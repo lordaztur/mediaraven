@@ -1,0 +1,92 @@
+{
+  "startup": {
+    "token_missing": "❌ Erro: Token não configurado.",
+    "connecting": "🔌 Conectando ao Servidor Local em: {api_url}",
+    "ready": "🤖 Bot iniciado..."
+  },
+
+  "buttons": {
+    "download_yes": "✅ Baixar",
+    "download_no": "❌ Ignorar",
+    "caption_yes": "✅ Sim",
+    "caption_no": "❌ Não",
+    "retry": "🔄 Tentar novamente"
+  },
+
+  "prompts": {
+    "link_detected": "🔗 <b>Link detectado</b>\n\nVocê tem 5 segundos para escolher ou iniciarei o download.{suffix}",
+    "language_detected": "🌍 <b>Múltiplos idiomas detectados!</b>\n\nVocê tem 10s para escolher ou baixarei o original.{suffix}",
+    "caption_found": "📝 <b>Descrição encontrada!</b>\nDeseja incluir como legenda?\n\nVocê tem 5s para escolher ou deixarei sem legenda.{suffix}"
+  },
+
+  "callback_alerts": {
+    "dl_expired": "⚠️ Esta opção expirou.",
+    "dl_wrong_user": "🚫 Apenas quem enviou o link pode escolher!",
+    "lang_expired": "⚠️ Esta opção expirou ou o bot já escolheu sozinho.",
+    "lang_wrong_user": "🚫 Apenas quem enviou o link pode escolher o idioma!",
+    "caption_expired": "⚠️ Esta opção expirou ou já foi respondida.",
+    "caption_wrong_user": "🚫 Apenas quem enviou o link pode escolher a legenda!",
+    "retry_expired": "⚠️ Este link expirou.",
+    "retry_wrong_user": "🚫 Apenas quem enviou o link pode tentar novamente!"
+  },
+
+  "status": {
+    "download_ignored": "❌ Download ignorado pelo usuário.{suffix}",
+    "queue_busy": "⏳ Fila ocupada. Aguarde...{suffix}",
+    "downloading": "📥 Baixando mídia...{suffix}",
+    "sending": "📤 Enviando {count} arquivos...{suffix}",
+    "retry_failed": "{status}{suffix}\n\n⚠️ Falha na retentativa.",
+    "internal_error": "❌ Erro interno ao enviar os arquivos.{suffix}"
+  },
+
+  "status_cycle": [
+    "📥 Baixando mídia...{suffix}",
+    "📥 Processando o conteúdo...{suffix}",
+    "📥 Finalizando o download...{suffix}",
+    "📥 Quase lá...{suffix}",
+    "📥 Aguarde mais um instante...{suffix}"
+  ],
+
+  "download_errors": {
+    "login_required": "🔒 Conteúdo privado ou requer login.",
+    "video_unavailable": "❌ Mídia indisponível.",
+    "forbidden": "🚫 Acesso negado (Erro 403).",
+    "generic": "⚠️ Erro ao processar o link."
+  },
+
+  "downloader_status": {
+    "ytdlp_success": "✅ yt-dlp",
+    "threads_fail": "⚠️ Falha ao processar este link do Threads.",
+    "generic_fail": "❌ Não foi possível baixar a mídia.",
+    "instagrapi": "📸 Instagrapi ({media_type})",
+    "instagrapi_fail": "⚠️ Falha no Instagrapi. Verifique o login.",
+    "reddit_json": "👽 API Nativa (Imagens)",
+    "reddit_json_fail": "⚠️ Falha ao extrair imagens do Reddit.",
+    "reddit_playwright": "👽 Playwright (Imagens)",
+    "reddit_playwright_fail": "⚠️ Falha ao extrair imagens do Reddit via Playwright.",
+    "threads_playwright": "🧵 Playwright Threads ({media_type})",
+    "threads_playwright_fail": "⚠️ Falha ao extrair mídias do Threads via Playwright.",
+    "scraper": "🕸️ Scraper Deep Search ({media_type}) [{count} arquivos]",
+    "scraper_fail": "⚠️ Falha: Nenhuma mídia interceptada na rede.",
+    "playwright_not_running": "⚠️ Playwright global não está rodando."
+  },
+
+  "media_type_labels": {
+    "ig_video_music": "Vídeo com Música",
+    "ig_video": "Vídeo",
+    "ig_album": "Imagem/Álbum",
+    "threads_video": "Vídeo",
+    "threads_album": "Imagem/Carrossel",
+    "scraper_video_mixed": "Vídeo/Misto",
+    "scraper_images": "Imagens"
+  },
+
+  "caption": {
+    "link_original_label": "Link Original",
+    "title_prefix": "📄 ",
+    "link_prefix": "🔗 ",
+    "original_lang_label": "ORIGINAL"
+  },
+
+  "reactions": ["🔥", "⚡", "👀", "🗿", "👨‍💻"]
+}

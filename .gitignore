@@ -1,0 +1,119 @@
+# ============================================================================
+# Segredos e configurações locais (NUNCA COMMITAR)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+
+# Mensagens customizadas (cada usuário tem as suas)
+messages.json
+
+# Sessão persistida do Instagrapi (equivale a credenciais)
+ig_session.json
+
+# Logs — podem conter URLs, IDs de usuários, stack traces com paths locais
+*.log
+*.log.*
+bot.log*
+
+
+# ============================================================================
+# Dados em runtime
+# ============================================================================
+# Pasta de downloads (ajuste se BASE_DOWNLOAD_DIR apontar pra outro lugar)
+downloads/
+task_*/
+
+
+# ============================================================================
+# Python
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribuição / build
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+MANIFEST
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# Testes / cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+
+# Type checkers / linters
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+
+# ============================================================================
+# Playwright
+# ============================================================================
+# Cache de navegadores baixados (pesado, cada dev baixa o seu)
+.playwright/
+playwright-report/
+test-results/
+
+
+# ============================================================================
+# Editores e IDEs
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+.project
+.pydevproject
+*.sublime-workspace
+*.sublime-project
+
+
+# ============================================================================
+# Sistemas operacionais
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+
+# ============================================================================
+# Ferramentas de agente / IA
+# ============================================================================
+.claude/
+.aider*
+.cursor/

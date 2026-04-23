@@ -1,0 +1,151 @@
+import asyncio
+import logging
+import os
+
+import aiofiles
+
+import state
+from config import IG_CAPTION_MAX, IG_QUEUE_WARN_THRESHOLD, IG_USER_AGENT
+from messages import msg
+from utils import async_merge_audio_image, safe_url
+
+logger = logging.getLogger(__name__)
+
+
+async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+    logger.info(f"📸 Iniciando Instagrapi para: {safe_url(url)}")
+    if not os.path.exists(unique_folder):
+        os.makedirs(unique_folder)
+
+    def perform_instagrapi():
+        if not state.IG_CLIENT:
+            logger.error("❌ Cliente Instagrapi não está logado.")
+            return None
+
+        try:
+            media_pk = state.IG_CLIENT.media_pk_from_url(url)
+            media_info = state.IG_CLIENT.media_info(media_pk)
+
+            audio_url = None
+            start_time_sec = None
+            overlap_duration_sec = None
+            track_duration_sec = None
+            duration_sec = 15.0
+
+            resource_count = len(getattr(media_info, 'resources', []) or [])
+            is_single_photo = (
+                media_info.media_type == 1
+                or (media_info.media_type == 8 and resource_count <= 1)
+            )
+            if is_single_photo:
+                try:
+                    logger.info("🕵️ Buscando áudio e metadados...")
+                    raw_data = state.IG_CLIENT.private_request(f"media/{media_pk}/info/")
+
+                    def extract_audio_data(data):
+                        nonlocal audio_url, start_time_sec, overlap_duration_sec, track_duration_sec
+                        if isinstance(data, dict):
+                            if data.get('progressive_download_url') and not audio_url:
+                                audio_url = data['progressive_download_url']
+                            if 'audio_asset_start_time_in_ms' in data and start_time_sec is None:
+                                start_time_sec = data.get('audio_asset_start_time_in_ms', 0) / 1000.0
+                            if 'overlap_duration_in_ms' in data and overlap_duration_sec is None:
+                                overlap_duration_sec = data.get('overlap_duration_in_ms', 0) / 1000.0
+                            if 'duration_in_ms' in data and track_duration_sec is None:
+                                track_duration_sec = data.get('duration_in_ms', 0) / 1000.0
+                            for k, v in data.items(): extract_audio_data(v)
+                        elif isinstance(data, list):
+                            for item in data: extract_audio_data(item)
+
+                    extract_audio_data(raw_data)
+
+                    if overlap_duration_sec and overlap_duration_sec > 0:
+                        duration_sec = overlap_duration_sec
+                    elif track_duration_sec and track_duration_sec > 0:
+                        duration_sec = min(track_duration_sec, 90.0)
+                    else:
+                        duration_sec = 30.0
+
+                except Exception as e:
+                    logger.warning(f"⚠️ Erro ao buscar JSON bruto: {e}")
+
+            paths = []
+            if media_info.media_type == 1:
+                paths.append(str(state.IG_CLIENT.photo_download(media_pk, folder=unique_folder)))
+            elif media_info.media_type == 2:
+                paths.append(str(state.IG_CLIENT.video_download(media_pk, folder=unique_folder)))
+            elif media_info.media_type == 8:
+                paths.extend([str(p) for p in state.IG_CLIENT.album_download(media_pk, folder=unique_folder)])
+
+            caption_text = getattr(media_info, 'caption_text', "") or ""
+            return paths, audio_url, duration_sec, start_time_sec, media_info.media_type, caption_text, is_single_photo
+        except Exception as e:
+            logger.error(f"❌ Instagrapi falhou: {e}")
+            return None
+
+    queue_size = state.ig_pending_inc()
+    if queue_size >= IG_QUEUE_WARN_THRESHOLD:
+        logger.warning(f"📮 Fila do Instagrapi com {queue_size} jobs aguardando (limiar={IG_QUEUE_WARN_THRESHOLD}).")
+
+    loop = asyncio.get_running_loop()
+    try:
+        result = await loop.run_in_executor(state.IG_POOL, perform_instagrapi)
+    finally:
+        state.ig_pending_dec()
+
+    if not result:
+        return [], msg("downloader_status.instagrapi_fail"), ""
+
+    paths, audio_url, duration_sec, start_time_sec, media_type, caption_text, is_single_photo = result
+
+    audio_path = None
+    if audio_url:
+        try:
+            logger.info("🎵 Baixando áudio puro...")
+            a_path = os.path.join(unique_folder, "temp_audio.m4a")
+            headers_ig = {'User-Agent': IG_USER_AGENT}
+            async with state.AIOHTTP_SESSION.get(audio_url, headers=headers_ig, timeout=15) as r:
+                if r.status == 200:
+                    async with aiofiles.open(a_path, 'wb') as f:
+                        async for chunk in r.content.iter_chunked(8192):
+                            await f.write(chunk)
+                    audio_path = a_path
+        except Exception as e:
+            logger.error(f"⚠️ Erro ao baixar o áudio: {e}")
+
+    if is_single_photo and audio_path and os.path.exists(audio_path):
+        logger.info("🎬 Transformando foto em vídeo com a música...")
+        merged_paths = []
+        for img_path in paths:
+            if img_path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                video_output = img_path.rsplit('.', 1)[0] + '_video.mp4'
+
+                if await async_merge_audio_image(img_path, audio_path, video_output, start_time_sec, duration_sec):
+                    merged_paths.append(video_output)
+                    try:
+                        os.remove(img_path)
+                    except OSError as e:
+                        logger.debug(f"Falha ao remover imagem após merge ({img_path}): {e}")
+                else:
+                    merged_paths.append(img_path)
+            else:
+                merged_paths.append(img_path)
+
+        paths = merged_paths
+        try:
+            os.remove(audio_path)
+        except OSError as e:
+            logger.debug(f"Falha ao remover áudio temporário ({audio_path}): {e}")
+
+    has_video = any(f.endswith('.mp4') for f in paths)
+    if has_video and audio_path:
+        m_type = msg("media_type_labels.ig_video_music")
+    elif has_video:
+        m_type = msg("media_type_labels.ig_video")
+    else:
+        m_type = msg("media_type_labels.ig_album")
+
+    if caption_text and len(caption_text) > IG_CAPTION_MAX:
+        caption_text = caption_text[:IG_CAPTION_MAX] + "..."
+
+    return paths, msg("downloader_status.instagrapi", media_type=m_type), caption_text
