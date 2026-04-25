@@ -15,6 +15,7 @@ class Platform:
     instagram: bool = False
     youtube: bool = False
     reddit: bool = False
+    facebook: bool = False
 
 
 _PLATFORM_HOSTS = {
@@ -22,6 +23,7 @@ _PLATFORM_HOSTS = {
     'instagram': ('instagram.com',),
     'youtube': ('youtube.com', 'youtu.be', 'm.youtube.com', 'music.youtube.com'),
     'reddit': ('reddit.com', 'redd.it', 'old.reddit.com', 'new.reddit.com'),
+    'facebook': ('facebook.com', 'fb.com', 'fb.watch', 'm.facebook.com'),
 }
 
 
@@ -44,6 +46,7 @@ def _detect_platform(url: str) -> Platform:
         instagram=_host_matches(host, _PLATFORM_HOSTS['instagram']),
         youtube=_host_matches(host, _PLATFORM_HOSTS['youtube']),
         reddit=_host_matches(host, _PLATFORM_HOSTS['reddit']),
+        facebook=_host_matches(host, _PLATFORM_HOSTS['facebook']),
     )
 
 
@@ -60,6 +63,28 @@ async def _resolve_short_reddit_url(url: str) -> str:
         return new_url
     except Exception as e:
         logger.warning(f"⚠️ Falha ao resolver redirect Reddit: {e}")
+        return url
+
+
+async def _resolve_facebook_share_url(url: str) -> str:
+    parsed = urlparse(url)
+    host = (parsed.netloc or '').lower()
+    if host.startswith('www.'):
+        host = host[4:]
+    if not (host == 'facebook.com' or host.endswith('.facebook.com')):
+        return url
+    if '/share/' not in parsed.path:
+        return url
+    try:
+        logger.info(f"🔄 Resolvendo share URL do Facebook: {safe_url(url)}")
+        headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
+        async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
+            new_url = str(resp.url)
+        if new_url != url:
+            logger.info(f"✅ Link resolvido: {safe_url(new_url)}")
+        return new_url
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao resolver redirect Facebook: {e}")
         return url
 
 

@@ -4,6 +4,7 @@ import os
 from typing import Any, Optional
 
 import yt_dlp
+from yt_dlp.networking.impersonate import ImpersonateTarget
 
 import state
 from config import (
@@ -59,6 +60,9 @@ def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lan
         opts['noplaylist'] = True
         opts['format'] = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]/best'
         opts['merge_output_format'] = 'mp4'
+
+    if platform.facebook:
+        opts['impersonate'] = ImpersonateTarget('chrome')
 
 
 def _yt_dlp_extract(opts: dict[str, Any], url: str, download: bool = False) -> Optional[dict]:

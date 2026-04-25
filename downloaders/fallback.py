@@ -1,5 +1,6 @@
 import logging
 import os
+from urllib.parse import urlparse
 
 import state
 from config import PW_GOTO_TIMEOUT_MS
@@ -7,6 +8,19 @@ from messages import msg
 from utils import async_download_file, normalize_image, safe_url
 
 logger = logging.getLogger(__name__)
+
+
+_FACEBOOK_HOSTS = ('facebook.com', 'fb.com', 'fb.watch')
+
+
+def _is_facebook(url: str) -> bool:
+    try:
+        host = (urlparse(url).netloc or '').lower()
+    except Exception:
+        return False
+    if host.startswith('www.'):
+        host = host[4:]
+    return any(host == h or host.endswith('.' + h) for h in _FACEBOOK_HOSTS)
 
 
 async def scrape_fallback(url: str, unique_folder: str) -> tuple[list[str], str]:
@@ -38,7 +52,7 @@ async def scrape_fallback(url: str, unique_folder: str) -> tuple[list[str], str]
 
             page.on("response", handle_response)
 
-            await page.goto(url, wait_until="networkidle", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(url, wait_until="load", timeout=PW_GOTO_TIMEOUT_MS)
 
             await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
             await page.wait_for_timeout(3000)
@@ -114,6 +128,13 @@ async def scrape_fallback(url: str, unique_folder: str) -> tuple[list[str], str]
 
     if downloaded_files:
         has_video = any(f.endswith('.mp4') for f in downloaded_files)
+        if _is_facebook(url) and not has_video:
+            logger.warning(
+                f"⚠️ Scraper achou {len(downloaded_files)} mídias para link do Facebook, "
+                "mas nenhuma é vídeo — provavelmente lixo de UI. Descartando."
+            )
+            return [], msg("downloader_status.scraper_fail")
+
         media_type = msg("media_type_labels.scraper_video_mixed") if has_video else msg("media_type_labels.scraper_images")
         return downloaded_files, msg("downloader_status.scraper", media_type=media_type, count=len(downloaded_files))
 
