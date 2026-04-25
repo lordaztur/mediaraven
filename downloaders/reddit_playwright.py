@@ -1,36 +1,56 @@
 import logging
 import os
 import re
+from urllib.parse import urlparse
 
 import state
 from config import PW_GOTO_TIMEOUT_MS
 from messages import msg
 from utils import async_download_file, safe_url
 
-from .reddit_common import clean_reddit_media_url, is_reddit_media_url, looks_like_image
+from .reddit_common import build_reddit_caption, clean_reddit_media_url, is_reddit_media_url, looks_like_image
 
 logger = logging.getLogger(__name__)
 
 
-async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list[str], str]:
+_REDDIT_HOSTS_TO_SWAP = ('reddit.com', 'www.reddit.com', 'new.reddit.com', 'np.reddit.com')
+
+
+def _force_old_reddit(url: str) -> str:
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return url
+    host = (parsed.netloc or '').lower()
+    if host in _REDDIT_HOSTS_TO_SWAP:
+        return url.replace(parsed.netloc, 'old.reddit.com', 1)
+    return url
+
+
+async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list[str], str, str]:
     logger.info(f"👽 Iniciando extração via Playwright para Reddit: {safe_url(url)}")
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
     downloaded_files = []
     media_urls = []
+    og_title = ""
 
     if not state.PW_BROWSER:
-        return [], msg("downloader_status.playwright_not_running")
+        return [], msg("downloader_status.playwright_not_running"), ""
 
     if not state.PW_CONTEXT:
-        return [], msg("downloader_status.playwright_not_running")
+        return [], msg("downloader_status.playwright_not_running"), ""
+
+    target_url = _force_old_reddit(url)
+    if target_url != url:
+        logger.info(f"👽 Forçando old.reddit.com: {safe_url(target_url)}")
 
     async with state.PW_SEMAPHORE:
         page = await state.PW_CONTEXT.new_page()
 
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(target_url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
             await page.wait_for_timeout(3000)
 
             try:
@@ -88,6 +108,13 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                     if clean_og and clean_og not in media_urls:
                         media_urls.append(clean_og)
 
+            try:
+                og_title_attr = await page.locator('meta[property="og:title"]').get_attribute('content', timeout=500)
+                if og_title_attr:
+                    og_title = og_title_attr.strip()
+            except Exception as e:
+                logger.debug(f"Meta og:title não encontrada: {e}")
+
         except Exception as e:
             logger.warning(f"⚠️ Erro no Playwright ao carregar a página: {e}")
         finally:
@@ -107,5 +134,6 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
             logger.error(f"⚠️ Erro ao baixar imagem do Reddit: {e}")
 
     if downloaded_files:
-        return downloaded_files, msg("downloader_status.reddit_playwright")
-    return [], msg("downloader_status.reddit_playwright_fail")
+        caption = build_reddit_caption(og_title, "", url)
+        return downloaded_files, msg("downloader_status.reddit_playwright"), caption
+    return [], msg("downloader_status.reddit_playwright_fail"), ""

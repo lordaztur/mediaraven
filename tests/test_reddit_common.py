@@ -1,5 +1,6 @@
 """Testes dos helpers compartilhados entre os extratores de Reddit."""
 from downloaders.reddit_common import (
+    build_reddit_caption,
     clean_reddit_media_url,
     is_reddit_media_url,
     looks_like_image,
@@ -50,3 +51,33 @@ def test_looks_like_image_detects_extensions():
     assert looks_like_image("https://x.com/a.gif?x") is True
     assert looks_like_image("https://x.com/page") is False
     assert looks_like_image("") is False
+
+
+def test_build_reddit_caption_with_title_and_selftext():
+    caption = build_reddit_caption(
+        "Cute puppy playing",
+        "Found this little guy in my yard today.",
+        "https://reddit.com/r/aww/comments/x/",
+    )
+    assert "Cute puppy playing" in caption
+    assert "Found this little guy" in caption
+    assert "<b>" in caption
+    assert "<a href=" in caption
+
+
+def test_build_reddit_caption_only_title():
+    caption = build_reddit_caption("Just a photo", "", "https://reddit.com/r/pics/comments/x/")
+    assert "Just a photo" in caption
+    assert "<a href=" in caption
+
+
+def test_build_reddit_caption_empty_returns_empty_string():
+    caption = build_reddit_caption("", "", "https://reddit.com/r/x/comments/y/")
+    assert caption == ""
+
+
+def test_build_reddit_caption_html_escapes_specials():
+    caption = build_reddit_caption("Title <with> & stuff", "body & <stuff>", "https://reddit.com/r/x/comments/y/")
+    assert "&lt;" in caption
+    assert "&amp;" in caption
+    assert "<with>" not in caption

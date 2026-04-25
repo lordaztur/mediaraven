@@ -10,7 +10,7 @@ FRAGMENT_RESERVE = 200
 
 
 def _build_caption(info_dict: dict[str, Any], url: str) -> tuple[str, str]:
-    raw_title = str(info_dict.get('title', '') or '')
+    raw_title = str(info_dict.get('alt_title') or info_dict.get('title') or '')
     raw_desc = str(
         info_dict.get('description', '')
         or info_dict.get('comment', '')

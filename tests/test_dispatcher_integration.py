@@ -75,18 +75,21 @@ async def test_download_media_reddit_tries_json_first(tmp_folder):
 
     async def reddit_json_mock(url, folder):
         call_order.append("json")
-        return [reddit_json_file], "OK_JSON"
+        return [reddit_json_file], "OK_JSON", "OK_CAP"
 
     async def reddit_pw_mock(url, folder):
         call_order.append("pw")
-        return [], "fail"
+        return [], "fail", ""
+
+    async def ytdlp_mock(*a, **kw):
+        call_order.append("ytdlp")
+        return [], {}
 
     async def scrape_mock(url, folder):
         call_order.append("scrape")
         return [], "fail"
 
-    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
-                      new=AsyncMock(return_value=([], {}))), \
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_reddit_json", new=AsyncMock(side_effect=reddit_json_mock)), \
          patch.object(dispatcher, "download_reddit_playwright", new=AsyncMock(side_effect=reddit_pw_mock)), \
@@ -98,6 +101,35 @@ async def test_download_media_reddit_tries_json_first(tmp_folder):
     assert files == [reddit_json_file]
     assert status == "OK_JSON"
     assert call_order == ["json"]
+    assert "ytdlp" not in call_order
+
+
+@pytest.mark.asyncio
+async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
+    """Reddit: se reddit_json retorna vazio (vídeo), yt-dlp deve ser tentado."""
+    video_file = os.path.join(tmp_folder, "v.mp4")
+    with open(video_file, "wb") as f:
+        f.write(b"x")
+    call_order = []
+
+    async def reddit_json_mock(url, folder):
+        call_order.append("json")
+        return [], "fail", ""
+
+    async def ytdlp_mock(*a, **kw):
+        call_order.append("ytdlp")
+        return [video_file], {"title": "vídeo legal", "description": "selftext aqui"}
+
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_reddit_json", new=AsyncMock(side_effect=reddit_json_mock)):
+        files, status, caption = await dispatcher.download_media(
+            "https://reddit.com/r/foo/comments/y/", tmp_folder, target_lang=None
+        )
+
+    assert files == [video_file]
+    assert call_order == ["json", "ytdlp"]
+    assert "vídeo legal" in caption
 
 
 @pytest.mark.asyncio

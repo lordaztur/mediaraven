@@ -7,18 +7,20 @@ from cookies import get_aiohttp_cookies_for_url
 from messages import msg
 from utils import async_download_file, normalize_image, safe_url
 
-from .reddit_common import clean_reddit_media_url, looks_like_image
+from .reddit_common import build_reddit_caption, clean_reddit_media_url, looks_like_image
 
 logger = logging.getLogger(__name__)
 
 
-async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str], str]:
+async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str], str, str]:
     logger.info(f"👽 Iniciando extração via JSON para Reddit: {safe_url(url)}")
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
     media_urls = []
     downloaded_files = []
+    title = ""
+    selftext = ""
 
     headers = {
         'User-Agent': REDDIT_JSON_UA,
@@ -44,6 +46,12 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
             data = await resp.json()
 
         post_data = data[0]['data']['children'][0]['data']
+        title = post_data.get('title', '') or ''
+        selftext = post_data.get('selftext', '') or ''
+
+        if post_data.get('is_video') or post_data.get('post_hint') in ('hosted:video', 'rich:video'):
+            logger.info("👽 Post é vídeo — delegando pro yt-dlp (que faz merge DASH).")
+            return [], msg("downloader_status.reddit_json_fail"), ""
 
         if 'media_metadata' in post_data:
             gallery_items = post_data.get('gallery_data', {}).get('items', [])
@@ -95,5 +103,6 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
             logger.error(f"⚠️ Erro ao processar imagem do Reddit: {e}")
 
     if downloaded_files:
-        return downloaded_files, msg("downloader_status.reddit_json")
-    return [], msg("downloader_status.reddit_json_fail")
+        caption = build_reddit_caption(title, selftext, url)
+        return downloaded_files, msg("downloader_status.reddit_json"), caption
+    return [], msg("downloader_status.reddit_json_fail"), ""

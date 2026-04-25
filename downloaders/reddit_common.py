@@ -1,10 +1,18 @@
 import html
 import re
 
+from ._caption import _build_caption
+
 
 _REDDIT_MEDIA_HOSTS = ('i.redd.it', 'preview.redd.it')
 _REDDIT_JUNK_MARKERS = ('award_images', 'snoovatar', 'avatars', 'icon')
 _IMG_EXT_RE = re.compile(r'\.(jpg|jpeg|png|webp|gif)($|\?)', re.IGNORECASE)
+
+
+def build_reddit_caption(title: str, selftext: str, url: str) -> str:
+    info = {"title": title or "", "description": selftext or ""}
+    caption, _ = _build_caption(info, url)
+    return caption
 
 
 def clean_reddit_media_url(raw_url: str) -> str | None:

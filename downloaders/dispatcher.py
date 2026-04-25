@@ -79,13 +79,9 @@ async def _run_platform_fallbacks(
             return ig_files, ig_status, ig_cap
 
     if platform.reddit:
-        reddit_files, reddit_status = await download_reddit_json(url, unique_folder)
-        if reddit_files:
-            return reddit_files, reddit_status, ""
-
-        reddit_pw_files, reddit_pw_status = await download_reddit_playwright(url, unique_folder)
+        reddit_pw_files, reddit_pw_status, reddit_pw_cap = await download_reddit_playwright(url, unique_folder)
         if reddit_pw_files:
-            return reddit_pw_files, reddit_pw_status, ""
+            return reddit_pw_files, reddit_pw_status, reddit_pw_cap
 
     scrape_files, scrape_status = await scrape_fallback(url, unique_folder)
     if scrape_files:
@@ -149,6 +145,12 @@ async def download_media(
             if embed_files:
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return embed_files, embed_status, embed_cap
+
+        if platform.reddit:
+            rj_files, rj_status, rj_cap = await download_reddit_json(url, unique_folder)
+            if rj_files:
+                metrics.record_success(platform_label, time.monotonic() - started)
+                return rj_files, rj_status, rj_cap
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:

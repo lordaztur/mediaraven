@@ -146,6 +146,29 @@ def test_build_caption_empty_when_no_info():
     assert 'x.test' in text_content
 
 
+def test_build_caption_prefers_alt_title_over_title():
+    info = {
+        'title': 'Truncated short version...',
+        'alt_title': 'The full long title without any truncation applied',
+        'description': 'body',
+    }
+    caption, _ = _build_caption(info, 'https://x.test')
+    assert 'The full long title without any truncation applied' in caption
+    assert 'Truncated short version' not in caption
+
+
+def test_build_caption_falls_back_to_title_when_no_alt_title():
+    info = {'title': 'Just title', 'description': 'body'}
+    caption, _ = _build_caption(info, 'https://x.test')
+    assert 'Just title' in caption
+
+
+def test_build_caption_ignores_empty_alt_title():
+    info = {'title': 'Real title', 'alt_title': '', 'description': 'body'}
+    caption, _ = _build_caption(info, 'https://x.test')
+    assert 'Real title' in caption
+
+
 def test_parse_lang_from_format_language_field():
     clean, untagged = _parse_lang_from_format({
         'acodec': 'aac', 'language': 'pt-BR', 'format_id': '140',

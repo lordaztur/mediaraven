@@ -370,7 +370,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-176 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL, extração de mídia do Instagram via página de embed.
+195 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL, extração de mídia do Instagram via página de embed, normalização de URL Reddit pra `old.reddit.com`, caption do Reddit com title+selftext.
 
 ---
 
