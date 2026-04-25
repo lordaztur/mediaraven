@@ -40,7 +40,7 @@ from .fallback import scrape_fallback
 from .instagram import download_instagram_instagrapi
 from .reddit_json import download_reddit_json
 from .reddit_playwright import download_reddit_playwright
-from .threads import download_threads_playwright
+from .threads import download_threads
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +126,7 @@ async def download_media(
 
         if platform.threads:
             logger.info("🧵 Link do Threads detectado, redirecionando direto para Playwright.")
-            files, status_info = await download_threads_playwright(url, unique_folder)
+            files, status_info = await download_threads(url, unique_folder)
             if files:
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return files, status_info, ""

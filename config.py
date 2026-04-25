@@ -180,12 +180,6 @@ IG_USER_AGENT = _env_str("IG_USER_AGENT", "Instagram 219.0.0.12.117 Android")
 IG_CAPTION_MAX = _env_int("IG_CAPTION_MAX", 1000)
 
 THREADS_MIN_IMAGE_SIZE = _env_int("THREADS_MIN_IMAGE_SIZE", 500)
-THREADS_JUNK_KEYWORDS = _csv_strings(
-    os.getenv(
-        "THREADS_JUNK_KEYWORDS",
-        "s150x150,p150x150,s320x320,p320x320,s480x480,p480x480,profile,avatar,icon,emoji,badge",
-    )
-)
 
 AIOHTTP_UA_DEFAULT = _env_str(
     "AIOHTTP_UA_DEFAULT",

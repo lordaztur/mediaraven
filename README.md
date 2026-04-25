@@ -22,7 +22,8 @@ Cole qualquer link num chat e o bot devolve a mídia em segundos. Simples assim.
 - 🎥 **YouTube** — vídeos, Shorts, múltiplas trilhas de áudio (seleção de idioma quando há dublagem)
 - 📸 **Instagram** — posts, reels, carrosséis, stories, com áudio original
 - 👽 **Reddit** — galerias, imagens únicas, vídeos, posts NSFW (remove blur)
-- 🧵 **Threads** — posts com vídeo ou imagens
+- 🧵 **Threads** — posts, carrosséis (foto/vídeo/misto), reposts com comentário
+- 👍 **Facebook** — vídeos e reels (incluindo links `/share/v/` resolvidos automaticamente)
 - 🕸️ **Qualquer outro site** — scraper genérico varre a página à procura de mídias
 
 ### 🎁 Extras
@@ -368,7 +369,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-99 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle.
+114 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR.
 
 ---
 
@@ -392,7 +393,7 @@ mediaraven/
 │   ├── instagram.py         ← fallback Instagrapi
 │   ├── reddit_json.py       ← API pública do Reddit
 │   ├── reddit_playwright.py ← Playwright no Reddit (NSFW, spoilers)
-│   ├── threads.py           ← Playwright no Threads
+│   ├── threads.py           ← extração JSON SSR do Threads (Playwright + parse)
 │   └── fallback.py          ← scraper genérico
 └── lifecycle/
     ├── services.py          ← init/stop globais

@@ -1,0 +1,109 @@
+import json
+import os
+
+import pytest
+
+from downloaders.threads import (
+    _extract_media,
+    _extract_post_code,
+    _find_post_by_code,
+)
+
+FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures", "threads")
+
+
+def _load_fixture(name: str) -> dict:
+    with open(os.path.join(FIXTURES_DIR, f"{name}.json")) as f:
+        return json.load(f)
+
+
+@pytest.mark.parametrize("url,expected", [
+    ("https://www.threads.com/@user/post/ABC123", "ABC123"),
+    ("https://www.threads.com/@user/post/ABC123?xmt=foo&slof=1", "ABC123"),
+    ("https://www.threads.com/@user/post/ABC123/", "ABC123"),
+    ("https://threads.net/@user/post/Xyz_-9", "Xyz_-9"),
+    ("https://www.threads.com/@user", None),
+    ("https://example.com/", None),
+])
+def test_extract_post_code(url, expected):
+    assert _extract_post_code(url) == expected
+
+
+def test_extract_media_photo_single():
+    post = _load_fixture("photo_single")
+    media = _extract_media(post)
+    assert len(media) == 1
+    kind, url = media[0]
+    assert kind == "image"
+    assert url.startswith("https://")
+    assert "fbcdn" in url
+
+
+def test_extract_media_carousel_photos():
+    post = _load_fixture("carousel_photos")
+    media = _extract_media(post)
+    assert len(media) == 2
+    assert all(kind == "image" for kind, _ in media)
+    assert all(url.startswith("https://") for _, url in media)
+
+
+def test_extract_media_carousel_mixed():
+    post = _load_fixture("carousel_mixed")
+    media = _extract_media(post)
+    assert len(media) == 2
+    kinds = [k for k, _ in media]
+    assert "video" in kinds
+    assert "image" in kinds
+
+
+def test_extract_media_quoted_repost_falls_back():
+    post = _load_fixture("video")
+    media = _extract_media(post)
+    assert len(media) >= 1
+    kinds = [k for k, _ in media]
+    assert "video" in kinds
+
+
+def test_extract_media_picks_highest_resolution_for_image():
+    post = _load_fixture("photo_single")
+    iv = post["image_versions2"]
+    cands = iv["candidates"]
+    max_width = max(c.get("width") or 0 for c in cands)
+
+    media = _extract_media(post)
+    _, picked = media[0]
+
+    matching = [c for c in cands if c.get("width") == max_width]
+    assert any(c["url"] == picked for c in matching)
+
+
+def test_extract_media_empty_post_returns_empty():
+    assert _extract_media({}) == []
+    assert _extract_media({"media_type": 1}) == []
+
+
+def test_find_post_by_code_returns_match_with_media_type():
+    tree = {
+        "data": {
+            "edges": [
+                {"node": {"thread_items": [{"post": {"code": "X1", "media_type": 1}}]}},
+                {"node": {"thread_items": [{"post": {"code": "X2", "media_type": 8}}]}},
+            ]
+        }
+    }
+    found = _find_post_by_code(tree, "X2")
+    assert found is not None
+    assert found["code"] == "X2"
+    assert found["media_type"] == 8
+
+
+def test_find_post_by_code_skips_match_without_media_type():
+    tree = {"post": {"code": "X1"}, "other": {"code": "X1", "media_type": 1}}
+    found = _find_post_by_code(tree, "X1")
+    assert found is not None
+    assert "media_type" in found
+
+
+def test_find_post_by_code_returns_none_when_absent():
+    assert _find_post_by_code({"a": 1}, "MISSING") is None
+    assert _find_post_by_code([], "MISSING") is None
