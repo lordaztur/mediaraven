@@ -38,6 +38,7 @@ from ._ytdlp import (
 
 from .fallback import scrape_fallback
 from .instagram import download_instagram_instagrapi
+from .instagram_embed import download_instagram_embed
 from .reddit_json import download_reddit_json
 from .reddit_playwright import download_reddit_playwright
 from .threads import download_threads
@@ -142,6 +143,12 @@ async def download_media(
                 return files, status_info, x_caption
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg("downloader_status.x_fail"), ""
+
+        if platform.instagram:
+            embed_files, embed_status, embed_cap = await download_instagram_embed(url, unique_folder)
+            if embed_files:
+                metrics.record_success(platform_label, time.monotonic() - started)
+                return embed_files, embed_status, embed_cap
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:

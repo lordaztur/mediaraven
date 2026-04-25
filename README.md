@@ -370,7 +370,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-137 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL.
+176 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL, extração de mídia do Instagram via página de embed.
 
 ---
 
@@ -391,7 +391,8 @@ mediaraven/
 │   ├── _ytdlp.py            ← wrappers do yt-dlp
 │   ├── _languages.py        ← multi-idioma do YouTube
 │   ├── _caption.py          ← legendas HTML
-│   ├── instagram.py         ← fallback Instagrapi
+│   ├── instagram_embed.py   ← Instagram via /embed/captioned/ (sem login, primeiro)
+│   ├── instagram.py         ← fallback Instagrapi (último recurso, com login)
 │   ├── reddit_json.py       ← API pública do Reddit
 │   ├── reddit_playwright.py ← Playwright no Reddit (NSFW, spoilers)
 │   ├── threads.py           ← extração JSON SSR do Threads (Playwright + parse)

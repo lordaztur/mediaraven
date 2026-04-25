@@ -61,7 +61,7 @@ def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lan
         opts['format'] = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]/best'
         opts['merge_output_format'] = 'mp4'
 
-    if platform.facebook:
+    if platform.facebook or platform.instagram:
         opts['impersonate'] = ImpersonateTarget('chrome')
 
 
