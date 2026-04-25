@@ -16,6 +16,7 @@ class Platform:
     youtube: bool = False
     reddit: bool = False
     facebook: bool = False
+    x: bool = False
 
 
 _PLATFORM_HOSTS = {
@@ -24,6 +25,7 @@ _PLATFORM_HOSTS = {
     'youtube': ('youtube.com', 'youtu.be', 'm.youtube.com', 'music.youtube.com'),
     'reddit': ('reddit.com', 'redd.it', 'old.reddit.com', 'new.reddit.com'),
     'facebook': ('facebook.com', 'fb.com', 'fb.watch', 'm.facebook.com'),
+    'x': ('x.com', 'twitter.com', 'mobile.twitter.com', 'fxtwitter.com', 'vxtwitter.com', 'fixupx.com'),
 }
 
 
@@ -47,6 +49,7 @@ def _detect_platform(url: str) -> Platform:
         youtube=_host_matches(host, _PLATFORM_HOSTS['youtube']),
         reddit=_host_matches(host, _PLATFORM_HOSTS['reddit']),
         facebook=_host_matches(host, _PLATFORM_HOSTS['facebook']),
+        x=_host_matches(host, _PLATFORM_HOSTS['x']),
     )
 
 

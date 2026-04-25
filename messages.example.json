@@ -66,6 +66,8 @@
     "reddit_playwright_fail": "⚠️ Falha ao extrair imagens do Reddit via Playwright.",
     "threads_playwright": "🧵 Playwright Threads ({media_type})",
     "threads_playwright_fail": "⚠️ Falha ao extrair mídias do Threads via Playwright.",
+    "x": "🐦 X ({media_type}) [{count} arquivos]",
+    "x_fail": "⚠️ Falha ao extrair mídias do X.",
     "scraper": "🕸️ Scraper Deep Search ({media_type}) [{count} arquivos]",
     "scraper_fail": "⚠️ Falha: Nenhuma mídia interceptada na rede.",
     "playwright_not_running": "⚠️ Playwright global não está rodando."
@@ -77,6 +79,8 @@
     "ig_album": "Imagem/Álbum",
     "threads_video": "Vídeo",
     "threads_album": "Imagem/Carrossel",
+    "x_video": "Vídeo",
+    "x_album": "Imagem/Carrossel",
     "scraper_video_mixed": "Vídeo/Misto",
     "scraper_images": "Imagens"
   },

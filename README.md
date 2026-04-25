@@ -23,6 +23,7 @@ Cole qualquer link num chat e o bot devolve a mídia em segundos. Simples assim.
 - 📸 **Instagram** — posts, reels, carrosséis, stories, com áudio original
 - 👽 **Reddit** — galerias, imagens únicas, vídeos, posts NSFW (remove blur)
 - 🧵 **Threads** — posts, carrosséis (foto/vídeo/misto), reposts com comentário
+- 🐦 **X (Twitter)** — fotos, vídeos, carrosséis (suporta `x.com`, `twitter.com`, `fxtwitter.com`, `vxtwitter.com`)
 - 👍 **Facebook** — vídeos e reels (incluindo links `/share/v/` resolvidos automaticamente)
 - 🕸️ **Qualquer outro site** — scraper genérico varre a página à procura de mídias
 
@@ -369,7 +370,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-114 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR.
+137 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL.
 
 ---
 
@@ -394,6 +395,7 @@ mediaraven/
 │   ├── reddit_json.py       ← API pública do Reddit
 │   ├── reddit_playwright.py ← Playwright no Reddit (NSFW, spoilers)
 │   ├── threads.py           ← extração JSON SSR do Threads (Playwright + parse)
+│   ├── x.py                 ← extração do X via __INITIAL_STATE__ (guest) / GraphQL (auth)
 │   └── fallback.py          ← scraper genérico
 └── lifecycle/
     ├── services.py          ← init/stop globais

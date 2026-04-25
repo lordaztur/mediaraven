@@ -1,0 +1,205 @@
+{
+  "bookmark_count": 58,
+  "bookmarked": false,
+  "conversation_id_str": "2043472628770275518",
+  "display_text_range": [
+    0,
+    166
+  ],
+  "entities": {
+    "hashtags": [],
+    "media": [
+      {
+        "additional_media_info": {
+          "monetizable": false
+        },
+        "allow_download_status": {
+          "allow_download": true
+        },
+        "display_url": "pic.x.com/dHHdtWVPPM",
+        "expanded_url": "https://x.com/EuAlePavanelli/status/2043472628770275518/video/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "id_str": "2043472377045020672",
+        "indices": [
+          167,
+          190
+        ],
+        "media_key": "7_2043472377045020672",
+        "media_results": {
+          "result": {
+            "media_key": "7_2043472377045020672"
+          }
+        },
+        "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/2043472377045020672/pu/img/KbeX2zY9OkwCK9ka.jpg",
+        "original_info": {
+          "focus_rects": [],
+          "height": 1280,
+          "width": 720
+        },
+        "sizes": {
+          "large": {
+            "h": 1280,
+            "resize": "fit",
+            "w": 720
+          },
+          "medium": {
+            "h": 1200,
+            "resize": "fit",
+            "w": 675
+          },
+          "small": {
+            "h": 680,
+            "resize": "fit",
+            "w": 383
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "video",
+        "url": "https://t.co/dHHdtWVPPM",
+        "video_info": {
+          "aspect_ratio": [
+            9,
+            16
+          ],
+          "duration_millis": 66874,
+          "variants": [
+            {
+              "content_type": "application/x-mpegURL",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/pl/R6o6qOzRZIP-vrTd.m3u8?tag&#x3D;19&amp;v&#x3D;372"
+            },
+            {
+              "bitrate": 632000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/320x568/bnswRbgPHUs8txex.mp4?tag&#x3D;19"
+            },
+            {
+              "bitrate": 950000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/480x852/jp28xUYVwcsuQ6fi.mp4?tag&#x3D;19"
+            },
+            {
+              "bitrate": 2176000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/720x1280/-QvTZUd2Zatdokmc.mp4?tag&#x3D;19"
+            }
+          ]
+        }
+      }
+    ],
+    "symbols": [],
+    "timestamps": [],
+    "urls": [],
+    "user_mentions": []
+  },
+  "favorite_count": 349,
+  "favorited": false,
+  "full_text": "O bolo 🎂 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣\nEssa IA da meta é uma porcaria. https://t.co/dHHdtWVPPM",
+  "id_str": "2043472628770275518",
+  "is_quote_status": false,
+  "lang": "pt",
+  "possibly_sensitive": false,
+  "possibly_sensitive_editable": true,
+  "quote_count": 2,
+  "reply_count": 15,
+  "retweet_count": 37,
+  "retweeted": false,
+  "has_super_follower": false,
+  "source": "&lt;a href&#x3D;&quot;http://twitter.com/download/android&quot; rel&#x3D;&quot;nofollow&quot;&gt;Twitter for Android&lt;/a&gt;",
+  "user": "1572774178616401920",
+  "extended_entities": {
+    "media": [
+      {
+        "additional_media_info": {
+          "monetizable": false
+        },
+        "allow_download_status": {
+          "allow_download": true
+        },
+        "display_url": "pic.x.com/dHHdtWVPPM",
+        "expanded_url": "https://x.com/EuAlePavanelli/status/2043472628770275518/video/1",
+        "ext_media_availability": {
+          "status": "available"
+        },
+        "id_str": "2043472377045020672",
+        "indices": [
+          167,
+          190
+        ],
+        "media_key": "7_2043472377045020672",
+        "media_results": {
+          "result": {
+            "media_key": "7_2043472377045020672"
+          }
+        },
+        "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/2043472377045020672/pu/img/KbeX2zY9OkwCK9ka.jpg",
+        "original_info": {
+          "focus_rects": [],
+          "height": 1280,
+          "width": 720
+        },
+        "sizes": {
+          "large": {
+            "h": 1280,
+            "resize": "fit",
+            "w": 720
+          },
+          "medium": {
+            "h": 1200,
+            "resize": "fit",
+            "w": 675
+          },
+          "small": {
+            "h": 680,
+            "resize": "fit",
+            "w": 383
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "video",
+        "url": "https://t.co/dHHdtWVPPM",
+        "video_info": {
+          "aspect_ratio": [
+            9,
+            16
+          ],
+          "duration_millis": 66874,
+          "variants": [
+            {
+              "content_type": "application/x-mpegURL",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/pl/R6o6qOzRZIP-vrTd.m3u8?tag&#x3D;19&amp;v&#x3D;372"
+            },
+            {
+              "bitrate": 632000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/320x568/bnswRbgPHUs8txex.mp4?tag&#x3D;19"
+            },
+            {
+              "bitrate": 950000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/480x852/jp28xUYVwcsuQ6fi.mp4?tag&#x3D;19"
+            },
+            {
+              "bitrate": 2176000,
+              "content_type": "video/mp4",
+              "url": "https://video.twimg.com/ext_tw_video/2043472377045020672/pu/vid/avc1/720x1280/-QvTZUd2Zatdokmc.mp4?tag&#x3D;19"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "text": "O bolo 🎂 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣 🤣\nEssa IA da meta é uma porcaria. https://t.co/dHHdtWVPPM",
+  "created_at": "2026-04-12T23:33:35.000Z",
+  "source_name": "Twitter for Android",
+  "source_url": "http://twitter.com/download/android"
+}

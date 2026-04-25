@@ -1,0 +1,289 @@
+{
+  "bookmark_count": 54,
+  "bookmarked": false,
+  "conversation_id_str": "2043260334933410139",
+  "display_text_range": [
+    0,
+    0
+  ],
+  "entities": {
+    "hashtags": [],
+    "media": [
+      {
+        "allow_download_status": {
+          "allow_download": true
+        },
+        "display_url": "pic.x.com/ZgSI9bVYe3",
+        "expanded_url": "https://x.com/brainletbr/status/2043260334933410139/photo/1",
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "features": {
+          "large": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "medium": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "orig": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "small": {
+            "faces": [
+              {
+                "h": 22,
+                "w": 22,
+                "x": 150,
+                "y": 502
+              }
+            ]
+          }
+        },
+        "id_str": "2043211568717180928",
+        "indices": [
+          0,
+          23
+        ],
+        "media_key": "3_2043211568717180928",
+        "media_results": {
+          "result": {
+            "media_key": "3_2043211568717180928"
+          }
+        },
+        "media_url_https": "https://pbs.twimg.com/media/HFryGKpbMAA0BWe.jpg",
+        "original_info": {
+          "focus_rects": [
+            {
+              "h": 655,
+              "w": 1169,
+              "x": 0,
+              "y": 52
+            },
+            {
+              "h": 1110,
+              "w": 1110,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 974,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 555,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 1169,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "height": 1110,
+          "width": 1169
+        },
+        "sizes": {
+          "large": {
+            "h": 1110,
+            "resize": "fit",
+            "w": 1169
+          },
+          "medium": {
+            "h": 1110,
+            "resize": "fit",
+            "w": 1169
+          },
+          "small": {
+            "h": 646,
+            "resize": "fit",
+            "w": 680
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "photo",
+        "url": "https://t.co/ZgSI9bVYe3"
+      }
+    ],
+    "symbols": [],
+    "timestamps": [],
+    "urls": [],
+    "user_mentions": []
+  },
+  "favorite_count": 2278,
+  "favorited": false,
+  "full_text": "https://t.co/ZgSI9bVYe3",
+  "id_str": "2043260334933410139",
+  "is_quote_status": false,
+  "lang": "zxx",
+  "possibly_sensitive": false,
+  "possibly_sensitive_editable": true,
+  "quote_count": 4,
+  "reply_count": 31,
+  "retweet_count": 146,
+  "retweeted": false,
+  "has_super_follower": false,
+  "source": "&lt;a href&#x3D;&quot;https://mobile.twitter.com&quot; rel&#x3D;&quot;nofollow&quot;&gt;Twitter Web App&lt;/a&gt;",
+  "user": "1261071959582007297",
+  "extended_entities": {
+    "media": [
+      {
+        "allow_download_status": {
+          "allow_download": true
+        },
+        "display_url": "pic.x.com/ZgSI9bVYe3",
+        "expanded_url": "https://x.com/brainletbr/status/2043260334933410139/photo/1",
+        "ext_media_availability": {
+          "status": "available"
+        },
+        "features": {
+          "large": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "medium": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "orig": {
+            "faces": [
+              {
+                "h": 38,
+                "w": 38,
+                "x": 259,
+                "y": 864
+              }
+            ]
+          },
+          "small": {
+            "faces": [
+              {
+                "h": 22,
+                "w": 22,
+                "x": 150,
+                "y": 502
+              }
+            ]
+          }
+        },
+        "id_str": "2043211568717180928",
+        "indices": [
+          0,
+          23
+        ],
+        "media_key": "3_2043211568717180928",
+        "media_results": {
+          "result": {
+            "media_key": "3_2043211568717180928"
+          }
+        },
+        "media_url_https": "https://pbs.twimg.com/media/HFryGKpbMAA0BWe.jpg",
+        "original_info": {
+          "focus_rects": [
+            {
+              "h": 655,
+              "w": 1169,
+              "x": 0,
+              "y": 52
+            },
+            {
+              "h": 1110,
+              "w": 1110,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 974,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 555,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "h": 1110,
+              "w": 1169,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "height": 1110,
+          "width": 1169
+        },
+        "sizes": {
+          "large": {
+            "h": 1110,
+            "resize": "fit",
+            "w": 1169
+          },
+          "medium": {
+            "h": 1110,
+            "resize": "fit",
+            "w": 1169
+          },
+          "small": {
+            "h": 646,
+            "resize": "fit",
+            "w": 680
+          },
+          "thumb": {
+            "h": 150,
+            "resize": "crop",
+            "w": 150
+          }
+        },
+        "type": "photo",
+        "url": "https://t.co/ZgSI9bVYe3"
+      }
+    ]
+  },
+  "text": "https://t.co/ZgSI9bVYe3",
+  "created_at": "2026-04-12T09:30:00.000Z",
+  "source_name": "Twitter Web App",
+  "source_url": "https://mobile.twitter.com"
+}

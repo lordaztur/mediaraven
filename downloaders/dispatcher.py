@@ -41,6 +41,7 @@ from .instagram import download_instagram_instagrapi
 from .reddit_json import download_reddit_json
 from .reddit_playwright import download_reddit_playwright
 from .threads import download_threads
+from .x import download_x
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ async def _run_platform_fallbacks(
 
 
 def _platform_label(platform: Platform) -> str:
-    for name in ('youtube', 'instagram', 'threads', 'reddit'):
+    for name in ('youtube', 'instagram', 'threads', 'reddit', 'facebook', 'x'):
         if getattr(platform, name):
             return name
     return 'other'
@@ -132,6 +133,15 @@ async def download_media(
                 return files, status_info, ""
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg("downloader_status.threads_fail"), ""
+
+        if platform.x:
+            logger.info("🐦 Link do X detectado, redirecionando direto para handler dedicado.")
+            files, status_info, x_caption = await download_x(url, unique_folder)
+            if files:
+                metrics.record_success(platform_label, time.monotonic() - started)
+                return files, status_info, x_caption
+            metrics.record_failure(platform_label, time.monotonic() - started)
+            return [], msg("downloader_status.x_fail"), ""
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
