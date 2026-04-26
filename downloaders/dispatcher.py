@@ -77,14 +77,12 @@ async def _run_platform_fallbacks(
     if platform.instagram:
         ig_files, ig_status, ig_cap = await download_instagram_instagrapi(url, unique_folder)
         if ig_files:
-            ig_cap, ig_art = await _enrich_caption_if_weak(url, ig_cap)
-            return ig_files, ig_status, ig_cap, ig_art
+            return await _finalize_success(ig_files, ig_status, ig_cap, url)
 
     if platform.reddit:
         reddit_pw_files, reddit_pw_status, reddit_pw_cap = await download_reddit_playwright(url, unique_folder)
         if reddit_pw_files:
-            reddit_pw_cap, reddit_pw_art = await _enrich_caption_if_weak(url, reddit_pw_cap)
-            return reddit_pw_files, reddit_pw_status, reddit_pw_cap, reddit_pw_art
+            return await _finalize_success(reddit_pw_files, reddit_pw_status, reddit_pw_cap, url)
 
     scrape_files, scrape_status, scrape_caption, scrape_is_article = await scrape_fallback(url, unique_folder)
     if scrape_files:
@@ -108,13 +106,27 @@ def _caption_is_weak(caption: str) -> bool:
     return stripped.startswith(link_prefix) and stripped.count('<a ') <= 1
 
 
-async def _enrich_caption_if_weak(url: str, caption: str) -> tuple[str, bool]:
+async def _enrich_caption_with_article(url: str, caption: str) -> tuple[str, bool]:
     if not _caption_is_weak(caption):
         return caption, False
-    article_caption, found = await fetch_article_caption(url)
-    if found:
+    article_caption = await fetch_article_caption(url)
+    if article_caption:
         return article_caption, True
     return caption, False
+
+
+async def _finalize_success(
+    files: list,
+    status: str,
+    caption: str,
+    url: str,
+    platform_label: Optional[str] = None,
+    started: Optional[float] = None,
+) -> tuple[list, str, str, bool]:
+    caption, is_article = await _enrich_caption_with_article(url, caption)
+    if platform_label is not None and started is not None:
+        metrics.record_success(platform_label, time.monotonic() - started)
+    return files, status, caption, is_article
 
 
 async def download_media(
@@ -141,9 +153,7 @@ async def download_media(
             logger.info("🧵 Link do Threads detectado, redirecionando direto para Playwright.")
             files, status_info, threads_cap = await download_threads(url, unique_folder)
             if files:
-                threads_cap, threads_art = await _enrich_caption_if_weak(url, threads_cap)
-                metrics.record_success(platform_label, time.monotonic() - started)
-                return files, status_info, threads_cap, threads_art
+                return await _finalize_success(files, status_info, threads_cap, url, platform_label, started)
             if threads_cap:
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return [], status_info, threads_cap, False
@@ -154,9 +164,7 @@ async def download_media(
             logger.info("🐦 Link do X detectado, redirecionando direto para handler dedicado.")
             files, status_info, x_caption = await download_x(url, unique_folder)
             if files:
-                x_caption, x_is_article = await _enrich_caption_if_weak(url, x_caption)
-                metrics.record_success(platform_label, time.monotonic() - started)
-                return files, status_info, x_caption, x_is_article
+                return await _finalize_success(files, status_info, x_caption, url, platform_label, started)
             if x_caption:
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return [], status_info, x_caption, False
@@ -166,16 +174,12 @@ async def download_media(
         if platform.instagram:
             embed_files, embed_status, embed_cap = await download_instagram_embed(url, unique_folder)
             if embed_files:
-                embed_cap, embed_art = await _enrich_caption_if_weak(url, embed_cap)
-                metrics.record_success(platform_label, time.monotonic() - started)
-                return embed_files, embed_status, embed_cap, embed_art
+                return await _finalize_success(embed_files, embed_status, embed_cap, url, platform_label, started)
 
         if platform.reddit:
             rj_files, rj_status, rj_cap = await download_reddit_json(url, unique_folder)
             if rj_files:
-                rj_cap, rj_art = await _enrich_caption_if_weak(url, rj_cap)
-                metrics.record_success(platform_label, time.monotonic() - started)
-                return rj_files, rj_status, rj_cap, rj_art
+                return await _finalize_success(rj_files, rj_status, rj_cap, url, platform_label, started)
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
@@ -199,9 +203,10 @@ async def download_media(
         caption, _ = _build_caption(info_dict, url)
 
         if downloaded_files:
-            caption, yt_is_article = await _enrich_caption_if_weak(url, caption)
-            metrics.record_success(platform_label, time.monotonic() - started)
-            return downloaded_files, msg("downloader_status.ytdlp_success"), caption, yt_is_article
+            return await _finalize_success(
+                downloaded_files, msg("downloader_status.ytdlp_success"),
+                caption, url, platform_label, started,
+            )
 
         logger.warning(f"⚠️ Falha no yt-dlp para {safe_url(url)}. Iniciando Fallbacks.")
         _wipe_folder(unique_folder)

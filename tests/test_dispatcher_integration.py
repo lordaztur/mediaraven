@@ -18,7 +18,7 @@ from downloaders import dispatcher
 def stub_article_enrichment():
     with patch.object(
         dispatcher, "fetch_article_caption",
-        new=AsyncMock(return_value=("", False)),
+        new=AsyncMock(return_value=""),
     ):
         yield
 
@@ -221,7 +221,7 @@ async def test_threads_enriches_caption_from_article(tmp_folder):
          patch.object(dispatcher, "download_threads",
                       new=AsyncMock(return_value=([pw_file], "OK_THREADS", ""))), \
          patch.object(dispatcher, "fetch_article_caption",
-                      new=AsyncMock(return_value=(article_caption, True))):
+                      new=AsyncMock(return_value=article_caption)):
         files, status, caption, is_article = await dispatcher.download_media(
             "https://threads.net/@user/post/1", tmp_folder, target_lang=None
         )
@@ -235,7 +235,7 @@ async def test_threads_enriches_caption_from_article(tmp_folder):
 async def test_x_keeps_caption_when_already_present(tmp_folder):
     x_file = os.path.join(tmp_folder, "x.mp4")
     tweet_caption = "📄 <b>Tweet legal</b>\n\nTexto do tweet aqui\n\n🔗 link"
-    article_mock = AsyncMock(return_value=("ARTIGO_NAO_DEVERIA_SER_USADO", True))
+    article_mock = AsyncMock(return_value="ARTIGO_NAO_DEVERIA_SER_USADO")
 
     with patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_x",

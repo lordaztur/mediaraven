@@ -362,19 +362,7 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
 
 
 _GALLERY_DL_LOCK = asyncio.Lock()
-_GALLERY_DL_CONFIG_INITIALIZED = False
-
-
-def _init_gallery_dl_config_once() -> None:
-    global _GALLERY_DL_CONFIG_INITIALIZED
-    if _GALLERY_DL_CONFIG_INITIALIZED:
-        return
-    try:
-        from gallery_dl import config as gdl_config
-        gdl_config.load()
-    except Exception as e:
-        logger.debug(f"gallery-dl config.load falhou (ok se default): {e}")
-    _GALLERY_DL_CONFIG_INITIALIZED = True
+_GALLERY_DL_LOADED = False
 
 
 def _can_handle_with_gallery_dl(url: str) -> bool:
@@ -408,9 +396,15 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
     files_before = set(_list_files_in(folder))
 
     async with _GALLERY_DL_LOCK:
+        global _GALLERY_DL_LOADED
         from gallery_dl import config as gdl_config, job as gdl_job
 
-        _init_gallery_dl_config_once()
+        if not _GALLERY_DL_LOADED:
+            try:
+                gdl_config.load()
+            except Exception as e:
+                logger.debug(f"gallery-dl config.load falhou: {e}")
+            _GALLERY_DL_LOADED = True
 
         gdl_config.set(('extractor',), 'base-directory', folder + os.sep)
         gdl_config.set(('extractor',), 'directory', [])
@@ -506,30 +500,25 @@ def _drop_facebook_image_only(files: list[str], page_url: str) -> list[str]:
     return []
 
 
-def _maybe_extract_article(html: str, url: str) -> str:
-    if SCRAPE_ARTICLE_EXTRACT != "yes" or not html:
+async def fetch_article_caption(url: str, html: Optional[str] = None) -> str:
+    if SCRAPE_ARTICLE_EXTRACT != "yes":
+        return ""
+    if html is None:
+        html, _ = await _fetch_html_with_paywall_bypass(
+            url, timeout=SCRAPE_FAST_PATH_TIMEOUT_S,
+        )
+    if not html:
         return ""
     result = extract_article(html, url=url, min_chars=SCRAPE_ARTICLE_MIN_CHARS)
     if not result:
         return ""
     title, body = result
-    info_dict = {'title': title, 'description': body}
-    caption, _ = _build_caption(info_dict, url)
+    caption, _ = _build_caption({'title': title, 'description': body}, url)
     logger.info(
         f"📰 Artigo detectado ({len(body)} chars body, "
         f"caption {len(caption)} chars) em {safe_url(url)}"
     )
     return caption
-
-
-async def fetch_article_caption(url: str) -> tuple[str, bool]:
-    if SCRAPE_ARTICLE_EXTRACT != "yes":
-        return "", False
-    html, _ = await _fetch_html_with_paywall_bypass(
-        url, timeout=SCRAPE_FAST_PATH_TIMEOUT_S,
-    )
-    caption = _maybe_extract_article(html or "", url)
-    return (caption, True) if caption else ("", False)
 
 
 async def scrape_fallback(
@@ -557,7 +546,7 @@ async def scrape_fallback(
 
     paywall_in_pw = _looks_like_paywall(page_html)
 
-    article_text = _maybe_extract_article(fast_html or page_html, url)
+    article_text = await fetch_article_caption(url, html=fast_html or page_html)
     is_article = bool(article_text)
 
     fast_media = _gather_media_from_html(fast_html, url) if fast_html else []

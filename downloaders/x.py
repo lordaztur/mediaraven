@@ -142,31 +142,26 @@ def _extract_tweet_text(tweet: Optional[dict]) -> str:
     return text
 
 
-def _extract_screen_name(tweet: Optional[dict]) -> str:
-    if not isinstance(tweet, dict):
-        return ""
-    user = tweet.get("user")
-    if isinstance(user, dict):
-        sn = user.get("screen_name") or ""
-        if sn:
-            return sn
-    core = tweet.get("core")
-    if isinstance(core, dict):
-        ur = (((core.get("user_results") or {}).get("result") or {}).get("legacy") or {})
-        sn = ur.get("screen_name") or ""
-        if sn:
-            return sn
-    return ""
-
-
-def _screen_name_from_url(url: str) -> str:
+def _get_screen_name(tweet: Optional[dict], url: str) -> str:
+    if isinstance(tweet, dict):
+        user = tweet.get("user")
+        if isinstance(user, dict):
+            sn = user.get("screen_name") or ""
+            if sn:
+                return sn
+        core = tweet.get("core")
+        if isinstance(core, dict):
+            ur = (((core.get("user_results") or {}).get("result") or {}).get("legacy") or {})
+            sn = ur.get("screen_name") or ""
+            if sn:
+                return sn
     m = _SCREEN_NAME_URL_RE.match(url)
     return m.group(1) if m else ""
 
 
 def _build_caption(tweet: Optional[dict], url: str) -> str:
     text = _extract_tweet_text(tweet)
-    sn = _extract_screen_name(tweet) or _screen_name_from_url(url)
+    sn = _get_screen_name(tweet, url)
     uploader = f"@{sn}" if sn else ""
     caption, _ = _build_std_caption({'uploader': uploader, 'description': text}, url)
     return caption
