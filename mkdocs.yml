@@ -129,13 +129,6 @@ extra:
       link: https://github.com/LordAztur/mediaraven
     - icon: fontawesome/brands/telegram
       link: https://t.me/
-  alternate:
-    - name: Português
-      link: /
-      lang: pt
-    - name: English
-      link: /en/
-      lang: en
 
 nav:
   - Início: index.md
