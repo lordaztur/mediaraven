@@ -16,6 +16,8 @@ theme:
     code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme)"
+      primary: teal
+      accent: teal
       toggle: { icon: material/brightness-auto, name: Sistema }
     - media: "(prefers-color-scheme: light)"
       scheme: default
