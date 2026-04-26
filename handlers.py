@@ -9,21 +9,12 @@ from telegram.ext import ContextTypes
 
 import state
 from config import (
+    cfg,
+    ALLOW_ALL,
     ALLOWED_CHAT_ID,
     ALLOWED_USER_ID,
-    ASK_ARTICLE_DEFAULT,
-    ASK_ARTICLE_TIMEOUT,
-    ASK_CAPTION_DEFAULT,
-    ASK_CAPTION_TIMEOUT,
-    ASK_DL_DEFAULT,
-    ASK_DL_TIMEOUT,
-    ASK_LANG_TIMEOUT,
-    ASK_SCREENSHOT_DEFAULT,
-    ASK_SCREENSHOT_TIMEOUT,
     BASE_DOWNLOAD_DIR,
-    MAX_URLS_PER_MESSAGE,
-    SCRAPE_SCREENSHOT_FALLBACK,
-    TELEGRAM_UPLOAD_TIMEOUT,
+    request_context,
     should_show_prompt,
 )
 from downloaders.dispatcher import download_media
@@ -111,6 +102,7 @@ async def retry_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     context.bot_data['retries'].pop(retry_id)
     await query.answer()
     await query.message.delete()
+    request_context.set((query.message.chat_id, retry_data['user_id']))
     await process_media_request(
         context, query.message.chat_id, retry_data['msg_id'], retry_data['url'],
         target_lang=retry_data.get('target_lang'),
@@ -168,7 +160,7 @@ async def _ask_download_confirmation(
     )
     choice = await _ask_via_future(
         context, 'dl_futures', req_key, markup, user_id,
-        timeout=ASK_DL_TIMEOUT, default=ASK_DL_DEFAULT,
+        timeout=cfg("ASK_DL_TIMEOUT"), default=cfg("ASK_DL_DEFAULT"),
     )
     return choice, status_msg
 
@@ -196,7 +188,7 @@ async def _ask_language_choice(
     )
     return await _ask_via_future(
         context, 'lang_futures', req_key, markup, user_id,
-        timeout=ASK_LANG_TIMEOUT, default='original',
+        timeout=cfg("ASK_LANG_TIMEOUT"), default='original',
     )
 
 
@@ -207,9 +199,13 @@ async def _ask_caption_inclusion(
     suffix: str,
     user_id: Optional[int],
     idx: int,
-    timeout: float = ASK_CAPTION_TIMEOUT,
-    default: str = ASK_CAPTION_DEFAULT,
+    timeout: Optional[float] = None,
+    default: Optional[str] = None,
 ) -> bool:
+    if timeout is None:
+        timeout = cfg("ASK_CAPTION_TIMEOUT")
+    if default is None:
+        default = cfg("ASK_CAPTION_DEFAULT")
     req_key = f"cap_{message_id}_{idx}"
     markup = _yes_no_markup(
         "cap", req_key,
@@ -247,7 +243,7 @@ async def _ask_screenshot_offer(
     )
     choice = await _ask_via_future(
         context, 'screenshot_futures', req_key, markup, user_id,
-        timeout=ASK_SCREENSHOT_TIMEOUT, default=ASK_SCREENSHOT_DEFAULT,
+        timeout=cfg("ASK_SCREENSHOT_TIMEOUT"), default=cfg("ASK_SCREENSHOT_DEFAULT"),
     )
     return choice == 'yes'
 
@@ -263,7 +259,7 @@ async def _try_screenshot_offer(
     url: str,
     is_retry: bool,
 ) -> list:
-    if is_retry or SCRAPE_SCREENSHOT_FALLBACK != "yes" or unique_folder is None:
+    if is_retry or cfg("SCRAPE_SCREENSHOT_FALLBACK") != "yes" or unique_folder is None:
         return []
     try:
         wants = await _ask_screenshot_offer(context, status_msg, message_id, suffix, user_id, idx)
@@ -375,8 +371,8 @@ async def _send_files_and_cleanup_status(
 ) -> None:
     caption_to_send = None
     if desc_text:
-        timeout = ASK_ARTICLE_TIMEOUT if is_article else ASK_CAPTION_TIMEOUT
-        default = ASK_ARTICLE_DEFAULT if is_article else ASK_CAPTION_DEFAULT
+        timeout = cfg("ASK_ARTICLE_TIMEOUT") if is_article else cfg("ASK_CAPTION_TIMEOUT")
+        default = cfg("ASK_ARTICLE_DEFAULT") if is_article else cfg("ASK_CAPTION_DEFAULT")
         if should_show_prompt("caption", chat_id, user_id or 0):
             if await _ask_caption_inclusion(
                 context, status_msg, message_id, suffix, user_id, idx,
@@ -389,8 +385,8 @@ async def _send_files_and_cleanup_status(
     await _safe_edit(status_msg, msg("status.sending", count=len(files), suffix=suffix))
 
     upload_kwargs = {
-        'read_timeout': TELEGRAM_UPLOAD_TIMEOUT,
-        'write_timeout': TELEGRAM_UPLOAD_TIMEOUT,
+        'read_timeout': cfg("TELEGRAM_UPLOAD_TIMEOUT"),
+        'write_timeout': cfg("TELEGRAM_UPLOAD_TIMEOUT"),
         'parse_mode': 'HTML',
         'reply_to_message_id': message_id,
     }
@@ -412,6 +408,7 @@ async def process_media_request(
     user_id: Optional[int] = None,
     is_retry: bool = False,
 ) -> None:
+    request_context.set((chat_id, user_id))
     suffix = _build_suffix(idx, total, target_lang)
 
     skip_confirm = is_retry or bool(target_lang)
@@ -541,22 +538,23 @@ def _extract_urls_from_update(update: Update) -> list[str]:
         urls.append(candidate)
 
     deduped = list(dict.fromkeys(urls))
-    if len(deduped) > MAX_URLS_PER_MESSAGE:
+    if len(deduped) > cfg("MAX_URLS_PER_MESSAGE"):
         logger.warning(lmsg(
             "handlers.urls_exceed_limit",
-            n=len(deduped), max=MAX_URLS_PER_MESSAGE,
+            n=len(deduped), max=cfg("MAX_URLS_PER_MESSAGE"),
         ))
-        return deduped[:MAX_URLS_PER_MESSAGE]
+        return deduped[:cfg("MAX_URLS_PER_MESSAGE")]
     return deduped
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id if update.effective_user else 0
+    request_context.set((chat_id, user_id))
 
     is_allowed_user = user_id in ALLOWED_USER_ID
     is_whitelisted_chat = chat_id in ALLOWED_CHAT_ID
-    if not is_allowed_user and not is_whitelisted_chat:
+    if not (ALLOW_ALL == "yes" or is_allowed_user or is_whitelisted_chat):
         return
 
     urls = _extract_urls_from_update(update)

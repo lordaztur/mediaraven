@@ -1,6 +1,9 @@
+import contextvars
+import json
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from typing import Any, Optional
 
 from dotenv import load_dotenv
 
@@ -70,6 +73,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 ALLOWED_CHAT_ID: list[int] = _csv_ints(os.getenv("ALLOWED_CHAT_ID", ""), "ALLOWED_CHAT_ID")
 ALLOWED_USER_ID: list[int] = _csv_ints(os.getenv("ALLOWED_USER_IDS", ""), "ALLOWED_USER_IDS")
+ALLOW_ALL = _env_yesno("ALLOW_ALL", "no")
 
 LOCAL_API_HOST = os.getenv("LOCAL_API_HOST", "")
 LOCAL_API_URL = f"http://{LOCAL_API_HOST}/bot"
@@ -103,39 +107,14 @@ ASK_CAPTION_DEFAULT = _env_yesno("ASK_CAPTION_DEFAULT", "no")
 ASK_ARTICLE_DEFAULT = _env_yesno("ASK_ARTICLE_DEFAULT", "yes")
 ASK_SCREENSHOT_DEFAULT = _env_yesno("ASK_SCREENSHOT_DEFAULT", "yes")
 
-_PROMPT_OFF_CHATS = {
-    "download": set(_csv_ints(os.getenv("PROMPT_DOWNLOAD_OFF_CHATS", ""), "PROMPT_DOWNLOAD_OFF_CHATS")),
-    "caption":  set(_csv_ints(os.getenv("PROMPT_CAPTION_OFF_CHATS", ""),  "PROMPT_CAPTION_OFF_CHATS")),
-    "lang":     set(_csv_ints(os.getenv("PROMPT_LANG_OFF_CHATS", ""),     "PROMPT_LANG_OFF_CHATS")),
-}
-_PROMPT_ON_USERS = {
-    "download": set(_csv_ints(os.getenv("PROMPT_DOWNLOAD_ON_USERS", ""), "PROMPT_DOWNLOAD_ON_USERS")),
-    "caption":  set(_csv_ints(os.getenv("PROMPT_CAPTION_ON_USERS", ""),  "PROMPT_CAPTION_ON_USERS")),
-    "lang":     set(_csv_ints(os.getenv("PROMPT_LANG_ON_USERS", ""),     "PROMPT_LANG_ON_USERS")),
-}
-_PROMPT_OFF_USERS = {
-    "download": set(_csv_ints(os.getenv("PROMPT_DOWNLOAD_OFF_USERS", ""), "PROMPT_DOWNLOAD_OFF_USERS")),
-    "caption":  set(_csv_ints(os.getenv("PROMPT_CAPTION_OFF_USERS", ""),  "PROMPT_CAPTION_OFF_USERS")),
-    "lang":     set(_csv_ints(os.getenv("PROMPT_LANG_OFF_USERS", ""),     "PROMPT_LANG_OFF_USERS")),
-}
+PROMPT_DOWNLOAD_ENABLED = True
+PROMPT_CAPTION_ENABLED = True
+PROMPT_LANG_ENABLED = True
 
 
-def should_show_prompt(kind: str, chat_id: int, user_id: int) -> bool:
-    """Resolve se um prompt interativo (download/caption/lang) deve ser exibido.
-
-    Precedência (do mais específico para o mais geral):
-      1. user em OFF_USERS -> False (força desligado)
-      2. user em ON_USERS  -> True  (força ligado)
-      3. chat em OFF_CHATS -> False
-      4. default           -> True
-    """
-    if user_id in _PROMPT_OFF_USERS.get(kind, set()):
-        return False
-    if user_id in _PROMPT_ON_USERS.get(kind, set()):
-        return True
-    if chat_id in _PROMPT_OFF_CHATS.get(kind, set()):
-        return False
-    return True
+def should_show_prompt(kind: str, chat_id: Optional[int] = None, user_id: Optional[int] = None) -> bool:
+    v = cfg(f"PROMPT_{kind.upper()}_ENABLED", chat_id, user_id)
+    return True if v is None else bool(v)
 
 YTDLP_MAX_HEIGHT = _env_int("YTDLP_MAX_HEIGHT", 1920)
 YTDLP_SOCKET_TIMEOUT = _env_int("YTDLP_SOCKET_TIMEOUT", 90)
@@ -244,6 +223,53 @@ def setup_logging() -> None:
             logging.getLogger(noisy).setLevel(logging.WARNING)
 
     logging.captureWarnings(True)
+
+
+_CUSTOM_FILE = os.path.join(_BASE_DIR, "customization.json")
+_CUSTOM_EXAMPLE = os.path.join(_BASE_DIR, "customization.example.json")
+
+
+def _load_customization() -> dict:
+    path = _CUSTOM_FILE if os.path.exists(_CUSTOM_FILE) else _CUSTOM_EXAMPLE
+    if not os.path.exists(path):
+        return {"default": {}, "chats": {}, "users": {}}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        _boot_logger.warning(f"⚠️ Falha ao ler {path}: {e}")
+        return {"default": {}, "chats": {}, "users": {}}
+    return {
+        "default": data.get("default") or {},
+        "chats": data.get("chats") or {},
+        "users": data.get("users") or {},
+    }
+
+
+_CUSTOMIZATION: dict = _load_customization()
+
+request_context: contextvars.ContextVar[tuple[Optional[int], Optional[int]]] = (
+    contextvars.ContextVar("request_context", default=(None, None))
+)
+
+
+def cfg(key: str, chat_id: Optional[int] = None, user_id: Optional[int] = None) -> Any:
+    """Resolve config: user > chat > customization.default > .env (module-level constant)."""
+    if chat_id is None and user_id is None:
+        chat_id, user_id = request_context.get()
+
+    if user_id is not None:
+        u = _CUSTOMIZATION["users"].get(str(user_id))
+        if isinstance(u, dict) and key in u:
+            return u[key]
+    if chat_id is not None:
+        c = _CUSTOMIZATION["chats"].get(str(chat_id))
+        if isinstance(c, dict) and key in c:
+            return c[key]
+    d = _CUSTOMIZATION["default"]
+    if key in d:
+        return d[key]
+    return globals().get(key)
 
 
 def validate_runtime_config() -> list[str]:

@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 import state
-from config import PW_GOTO_TIMEOUT_MS, THREADS_MIN_IMAGE_SIZE
+from config import cfg
 from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
@@ -120,7 +120,7 @@ async def _fetch_html(url: str) -> Optional[str]:
     async with state.PW_SEMAPHORE:
         page = await state.PW_CONTEXT.new_page()
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(url, wait_until="domcontentloaded", timeout=cfg("PW_GOTO_TIMEOUT_MS"))
             await page.wait_for_timeout(2000)
             return await page.content()
         except Exception as e:
@@ -177,7 +177,7 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
         if not success:
             continue
         if kind == "image":
-            normalized = normalize_image(filepath, min_size=THREADS_MIN_IMAGE_SIZE)
+            normalized = normalize_image(filepath, min_size=cfg("THREADS_MIN_IMAGE_SIZE"))
             if normalized is None:
                 continue
             downloaded_files.append(normalized)

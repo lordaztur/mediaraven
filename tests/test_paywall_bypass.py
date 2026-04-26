@@ -82,7 +82,8 @@ async def test_bypass_disabled_returns_original_paywall():
     async def fake_fetch(url, timeout, user_agent=None):
         return PAYWALL_HTML
 
-    with patch.object(fallback, "SCRAPE_PAYWALL_BYPASS", "no"), \
+    from config import _CUSTOMIZATION
+    with patch.dict(_CUSTOMIZATION["default"], {"SCRAPE_PAYWALL_BYPASS": "no"}), \
          patch.object(fallback, "_fetch_html", new=AsyncMock(side_effect=fake_fetch)) as m:
         html, source = await fallback._fetch_html_with_paywall_bypass("https://wsj.com/a", 10)
 

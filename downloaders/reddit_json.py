@@ -2,7 +2,7 @@ import logging
 import os
 
 import state
-from config import REDDIT_JSON_UA
+from config import cfg
 from cookies import get_aiohttp_cookies_for_url
 from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
@@ -23,7 +23,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
     selftext = ""
 
     headers = {
-        'User-Agent': REDDIT_JSON_UA,
+        'User-Agent': cfg("REDDIT_JSON_UA"),
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
         'Accept-Language': 'pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3',
         'Upgrade-Insecure-Requests': '1',

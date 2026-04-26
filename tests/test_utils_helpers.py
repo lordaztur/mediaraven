@@ -3,7 +3,8 @@ import os
 
 from PIL import Image
 
-from utils import SAFE_URL_MAX_LENGTH, normalize_image, safe_url
+from config import cfg
+from utils import normalize_image, safe_url
 
 
 def test_safe_url_strips_query():
@@ -17,7 +18,7 @@ def test_safe_url_strips_fragment():
 def test_safe_url_truncates_long_url():
     long_url = "https://example.com/" + "a" * 500
     out = safe_url(long_url)
-    assert len(out) <= SAFE_URL_MAX_LENGTH + len("...(truncated)")
+    assert len(out) <= cfg("SAFE_URL_MAX_LENGTH") + len("...(truncated)")
     assert out.endswith("...(truncated)")
 
 

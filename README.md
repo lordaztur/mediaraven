@@ -113,20 +113,26 @@ python mediaraven.py
 
 **Mensagens:** copie `messages.example.json` pra `messages.json` (interface do bot) ou `log_messages.example.json` pra `log_messages.json` (logs internos) e edite. Recarrega no restart. Keys faltando viram `<<missing log key: X>>` (não crasha).
 
-**Envs:** `.env_example` documenta cada uma com defaults sensatos. Destaques:
+**Customização por chat/usuário:** copie `customization.example.json` pra `customization.json` e adicione overrides em `chats` (por chat_id) ou `users` (por user_id). Precedência: **user > chat > default > .env**. Exemplo: forçar 720p e desativar prompt de download para um chat específico:
+```json
+{
+  "default": { "YTDLP_MAX_HEIGHT": 1920 },
+  "chats": { "-100123": { "YTDLP_MAX_HEIGHT": 720, "PROMPT_DOWNLOAD_ENABLED": false } },
+  "users": { "555": { "ASK_CAPTION_DEFAULT": "yes" } }
+}
+```
+
+**Envs (system-level):** `.env_example` documenta auth, paths, pools e sessões. Destaques:
 
 ```ini
-YTDLP_MAX_HEIGHT=1920          # 1080p (use 720 em conexão lenta, 4320 em 8K)
+ALLOW_ALL=no                   # "yes" libera o bot pra qualquer chat/usuário
 YTDLP_WORKERS=5                # downloads simultâneos
 PW_CONCURRENCY=3               # páginas Playwright simultâneas
-SCRAPE_GALLERY_DL_ENABLE=yes   # gallery-dl no scraper genérico
-SCRAPE_SCREENSHOT_FALLBACK=yes # oferecer screenshot quando nada funciona
-SCRAPE_PAYWALL_BYPASS=yes      # Googlebot UA + archive.ph em paywall soft
-SCRAPE_ARTICLE_EXTRACT=yes     # extrai corpo de artigo como caption
 LOG_LEVEL=DEBUG                # debug pontual
 ```
 
-**Prompts por chat/usuário:** `PROMPT_DOWNLOAD_OFF_CHATS`, `PROMPT_CAPTION_ON_USERS`, etc. — precedência `OFF_USERS > ON_USERS > OFF_CHATS > default`.
+Tudo que afeta UX (timeouts, prompts, qualidade, scraper, etc. — 42 chaves) vive em `customization.example.json`.
+
 
 > 🔒 **Privacidade técnica:** o que o usuário vê no Telegram não expõe `yt-dlp`/`Playwright`/`gallery-dl`. Só "baixando…" → "enviando N arquivos" → mensagem some, ou uma mensagem genérica de falha + retry. Os logs (`bot.log`) preservam tudo pra debug.
 
@@ -177,6 +183,7 @@ telegram_io.py           upload de mídias
 utils.py                 download/ffmpeg/imagens
 messages.json            strings user-facing
 log_messages.json        strings de log (~180 chaves)
+customization.json       overrides por chat/user (~36 envs)
 downloaders/
   dispatcher.py          orquestrador
   _platform.py _ytdlp.py _languages.py _caption.py

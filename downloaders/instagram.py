@@ -5,7 +5,7 @@ import os
 import aiofiles
 
 import state
-from config import IG_CAPTION_MAX, IG_QUEUE_WARN_THRESHOLD, IG_USER_AGENT
+from config import cfg
 from messages import lmsg, msg
 from utils import async_merge_audio_image, safe_url
 
@@ -84,8 +84,8 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
             return None
 
     queue_size = state.ig_pending_inc()
-    if queue_size >= IG_QUEUE_WARN_THRESHOLD:
-        logger.warning(lmsg("instagram.fila_do_instagrapi", queue_size=queue_size, IG_QUEUE_WARN_THRESHOLD=IG_QUEUE_WARN_THRESHOLD))
+    if queue_size >= cfg("IG_QUEUE_WARN_THRESHOLD"):
+        logger.warning(lmsg("instagram.fila_do_instagrapi", queue_size=queue_size, IG_QUEUE_WARN_THRESHOLD=cfg("IG_QUEUE_WARN_THRESHOLD")))
 
     loop = asyncio.get_running_loop()
     try:
@@ -103,7 +103,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
         try:
             logger.info(lmsg("instagram.baixando_udio_puro"))
             a_path = os.path.join(unique_folder, "temp_audio.m4a")
-            headers_ig = {'User-Agent': IG_USER_AGENT}
+            headers_ig = {'User-Agent': cfg("IG_USER_AGENT")}
             async with state.AIOHTTP_SESSION.get(audio_url, headers=headers_ig, timeout=15) as r:
                 if r.status == 200:
                     async with aiofiles.open(a_path, 'wb') as f:
@@ -145,7 +145,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
     else:
         m_type = msg("media_type_labels.ig_album")
 
-    if caption_text and len(caption_text) > IG_CAPTION_MAX:
-        caption_text = caption_text[:IG_CAPTION_MAX] + "..."
+    if caption_text and len(caption_text) > cfg("IG_CAPTION_MAX"):
+        caption_text = caption_text[:cfg("IG_CAPTION_MAX")] + "..."
 
     return paths, msg("downloader_status.instagrapi", media_type=m_type), caption_text

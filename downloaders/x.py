@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from curl_cffi import requests as curl_requests
 
 import state
-from config import PW_GOTO_TIMEOUT_MS
+from config import cfg
 from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
@@ -244,7 +244,7 @@ async def _try_authenticated(url: str, tweet_id: str) -> tuple[list[tuple[str, s
 
         page.on("response", on_response)
         try:
-            await page.goto(url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(url, wait_until="domcontentloaded", timeout=cfg("PW_GOTO_TIMEOUT_MS"))
             await page.wait_for_timeout(3500)
             content = await page.content()
         except Exception as e:

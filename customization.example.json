@@ -1,0 +1,145 @@
+{
+  "_help": [
+    "Override de configuração por chat (chat_id) e por usuário (user_id).",
+    "Precedência: user > chat > default > .env (constante do módulo).",
+    "Chaves _doc_X são puramente documentação — o loader ignora qualquer",
+    "chave não-consultada via cfg().",
+    "",
+    "Exemplo de uso:",
+    "  \"chats\": { \"-100123456\": { \"YTDLP_MAX_HEIGHT\": 720 } },",
+    "  \"users\": { \"42\":         { \"ASK_CAPTION_DEFAULT\": \"yes\" } }"
+  ],
+
+  "default": {
+
+    "_doc_ASK_DL_TIMEOUT": "Segundos que o bot espera o usuário clicar no botão de confirmação de download. Min 1, max 60.",
+    "ASK_DL_TIMEOUT": 5.0,
+
+    "_doc_ASK_LANG_TIMEOUT": "Segundos que o bot espera o usuário escolher idioma de dublagem (YouTube). Min 1, max 60.",
+    "ASK_LANG_TIMEOUT": 10.0,
+
+    "_doc_ASK_CAPTION_TIMEOUT": "Segundos que o bot espera o usuário escolher incluir/descartar caption de mídia social. Min 1, max 60.",
+    "ASK_CAPTION_TIMEOUT": 5.0,
+
+    "_doc_ASK_ARTICLE_TIMEOUT": "Segundos que o bot espera o usuário escolher incluir/descartar corpo de artigo extraído. Min 1, max 60.",
+    "ASK_ARTICLE_TIMEOUT": 5.0,
+
+    "_doc_ASK_SCREENSHOT_TIMEOUT": "Segundos que o bot espera o usuário escolher tirar screenshot quando o scraper falha. Min 1, max 60.",
+    "ASK_SCREENSHOT_TIMEOUT": 5.0,
+
+    "_doc_ASK_DL_DEFAULT": "Comportamento no timeout do prompt de download. \"yes\" baixa automático, \"no\" ignora.",
+    "ASK_DL_DEFAULT": "yes",
+
+    "_doc_ASK_CAPTION_DEFAULT": "Comportamento no timeout do prompt de caption. \"yes\" inclui descrição da rede social, \"no\" envia sem caption.",
+    "ASK_CAPTION_DEFAULT": "no",
+
+    "_doc_ASK_ARTICLE_DEFAULT": "Comportamento no timeout do prompt de artigo. \"yes\" envia o corpo do artigo como caption, \"no\" descarta.",
+    "ASK_ARTICLE_DEFAULT": "yes",
+
+    "_doc_ASK_SCREENSHOT_DEFAULT": "Comportamento no timeout do prompt de screenshot. \"yes\" tira screenshot, \"no\" cai pra falha + retry.",
+    "ASK_SCREENSHOT_DEFAULT": "yes",
+
+    "_doc_PROMPT_DOWNLOAD_ENABLED": "true mostra o prompt \"Baixar/Ignorar\" antes de iniciar download. false baixa direto.",
+    "PROMPT_DOWNLOAD_ENABLED": true,
+
+    "_doc_PROMPT_CAPTION_ENABLED": "true pergunta se inclui caption quando há descrição. false respeita ASK_CAPTION_DEFAULT silenciosamente.",
+    "PROMPT_CAPTION_ENABLED": true,
+
+    "_doc_PROMPT_LANG_ENABLED": "true mostra escolha de idioma quando o vídeo do YouTube tem dublagem. false baixa o idioma original direto.",
+    "PROMPT_LANG_ENABLED": true,
+
+    "_doc_MAX_URLS_PER_MESSAGE": "Máximo de URLs processadas em uma única mensagem do Telegram (protege contra paste-bombs). Min 1, max 50.",
+    "MAX_URLS_PER_MESSAGE": 20,
+
+    "_doc_YTDLP_MAX_HEIGHT": "Altura máxima (pixels) do vídeo a baixar. 480/720 (SD/HD), 1080 (Full HD), 1920 (1440p), 2160 (4K), 4320 (8K). Min 144.",
+    "YTDLP_MAX_HEIGHT": 1920,
+
+    "_doc_YTDLP_SOCKET_TIMEOUT": "Timeout (segundos) de socket do yt-dlp ao baixar de qualquer plataforma. Min 30, max 600.",
+    "YTDLP_SOCKET_TIMEOUT": 90,
+
+    "_doc_YTDLP_YT_CLIENTS": "Lista CSV de extractor clients do YouTube na ordem de tentativa (yt-dlp). Comum: \"ios,mweb,web\". Ajuste se YouTube quebrar.",
+    "YTDLP_YT_CLIENTS": "ios,mweb,web",
+
+    "_doc_DOWNLOAD_TIMEOUT_SECONDS": "Timeout (segundos) por arquivo individual baixado via aiohttp (fora do yt-dlp). Min 5, max 120.",
+    "DOWNLOAD_TIMEOUT_SECONDS": 15,
+
+    "_doc_SCRAPE_MAX_PARALLEL_DOWNLOADS": "Quantos arquivos o scraper genérico baixa em paralelo (gather + semáforo). Min 1, max 20.",
+    "SCRAPE_MAX_PARALLEL_DOWNLOADS": 6,
+
+    "_doc_SCRAPE_MAX_MEDIA_URLS": "Limite duro de URLs candidatas a baixar — protege contra páginas com milhares de imagens. Min 1, max 500.",
+    "SCRAPE_MAX_MEDIA_URLS": 60,
+
+    "_doc_SCRAPE_SCROLL_MAX_ROUNDS": "Quantos scrolls o Playwright faz pra carregar conteúdo lazy-loaded. Para automaticamente quando estabiliza. Min 0, max 20.",
+    "SCRAPE_SCROLL_MAX_ROUNDS": 4,
+
+    "_doc_SCRAPE_SCROLL_PAUSE_MS": "Pausa (ms) entre cada scroll pra deixar o lazy-load disparar. Min 500, max 10000.",
+    "SCRAPE_SCROLL_PAUSE_MS": 3000,
+
+    "_doc_SCRAPE_MIN_IMAGE_SIZE": "Tamanho mínimo (pixels) da menor dimensão da imagem aceita pelo scraper — filtra ícones e pixels de tracking. Min 1, max 500.",
+    "SCRAPE_MIN_IMAGE_SIZE": 50,
+
+    "_doc_SCRAPE_HLS_TIMEOUT_S": "Timeout (segundos) do ffmpeg ao mux'ar streams HLS/DASH em mp4. Min 30, max 600.",
+    "SCRAPE_HLS_TIMEOUT_S": 180,
+
+    "_doc_SCRAPE_FAST_PATH_TIMEOUT_S": "Timeout (segundos) do fast-path HTTP do scraper (curl_cffi com Chrome impersonation). Min 5, max 60.",
+    "SCRAPE_FAST_PATH_TIMEOUT_S": 12,
+
+    "_doc_SCRAPE_SCREENSHOT_FALLBACK": "\"yes\" oferece screenshot da página quando o scraper não acha mídia. \"no\" desabilita o prompt.",
+    "SCRAPE_SCREENSHOT_FALLBACK": "yes",
+
+    "_doc_SCRAPE_GALLERY_DL_ENABLE": "\"yes\" liga o tier de gallery-dl no scraper (Pinterest, Imgur, Tumblr, etc.). \"no\" desliga.",
+    "SCRAPE_GALLERY_DL_ENABLE": "yes",
+
+    "_doc_SCRAPE_GALLERY_DL_TIMEOUT_S": "Timeout (segundos) por chamada do gallery-dl. Min 30, max 300.",
+    "SCRAPE_GALLERY_DL_TIMEOUT_S": 90,
+
+    "_doc_SCRAPE_PAYWALL_BYPASS": "\"yes\" tenta bypass de paywall soft (Googlebot UA + archive.ph). \"no\" respeita o bloqueio original.",
+    "SCRAPE_PAYWALL_BYPASS": "yes",
+
+    "_doc_SCRAPE_ARCHIVE_TIMEOUT_S": "Timeout (segundos) ao buscar versão arquivada via archive.ph. Min 5, max 60.",
+    "SCRAPE_ARCHIVE_TIMEOUT_S": 15,
+
+    "_doc_SCRAPE_ARTICLE_EXTRACT": "\"yes\" extrai corpo de artigo (trafilatura) e oferece como caption. \"no\" desliga.",
+    "SCRAPE_ARTICLE_EXTRACT": "yes",
+
+    "_doc_SCRAPE_ARTICLE_MIN_CHARS": "Mínimo de chars extraídos pra considerar a página um artigo de verdade. Min 100, max 2000.",
+    "SCRAPE_ARTICLE_MIN_CHARS": 300,
+
+    "_doc_MEDIA_GROUP_CHUNK_SIZE": "Tamanho do chunk ao enviar múltiplas mídias (sendMediaGroup). Telegram limita a 10. Min 1, max 10.",
+    "MEDIA_GROUP_CHUNK_SIZE": 10,
+
+    "_doc_MEDIA_GROUP_DELAY": "Delay (segundos) entre chunks de 10 mídias. Controla flood-risk em chats que recebem muitos arquivos. Min 0, max 30.",
+    "MEDIA_GROUP_DELAY": 4.0,
+
+    "_doc_STATUS_CYCLE_INTERVAL": "Intervalo (segundos) entre rotações da mensagem de status durante o download. Min 1, max 30.",
+    "STATUS_CYCLE_INTERVAL": 5.0,
+
+    "_doc_IG_CAPTION_MAX": "Tamanho máx (chars) do caption do Instagram antes de truncar com \"...\". Min 100, max 2200 (limite do IG).",
+    "IG_CAPTION_MAX": 1000,
+
+    "_doc_THREADS_MIN_IMAGE_SIZE": "Tamanho mín (pixels) de imagem do Threads — filtra thumbnails de UI. Min 1, max 1000.",
+    "THREADS_MIN_IMAGE_SIZE": 500,
+
+    "_doc_PW_GOTO_TIMEOUT_MS": "Timeout (milissegundos) do page.goto() em todas as navegações Playwright. Min 5000, max 120000.",
+    "PW_GOTO_TIMEOUT_MS": 25000,
+
+    "_doc_TELEGRAM_UPLOAD_TIMEOUT": "Timeout (segundos) de leitura/escrita ao subir arquivos grandes pro Telegram. Min 30, max 3600.",
+    "TELEGRAM_UPLOAD_TIMEOUT": 600,
+
+    "_doc_IG_QUEUE_WARN_THRESHOLD": "Tamanho da fila do Instagrapi que dispara log de warning. Min 1, max 100.",
+    "IG_QUEUE_WARN_THRESHOLD": 5,
+
+    "_doc_SAFE_URL_MAX_LENGTH": "Tamanho máx (chars) de URL ao logar — resto é truncado. Min 50, max 1000.",
+    "SAFE_URL_MAX_LENGTH": 200,
+
+    "_doc_IG_USER_AGENT": "User-Agent usado pra baixar áudio do Instagram (fora do instagrapi). Se o IG bloquear, troque por uma versão mais recente.",
+    "IG_USER_AGENT": "Instagram 219.0.0.12.117 Android",
+
+    "_doc_REDDIT_JSON_UA": "User-Agent usado nas requisições à API JSON do Reddit. Reddit detecta UAs de bot — use um realista.",
+    "REDDIT_JSON_UA": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"
+  },
+
+  "chats": {},
+
+  "users": {}
+}

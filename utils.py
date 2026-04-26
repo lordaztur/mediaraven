@@ -11,17 +11,15 @@ from PIL import Image
 from telegram.error import RetryAfter
 
 import state
-from config import (
-    DOWNLOAD_TIMEOUT_SECONDS,
-    SAFE_URL_MAX_LENGTH,
-    STATUS_CYCLE_INTERVAL,
-)
+from config import cfg
 from messages import lmsg, msg_list
 
 logger = logging.getLogger(__name__)
 
 
-def safe_url(url: str, max_length: int = SAFE_URL_MAX_LENGTH) -> str:
+def safe_url(url: str, max_length: Optional[int] = None) -> str:
+    if max_length is None:
+        max_length = cfg("SAFE_URL_MAX_LENGTH")
     if not isinstance(url, str) or not url:
         return "<invalid-url>"
     try:
@@ -103,7 +101,7 @@ async def async_download_file(
     ct = ''
     try:
         async with state.AIOHTTP_SESSION.get(
-            url, timeout=DOWNLOAD_TIMEOUT_SECONDS, headers=headers,
+            url, timeout=cfg("DOWNLOAD_TIMEOUT_SECONDS"), headers=headers,
         ) as response:
             ct = (response.headers.get('Content-Type') or '').lower()
             if response.status == 200:
@@ -281,7 +279,7 @@ async def cycle_status_message(status_msg: Any, suffix: str = "") -> None:
                 err_msg = str(str_err).lower()
                 if "not found" in err_msg or "deleted" in err_msg or "message to edit not found" in err_msg:
                     break
-            await asyncio.sleep(STATUS_CYCLE_INTERVAL)
+            await asyncio.sleep(cfg("STATUS_CYCLE_INTERVAL"))
             idx = (idx + 1) % len(messages)
     except asyncio.CancelledError:
         pass

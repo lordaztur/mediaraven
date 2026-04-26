@@ -8,10 +8,8 @@ from yt_dlp.networking.impersonate import ImpersonateTarget
 
 import state
 from config import (
+    cfg,
     FIREFOX_PROFILE_PATH,
-    YTDLP_MAX_HEIGHT,
-    YTDLP_SOCKET_TIMEOUT,
-    YTDLP_YT_CLIENTS,
 )
 from messages import lmsg
 
@@ -29,9 +27,9 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
         'no_warnings': True,
         'ignoreerrors': True,
         'geo_bypass': True,
-        'socket_timeout': YTDLP_SOCKET_TIMEOUT,
+        'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
         'remote_components': ['ejs:github'],
-        'extractor_args': {'youtube': [f'player_client={YTDLP_YT_CLIENTS}']},
+        'extractor_args': {'youtube': [f'player_client={cfg("YTDLP_YT_CLIENTS")}']},
     }
     if state.DENO_PATH:
         opts['js_runtimes'] = {'deno': {'path': state.DENO_PATH}}
@@ -39,7 +37,7 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
 
 
 def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lang: Optional[str]) -> None:
-    h = YTDLP_MAX_HEIGHT
+    h = cfg("YTDLP_MAX_HEIGHT")
     if platform.instagram:
         opts['noplaylist'] = False
         opts['format'] = 'best'

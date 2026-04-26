@@ -6,10 +6,8 @@ from telegram import InputMediaPhoto, InputMediaVideo
 from telegram.error import RetryAfter, TimedOut
 
 from config import (
+    cfg,
     IMAGE_EXTS,
-    MEDIA_GROUP_CHUNK_SIZE,
-    MEDIA_GROUP_DELAY,
-    TELEGRAM_UPLOAD_TIMEOUT,
     VIDEO_EXTS,
 )
 from messages import lmsg
@@ -51,7 +49,7 @@ async def send_downloaded_media(
                 logger.error(lmsg("telegram_io.erro_fatal_ao", e=e), exc_info=True)
                 raise e
     else:
-        chunk_size = MEDIA_GROUP_CHUNK_SIZE
+        chunk_size = cfg("MEDIA_GROUP_CHUNK_SIZE")
         for i in range(0, len(files), chunk_size):
             chunk_files = files[i:i + chunk_size]
             media_group = []
@@ -77,8 +75,8 @@ async def send_downloaded_media(
                                 chat_id=chat_id,
                                 media=media_group,
                                 reply_to_message_id=original_msg_id,
-                                read_timeout=TELEGRAM_UPLOAD_TIMEOUT,
-                                write_timeout=TELEGRAM_UPLOAD_TIMEOUT,
+                                read_timeout=cfg("TELEGRAM_UPLOAD_TIMEOUT"),
+                                write_timeout=cfg("TELEGRAM_UPLOAD_TIMEOUT"),
                             )
                             break
                         except RetryAfter as e:
@@ -92,7 +90,7 @@ async def send_downloaded_media(
                             raise e
 
                     if i + chunk_size < len(files):
-                        await asyncio.sleep(MEDIA_GROUP_DELAY)
+                        await asyncio.sleep(cfg("MEDIA_GROUP_DELAY"))
 
             finally:
                 for f in open_files:

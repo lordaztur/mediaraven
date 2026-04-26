@@ -7,24 +7,7 @@ from urllib.parse import quote, urlparse
 from curl_cffi import requests as curl_requests
 
 import state
-from config import (
-    PW_GOTO_TIMEOUT_MS,
-    SCRAPE_ARCHIVE_TIMEOUT_S,
-    SCRAPE_ARTICLE_EXTRACT,
-    SCRAPE_ARTICLE_MIN_CHARS,
-    SCRAPE_FAST_PATH_TIMEOUT_S,
-    SCRAPE_GALLERY_DL_ENABLE,
-    SCRAPE_GALLERY_DL_TIMEOUT_S,
-    SCRAPE_HLS_TIMEOUT_S,
-    SCRAPE_MAX_MEDIA_URLS,
-    SCRAPE_MAX_PARALLEL_DOWNLOADS,
-    SCRAPE_MIN_IMAGE_SIZE,
-    SCRAPE_PAYWALL_BYPASS,
-    SCRAPE_SCROLL_MAX_ROUNDS,
-    SCRAPE_SCROLL_PAUSE_MS,
-    YTDLP_MAX_HEIGHT,
-    YTDLP_SOCKET_TIMEOUT,
-)
+from config import cfg
 from messages import lmsg, msg
 from utils import (
     async_download_file,
@@ -119,7 +102,7 @@ async def _fetch_html_with_paywall_bypass(
     if not _looks_like_paywall(html or ""):
         return html, ('normal' if html else '')
 
-    if SCRAPE_PAYWALL_BYPASS != "yes":
+    if cfg("SCRAPE_PAYWALL_BYPASS") != "yes":
         return html, 'normal'
 
     logger.info(lmsg("fallback.paywall_detectado_em", arg0=safe_url(url)))
@@ -128,7 +111,7 @@ async def _fetch_html_with_paywall_bypass(
         logger.info(lmsg("fallback.googlebot_ua_passou", arg0=safe_url(url)))
         return gbot_html, 'googlebot'
 
-    arch_html = await _try_archive_today(url, timeout=SCRAPE_ARCHIVE_TIMEOUT_S)
+    arch_html = await _try_archive_today(url, timeout=cfg("SCRAPE_ARCHIVE_TIMEOUT_S"))
     if arch_html and not _looks_like_paywall(arch_html):
         logger.info(lmsg("fallback.archive_ph_retornou", arg0=safe_url(url)))
         return arch_html, 'archive'
@@ -170,16 +153,16 @@ async def _gather_media_via_playwright(
                     logger.debug(lmsg("fallback.handle_response_x", e=e))
 
             page.on("response", handle_response)
-            await page.goto(page_url, wait_until="load", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(page_url, wait_until="load", timeout=cfg("PW_GOTO_TIMEOUT_MS"))
 
             prev_count = -1
-            for _ in range(SCRAPE_SCROLL_MAX_ROUNDS):
+            for _ in range(cfg("SCRAPE_SCROLL_MAX_ROUNDS")):
                 try:
                     await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 except Exception as e:
                     logger.debug(lmsg("fallback.scroll_falhou_x", e=e))
                     break
-                await page.wait_for_timeout(SCRAPE_SCROLL_PAUSE_MS)
+                await page.wait_for_timeout(cfg("SCRAPE_SCROLL_PAUSE_MS"))
                 if len(captured_responses) == prev_count:
                     break
                 prev_count = len(captured_responses)
@@ -209,7 +192,7 @@ async def _gather_media_via_playwright(
     players = extract_player_configs(page_html, page_url) if page_html else []
     iframes = extract_iframes(page_html, page_url) if page_html else []
 
-    media = merge_media_lists(meta, jsonld, sniffed, players, cap=SCRAPE_MAX_MEDIA_URLS)
+    media = merge_media_lists(meta, jsonld, sniffed, players, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
     return media, iframes, page_html
 
 
@@ -217,7 +200,7 @@ def _gather_media_from_html(html: str, base_url: str) -> list[MediaTuple]:
     meta = extract_meta_media(html, base_url)
     jsonld = extract_jsonld_media(html, base_url)
     players = extract_player_configs(html, base_url)
-    return merge_media_lists(meta, jsonld, players, cap=SCRAPE_MAX_MEDIA_URLS)
+    return merge_media_lists(meta, jsonld, players, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
 
 
 def _prepare_for_download(
@@ -261,7 +244,7 @@ async def _download_one(
     if kind in ('hls', 'dash'):
         out_path = os.path.join(folder, f"scrape_media_{idx}.mp4")
         ok = await async_ffmpeg_remux(
-            media_url, out_path, timeout=SCRAPE_HLS_TIMEOUT_S, headers=headers,
+            media_url, out_path, timeout=cfg("SCRAPE_HLS_TIMEOUT_S"), headers=headers,
         )
         if ok:
             return out_path
@@ -287,7 +270,7 @@ async def _download_one(
             return None
 
     if kind == "image":
-        normalized = normalize_image(filepath, min_size=SCRAPE_MIN_IMAGE_SIZE)
+        normalized = normalize_image(filepath, min_size=cfg("SCRAPE_MIN_IMAGE_SIZE"))
         return normalized
     return filepath
 
@@ -298,7 +281,7 @@ async def _download_all(
     folder: str,
 ) -> tuple[list[str], int]:
     """Baixa em paralelo. Retorna (arquivos, contagem_de_403)."""
-    semaphore = asyncio.Semaphore(SCRAPE_MAX_PARALLEL_DOWNLOADS)
+    semaphore = asyncio.Semaphore(cfg("SCRAPE_MAX_PARALLEL_DOWNLOADS"))
     failed_counter = [0]
 
     async def task(idx: int, kind: str, url: str) -> Optional[str]:
@@ -332,8 +315,8 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
         'ignoreerrors': True,
         'noplaylist': True,
         'force_generic_extractor': True,
-        'socket_timeout': YTDLP_SOCKET_TIMEOUT,
-        'format': f'bestvideo[height<={YTDLP_MAX_HEIGHT}]+bestaudio/best[height<={YTDLP_MAX_HEIGHT}]/best',
+        'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
+        'format': f'bestvideo[height<={cfg("YTDLP_MAX_HEIGHT")}]+bestaudio/best[height<={cfg("YTDLP_MAX_HEIGHT")}]/best',
         'merge_output_format': 'mp4',
     }
 
@@ -389,7 +372,7 @@ def _list_files_in(folder: str) -> list[str]:
 
 async def _gallery_dl_run(url: str, folder: str) -> list[str]:
     """Roda gallery-dl pra URL. Útil em galerias (Pinterest, Imgur, Tumblr, etc.)."""
-    if SCRAPE_GALLERY_DL_ENABLE != "yes":
+    if cfg("SCRAPE_GALLERY_DL_ENABLE") != "yes":
         return []
     if not _can_handle_with_gallery_dl(url):
         return []
@@ -424,12 +407,12 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
         try:
             await asyncio.wait_for(
                 loop.run_in_executor(state.YTDLP_POOL, _run),
-                timeout=SCRAPE_GALLERY_DL_TIMEOUT_S,
+                timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"),
             )
         except asyncio.TimeoutError:
             logger.warning(lmsg(
                 "fallback.gallery_dl_timeout",
-                timeout=SCRAPE_GALLERY_DL_TIMEOUT_S, url=safe_url(url),
+                timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"), url=safe_url(url),
             ))
         except Exception as e:
             logger.debug(lmsg("fallback.gallery_dl_executor", e=e))
@@ -459,7 +442,7 @@ async def take_page_screenshot(folder: str, url: str) -> Optional[str]:
         page = None
         try:
             page = await state.PW_CONTEXT.new_page()
-            await page.goto(url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(url, wait_until="domcontentloaded", timeout=cfg("PW_GOTO_TIMEOUT_MS"))
             await page.wait_for_timeout(2000)
             await page.screenshot(path=out_path, full_page=False, type='jpeg', quality=85)
         except Exception as e:
@@ -500,15 +483,15 @@ def _drop_facebook_image_only(files: list[str], page_url: str) -> list[str]:
 
 
 async def fetch_article_caption(url: str, html: Optional[str] = None) -> str:
-    if SCRAPE_ARTICLE_EXTRACT != "yes":
+    if cfg("SCRAPE_ARTICLE_EXTRACT") != "yes":
         return ""
     if html is None:
         html, _ = await _fetch_html_with_paywall_bypass(
-            url, timeout=SCRAPE_FAST_PATH_TIMEOUT_S,
+            url, timeout=cfg("SCRAPE_FAST_PATH_TIMEOUT_S"),
         )
     if not html:
         return ""
-    result = extract_article(html, url=url, min_chars=SCRAPE_ARTICLE_MIN_CHARS)
+    result = extract_article(html, url=url, min_chars=cfg("SCRAPE_ARTICLE_MIN_CHARS"))
     if not result:
         return ""
     title, body = result
@@ -532,14 +515,14 @@ async def scrape_fallback(
 
     if pw_available:
         bypass_result, pw_result = await asyncio.gather(
-            _fetch_html_with_paywall_bypass(url, timeout=SCRAPE_FAST_PATH_TIMEOUT_S),
+            _fetch_html_with_paywall_bypass(url, timeout=cfg("SCRAPE_FAST_PATH_TIMEOUT_S")),
             _gather_media_via_playwright(url),
         )
         fast_html, html_source = bypass_result
         pw_media, iframes, page_html = pw_result
     else:
         fast_html, html_source = await _fetch_html_with_paywall_bypass(
-            url, timeout=SCRAPE_FAST_PATH_TIMEOUT_S,
+            url, timeout=cfg("SCRAPE_FAST_PATH_TIMEOUT_S"),
         )
         pw_media, iframes, page_html = [], [], ""
 
@@ -549,7 +532,7 @@ async def scrape_fallback(
     is_article = bool(article_text)
 
     fast_media = _gather_media_from_html(fast_html, url) if fast_html else []
-    combined = merge_media_lists(fast_media, pw_media, cap=SCRAPE_MAX_MEDIA_URLS)
+    combined = merge_media_lists(fast_media, pw_media, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
     logger.info(lmsg(
         "fallback.combined_stats",
         n_html=len(fast_media), source=html_source, n_pw=len(pw_media),

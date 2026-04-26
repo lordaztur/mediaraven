@@ -8,11 +8,12 @@ from typing import Optional
 from curl_cffi import requests as curl_requests
 
 import state
-from config import IG_CAPTION_MAX
+
 from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
 from ._caption import _build_caption
+from config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -182,8 +183,8 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     raw_caption = _extract_caption(media)
-    if raw_caption and len(raw_caption) > IG_CAPTION_MAX:
-        raw_caption = raw_caption[:IG_CAPTION_MAX] + "..."
+    if raw_caption and len(raw_caption) > cfg("IG_CAPTION_MAX"):
+        raw_caption = raw_caption[:cfg("IG_CAPTION_MAX")] + "..."
     username = ((media.get("owner") or {}).get("username")) or ""
     info_for_caption = {
         "uploader": f"@{username}" if username else "",

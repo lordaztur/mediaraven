@@ -4,7 +4,7 @@ import re
 from urllib.parse import urlparse
 
 import state
-from config import PW_GOTO_TIMEOUT_MS
+from config import cfg
 from messages import lmsg, msg
 from utils import async_download_file, safe_url
 
@@ -50,7 +50,7 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
         page = await state.PW_CONTEXT.new_page()
 
         try:
-            await page.goto(target_url, wait_until="domcontentloaded", timeout=PW_GOTO_TIMEOUT_MS)
+            await page.goto(target_url, wait_until="domcontentloaded", timeout=cfg("PW_GOTO_TIMEOUT_MS"))
             await page.wait_for_timeout(3000)
 
             try:

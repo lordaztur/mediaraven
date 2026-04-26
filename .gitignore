@@ -5,9 +5,10 @@
 .env.local
 .env.*.local
 
-# Mensagens customizadas (cada usuário tem as suas)
+# Mensagens e configurações customizadas (cada usuário tem as suas)
 messages.json
 log_messages.json
+customization.json
 
 # Sessão persistida do Instagrapi (equivale a credenciais)
 ig_session.json

@@ -65,22 +65,21 @@ def test_should_show_prompt_default_true():
 
 
 def test_should_show_prompt_chat_off():
-    with patch.dict(config._PROMPT_OFF_CHATS, {"download": {123}}):
+    with patch.dict(config._CUSTOMIZATION["chats"], {"123": {"PROMPT_DOWNLOAD_ENABLED": False}}):
         assert config.should_show_prompt("download", 123, 99) is False
         assert config.should_show_prompt("download", 456, 99) is True
 
 
 def test_should_show_prompt_user_on_overrides_chat_off():
-    with patch.dict(config._PROMPT_OFF_CHATS, {"download": {123}}), \
-         patch.dict(config._PROMPT_ON_USERS, {"download": {99}}):
+    with patch.dict(config._CUSTOMIZATION["chats"], {"123": {"PROMPT_DOWNLOAD_ENABLED": False}}), \
+         patch.dict(config._CUSTOMIZATION["users"], {"99": {"PROMPT_DOWNLOAD_ENABLED": True}}):
         assert config.should_show_prompt("download", 123, 99) is True
         assert config.should_show_prompt("download", 123, 42) is False
 
 
 def test_should_show_prompt_user_off_overrides_everything():
-    with patch.dict(config._PROMPT_OFF_CHATS, {"download": set()}), \
-         patch.dict(config._PROMPT_ON_USERS, {"download": {99}}), \
-         patch.dict(config._PROMPT_OFF_USERS, {"download": {99}}):
+    with patch.dict(config._CUSTOMIZATION["chats"], {"1": {"PROMPT_DOWNLOAD_ENABLED": True}}), \
+         patch.dict(config._CUSTOMIZATION["users"], {"99": {"PROMPT_DOWNLOAD_ENABLED": False}}):
         assert config.should_show_prompt("download", 1, 99) is False
 
 
