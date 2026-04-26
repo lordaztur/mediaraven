@@ -62,8 +62,8 @@ def _build_threads_caption(post: dict, url: str) -> str:
         return ""
     user = post.get("user") or {}
     username = (user.get("username") or "").strip()
-    title = f"@{username}" if username else ""
-    caption, _ = _build_caption({'title': title, 'description': text}, url)
+    uploader = f"@{username}" if username else ""
+    caption, _ = _build_caption({'uploader': uploader, 'description': text}, url)
     return caption
 
 

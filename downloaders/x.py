@@ -167,8 +167,8 @@ def _screen_name_from_url(url: str) -> str:
 def _build_caption(tweet: Optional[dict], url: str) -> str:
     text = _extract_tweet_text(tweet)
     sn = _extract_screen_name(tweet) or _screen_name_from_url(url)
-    title = f"@{sn}" if sn else ""
-    caption, _ = _build_std_caption({'title': title, 'description': text}, url)
+    uploader = f"@{sn}" if sn else ""
+    caption, _ = _build_std_caption({'uploader': uploader, 'description': text}, url)
     return caption
 
 

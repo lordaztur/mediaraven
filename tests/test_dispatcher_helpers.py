@@ -169,6 +169,84 @@ def test_build_caption_ignores_empty_alt_title():
     assert 'Real title' in caption
 
 
+def test_build_caption_uploader_and_title_render_two_lines():
+    info = {
+        'uploader': 'MrBeast',
+        'title': 'I gave away $1M',
+        'description': 'Detailed body text',
+    }
+    caption, _ = _build_caption(info, 'https://youtube.com/watch?v=abc')
+    assert '<b>MrBeast</b>' in caption
+    assert '<b>I gave away $1M</b>' in caption
+    idx_uploader = caption.find('MrBeast')
+    idx_title = caption.find('I gave away')
+    idx_desc = caption.find('Detailed body')
+    assert idx_uploader < idx_title < idx_desc
+
+
+def test_build_caption_prefers_uploader_id_with_at():
+    info = {
+        'uploader_id': '@mrbeast',
+        'uploader': 'MrBeast Channel',
+        'title': 'Video Title',
+        'description': 'body',
+    }
+    caption, _ = _build_caption(info, 'https://youtube.com/watch?v=abc')
+    assert '@mrbeast' in caption
+    assert 'MrBeast Channel' not in caption
+
+
+def test_build_caption_shorts_collapses_title_into_desc():
+    info = {
+        'uploader': '@channel',
+        'title': 'Funny clip with dog',
+        'description': 'Funny clip with dog and cat doing things together #fun',
+        'original_url': 'https://youtube.com/shorts/abc123',
+    }
+    caption, _ = _build_caption(info, 'https://youtube.com/watch?v=abc123')
+    assert '<b>Funny clip with dog</b>' not in caption
+    assert '@channel' in caption
+    assert 'Funny clip with dog and cat' in caption
+
+
+def test_build_caption_shorts_with_empty_desc_moves_title_to_desc():
+    info = {
+        'uploader': '@channel',
+        'title': 'Cute moment',
+        'description': '',
+        'webpage_url': 'https://www.youtube.com/shorts/xyz',
+    }
+    caption, _ = _build_caption(info, 'https://youtube.com/watch?v=xyz')
+    assert '<b>Cute moment</b>' not in caption
+    assert 'Cute moment' in caption
+    assert '@channel' in caption
+
+
+def test_build_caption_drops_title_when_redundant_with_desc():
+    info = {
+        'uploader': '@user',
+        'title': 'Hello world',
+        'description': 'Hello world this is a longer body that starts the same',
+    }
+    caption, _ = _build_caption(info, 'https://x.test')
+    assert '<b>Hello world</b>' not in caption
+    assert 'Hello world this is' in caption
+
+
+def test_build_caption_only_uploader_no_title():
+    info = {'uploader': '@user', 'description': 'tweet body here'}
+    caption, _ = _build_caption(info, 'https://x.com/u/status/1')
+    assert '<b>@user</b>' in caption
+    assert 'tweet body' in caption
+
+
+def test_build_caption_only_title_promotes_to_primary():
+    info = {'title': 'Article Title', 'description': 'article body'}
+    caption, _ = _build_caption(info, 'https://news.example.com/x')
+    assert '<b>Article Title</b>' in caption
+    assert 'article body' in caption
+
+
 def test_parse_lang_from_format_language_field():
     clean, untagged = _parse_lang_from_format({
         'acodec': 'aac', 'language': 'pt-BR', 'format_id': '140',

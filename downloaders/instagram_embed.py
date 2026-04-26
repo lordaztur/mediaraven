@@ -185,7 +185,7 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
         raw_caption = raw_caption[:IG_CAPTION_MAX] + "..."
     username = ((media.get("owner") or {}).get("username")) or ""
     info_for_caption = {
-        "title": f"@{username}" if username else "",
+        "uploader": f"@{username}" if username else "",
         "description": raw_caption,
     }
     caption, _ = _build_caption(info_for_caption, url)
