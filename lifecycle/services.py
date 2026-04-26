@@ -65,6 +65,7 @@ async def init_globals(app) -> None:
     app.bot_data['dl_futures'] = TTLCache(maxsize=1000, ttl=TTL_FUTURES_SECONDS)
     app.bot_data['lang_futures'] = TTLCache(maxsize=1000, ttl=TTL_FUTURES_SECONDS)
     app.bot_data['caption_futures'] = TTLCache(maxsize=1000, ttl=TTL_FUTURES_SECONDS)
+    app.bot_data['screenshot_futures'] = TTLCache(maxsize=1000, ttl=TTL_FUTURES_SECONDS)
     logger.info("✅ Todos os serviços globais prontos!")
 
     asyncio.create_task(periodic_playwright_refresh())

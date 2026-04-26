@@ -10,13 +10,16 @@
     "download_no": "❌ Ignorar",
     "caption_yes": "✅ Sim",
     "caption_no": "❌ Não",
+    "screenshot_yes": "👍 Sim",
+    "screenshot_no": "👎 Não",
     "retry": "🔄 Tentar novamente"
   },
 
   "prompts": {
     "link_detected": "🔗 <b>Link detectado</b>\n\nVocê tem 5 segundos para escolher ou iniciarei o download.{suffix}",
     "language_detected": "🌍 <b>Múltiplos idiomas detectados!</b>\n\nVocê tem 10s para escolher ou baixarei o original.{suffix}",
-    "caption_found": "📝 <b>Descrição encontrada!</b>\nDeseja incluir como legenda?\n\nVocê tem 5s para escolher ou deixarei sem legenda.{suffix}"
+    "caption_found": "📝 <b>Descrição encontrada!</b>\nDeseja incluir como legenda?\n\nVocê tem 5s para escolher ou deixarei sem legenda.{suffix}",
+    "screenshot_offer": "🖼️ Não consegui extrair nenhuma mídia deste link. Deseja enviar um screenshot do site?\n\nSe não responder em 5 segundos, enviarei o screenshot.{suffix}"
   },
 
   "callback_alerts": {
@@ -26,6 +29,8 @@
     "lang_wrong_user": "🚫 Apenas quem enviou o link pode escolher o idioma!",
     "caption_expired": "⚠️ Esta opção expirou ou já foi respondida.",
     "caption_wrong_user": "🚫 Apenas quem enviou o link pode escolher a legenda!",
+    "screenshot_expired": "⚠️ Esta opção expirou ou já foi respondida.",
+    "screenshot_wrong_user": "🚫 Apenas quem enviou o link pode escolher!",
     "retry_expired": "⚠️ Este link expirou.",
     "retry_wrong_user": "🚫 Apenas quem enviou o link pode tentar novamente!"
   },
@@ -34,8 +39,9 @@
     "download_ignored": "❌ Download ignorado pelo usuário.{suffix}",
     "queue_busy": "⏳ Fila ocupada. Aguarde...{suffix}",
     "downloading": "📥 Baixando mídia...{suffix}",
+    "screenshot_taking": "📸 Capturando screenshot da página...{suffix}",
     "sending": "📤 Enviando {count} arquivos...{suffix}",
-    "retry_failed": "{status}{suffix}\n\n⚠️ Falha na retentativa.",
+    "retry_failed": "❌ Falha na retentativa.{suffix}",
     "internal_error": "❌ Erro interno ao enviar os arquivos.{suffix}"
   },
 
@@ -47,31 +53,29 @@
     "📥 Aguarde mais um instante...{suffix}"
   ],
 
-  "download_errors": {
-    "login_required": "🔒 Conteúdo privado ou requer login.",
-    "video_unavailable": "❌ Mídia indisponível.",
-    "forbidden": "🚫 Acesso negado (Erro 403).",
-    "generic": "⚠️ Erro ao processar o link."
-  },
-
   "downloader_status": {
     "ytdlp_success": "✅ yt-dlp",
     "threads_fail": "⚠️ Falha ao processar este link do Threads.",
     "generic_fail": "❌ Não foi possível baixar a mídia.",
     "instagram_embed": "📸 IG Embed ({media_type})",
+    "instagram_embed_fail": "⚠️ Falha ao extrair via embed do Instagram.",
     "instagrapi": "📸 Instagrapi ({media_type})",
-    "instagrapi_fail": "⚠️ Falha no Instagrapi. Verifique o login.",
+    "instagrapi_fail": "⚠️ Falha ao baixar do Instagram.",
     "reddit_json": "👽 API Nativa (Imagens)",
     "reddit_json_fail": "⚠️ Falha ao extrair imagens do Reddit.",
     "reddit_playwright": "👽 Playwright (Imagens)",
-    "reddit_playwright_fail": "⚠️ Falha ao extrair imagens do Reddit via Playwright.",
+    "reddit_playwright_fail": "⚠️ Falha ao extrair imagens do Reddit.",
     "threads_playwright": "🧵 Playwright Threads ({media_type})",
-    "threads_playwright_fail": "⚠️ Falha ao extrair mídias do Threads via Playwright.",
+    "threads_playwright_fail": "⚠️ Falha ao extrair mídias do Threads.",
     "x": "🐦 X ({media_type}) [{count} arquivos]",
     "x_fail": "⚠️ Falha ao extrair mídias do X.",
     "scraper": "🕸️ Scraper Deep Search ({media_type}) [{count} arquivos]",
-    "scraper_fail": "⚠️ Falha: Nenhuma mídia interceptada na rede.",
-    "playwright_not_running": "⚠️ Playwright global não está rodando."
+    "scraper_fail": "⚠️ Nenhuma mídia encontrada na página.",
+    "scraper_paywall": "🔒 Conteúdo bloqueado (paywall ou login).",
+    "scraper_fast_path": "⚡ Scraper Fast Path ({media_type}) [{count} arquivos]",
+    "scraper_generic_ytdlp": "🧩 yt-dlp Generic ({media_type}) [{count} arquivos]",
+    "scraper_gallerydl": "🖼️ gallery-dl ({media_type}) [{count} arquivos]",
+    "playwright_not_running": "⚠️ Sistema indisponível no momento, tente novamente em instantes."
   },
 
   "media_type_labels": {
@@ -83,7 +87,8 @@
     "x_video": "Vídeo",
     "x_album": "Imagem/Carrossel",
     "scraper_video_mixed": "Vídeo/Misto",
-    "scraper_images": "Imagens"
+    "scraper_images": "Imagens",
+    "scraper_video": "Vídeo"
   },
 
   "caption": {

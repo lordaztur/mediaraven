@@ -6,7 +6,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![python-telegram-bot](https://img.shields.io/badge/python--telegram--bot-22.7-26A5E4?style=flat&logo=telegram&logoColor=white)](https://python-telegram-bot.org/)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-blue?style=flat)](#)
 [![yt-dlp](https://img.shields.io/badge/powered%20by-yt--dlp-red?style=flat)](https://github.com/yt-dlp/yt-dlp)
 [![Playwright](https://img.shields.io/badge/playwright-1.58-2EAD33?style=flat&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
@@ -17,434 +16,183 @@
 
 ## ✨ O que ele faz
 
-Cole qualquer link num chat e o bot devolve a mídia em segundos. Simples assim.
+Cole um link, recebe a mídia. Suporta **YouTube** (com seleção de idioma quando há dublagem), **Instagram**, **Reddit** (incluindo NSFW), **Threads**, **X/Twitter**, **Facebook** e **qualquer outro site** via scraper genérico (HTTP + Playwright em paralelo, com yt-dlp generic e gallery-dl como fallbacks).
 
-- 🎥 **YouTube** — vídeos, Shorts, múltiplas trilhas de áudio (seleção de idioma quando há dublagem)
-- 📸 **Instagram** — posts, reels, carrosséis, stories, com áudio original
-- 👽 **Reddit** — galerias, imagens únicas, vídeos, posts NSFW (remove blur)
-- 🧵 **Threads** — posts, carrosséis (foto/vídeo/misto), reposts com comentário
-- 🐦 **X (Twitter)** — fotos, vídeos, carrosséis (suporta `x.com`, `twitter.com`, `fxtwitter.com`, `vxtwitter.com`)
-- 👍 **Facebook** — vídeos e reels (incluindo links `/share/v/` resolvidos automaticamente)
-- 🕸️ **Qualquer outro site** — scraper genérico varre a página à procura de mídias
-
-### 🎁 Extras
-
-- ⚡ Envia arquivos de até **2 GB** (usa Bot API local)
-- 🍪 Reaproveita cookies do seu **Firefox** para burlar paywalls e bloqueios
-- 🗣️ Todas as mensagens estão em um **arquivo JSON** — personalize o tom do bot sem tocar no código
-- 🔒 **Whitelist** de chats e usuários permitidos
-- ⚙️ **70+ parâmetros configuráveis via `.env`** — timeouts, concorrência, qualidade de vídeo, prompts por chat/usuário, tudo
-- 📊 Métricas de sucesso/falha por plataforma nos logs
-- 🔁 Botão **"Tentar novamente"** se um download falhar
+- Envia arquivos até **2 GB** (Bot API local)
+- Reaproveita cookies do **Firefox** pra burlar bloqueios
+- **Bypass de paywall soft** (Googlebot UA + archive.ph) e extração do corpo do artigo como caption
+- Mensagens user-facing 100% customizáveis via `messages.json`
+- Whitelist por chat e por usuário
+- 80+ envs de tuning (timeouts, concorrência, qualidade, etc.)
+- Botão **"Tentar novamente"** em falha + prompt opcional de **screenshot da página** quando o scraper não acha mídia
 
 ---
 
-## 📸 Como funciona (resumo)
+## 🚀 Instalação rápida
 
-```
-┌─────────────┐      ┌──────────┐      ┌─────────────┐      ┌──────────┐
-│  Você cola  │──►   │  Bot     │──►   │  Escolhe o  │──►   │ Baixa e  │
-│  um link    │      │ detecta  │      │   método    │      │  envia   │
-└─────────────┘      └──────────┘      └─────────────┘      └──────────┘
-                                       yt-dlp / Instagrapi
-                                       Reddit JSON / Playwright
-                                       Scraper genérico
-```
-
-O bot tenta várias estratégias em ordem. Se uma falha, cai na próxima — você quase nunca vai ver um "não consegui".
-
----
-
-## 🚀 Tutorial de instalação
-
-> **Tempo estimado**: 20–30 minutos na primeira vez.
-
-### 1️⃣ Pré-requisitos
-
-| Requisito | Versão | Obrigatório? |
-|-----------|--------|:---:|
-| Python | 3.11+ | ✅ |
-| ffmpeg | qualquer recente | ✅ (para Instagram com áudio) |
-| git | qualquer | ✅ |
-| Deno | qualquer | ⚠️ opcional (bypass JS do YouTube) |
-| Firefox | qualquer | ⚠️ opcional (cookies) |
-
-<details>
-<summary><b>📦 Instalando no Linux (Debian/Ubuntu)</b></summary>
+**Pré-requisitos:** Python 3.11+, ffmpeg, git. Opcional: Deno (bypass JS do YouTube), Firefox (cookies).
 
 ```bash
-sudo apt update
-sudo apt install -y python3.11 python3.11-venv python3-pip ffmpeg git
-# Deno (opcional)
-curl -fsSL https://deno.land/install.sh | sh
-```
-</details>
+# Linux
+sudo apt install -y python3.11 python3.11-venv ffmpeg git
 
-<details>
-<summary><b>📦 Instalando no Windows</b></summary>
-
-Use [Chocolatey](https://chocolatey.org/) (PowerShell como admin):
-```powershell
-choco install python311 ffmpeg git -y
-choco install deno -y   # opcional
-```
-
-Ou baixe manualmente: [Python](https://www.python.org/downloads/), [ffmpeg](https://www.gyan.dev/ffmpeg/builds/), [git](https://git-scm.com/).
-</details>
-
-<details>
-<summary><b>📦 Instalando no macOS</b></summary>
-
-```bash
+# macOS
 brew install python@3.11 ffmpeg git
-brew install deno   # opcional
+
+# Windows (Chocolatey)
+choco install python311 ffmpeg git -y
 ```
-</details>
-
----
-
-### 2️⃣ Telegram Bot API Local
-
-Esse passo é **obrigatório** — sem o servidor local, o Telegram limita uploads a 50 MB. Com ele, você manda até 2 GB.
-
-#### Opção A: Docker (recomendado — mais simples)
-
-```bash
-docker run -d --name telegram-bot-api \
-  -p 8081:8081 \
-  -e TELEGRAM_API_ID=SEU_API_ID \
-  -e TELEGRAM_API_HASH=SEU_API_HASH \
-  -e TELEGRAM_LOCAL=1 \
-  -v telegram-bot-api-data:/var/lib/telegram-bot-api \
-  aiogram/telegram-bot-api:latest
-```
-
-Para conseguir `TELEGRAM_API_ID` e `TELEGRAM_API_HASH`:
-1. Entre em https://my.telegram.org
-2. Faça login com seu número
-3. Clique em **API development tools** → **Create application**
-4. Preencha qualquer nome/descrição — copie o `api_id` e `api_hash`
-
-#### Opção B: Compilar do zero
-
-Siga o guia oficial: [github.com/tdlib/telegram-bot-api](https://github.com/tdlib/telegram-bot-api#installation).
-
-#### ✅ Teste se tá funcionando
-
-```bash
-curl http://localhost:8081/
-# deve responder algo — não vai dar "connection refused"
-```
-
----
-
-### 3️⃣ Criar o bot no Telegram
-
-1. Abra o Telegram e fale com **[@BotFather](https://t.me/BotFather)**
-2. Mande `/newbot`
-3. Escolha um nome e um username (tem que terminar com `bot`)
-4. O BotFather te manda um **token**: `123456789:ABC-DEF...` — guarde
-
-#### Permitir que o bot leia todas as mensagens do grupo
-
-```
-/mybots → [seu bot] → Bot Settings → Group Privacy → Turn OFF
-```
-
-Sem isso, o bot só responde a comandos e menções.
-
----
-
-### 4️⃣ Pegar seu User ID e do grupo
-
-- **Seu ID**: fale com [@userinfobot](https://t.me/userinfobot)
-- **ID do grupo**: adicione o bot ao grupo, mande qualquer mensagem, e acesse:
-  ```
-  https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
-  ```
-  Procure `"chat":{"id":-100...` — é o ID (negativo).
-
----
-
-### 5️⃣ Clonar o projeto e instalar dependências
 
 ```bash
 git clone https://github.com/SEU_USUARIO/mediaraven.git
 cd mediaraven
-
-# Ambiente virtual Python
 python3.11 -m venv venv
-
-# Ativar o venv
-source venv/bin/activate          # Linux/macOS
-# ou
-venv\Scripts\activate              # Windows PowerShell
-
-# Instalar deps
+source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Instalar navegador do Playwright (~300 MB)
 playwright install chromium
 ```
 
 ---
 
-### 6️⃣ Configurar o `.env`
+## 🔧 Setup
+
+### 1. Bot API local (obrigatório — sem ele, Telegram limita a 50MB)
+
+```bash
+docker run -d --name telegram-bot-api -p 8081:8081 \
+  -e TELEGRAM_API_ID=SEU_API_ID -e TELEGRAM_API_HASH=SEU_API_HASH \
+  -e TELEGRAM_LOCAL=1 \
+  -v telegram-bot-api-data:/var/lib/telegram-bot-api \
+  aiogram/telegram-bot-api:latest
+```
+
+Pegue `TELEGRAM_API_ID` e `TELEGRAM_API_HASH` em https://my.telegram.org → **API development tools**.
+
+### 2. Bot no Telegram
+
+Fale com [@BotFather](https://t.me/BotFather) → `/newbot` → guarde o token.
+Depois: **Bot Settings → Group Privacy → OFF** (senão o bot só responde a comandos diretos).
+
+### 3. `.env` mínimo
 
 ```bash
 cp .env_example .env
 ```
 
-Edite o `.env` com seu editor favorito. Campos essenciais:
-
 ```ini
 TELEGRAM_BOT_TOKEN="123456789:ABC-DEF..."
-ALLOWED_CHAT_ID=-1001234567890
-ALLOWED_USER_IDS=123456789
+ALLOWED_CHAT_ID=-1001234567890       # de https://api.telegram.org/bot<TOKEN>/getUpdates
+ALLOWED_USER_IDS=123456789           # de @userinfobot
 LOCAL_API_HOST=127.0.0.1:8081
-BASE_DOWNLOAD_DIR=/caminho/absoluto/para/pasta/downloads
+BASE_DOWNLOAD_DIR=/caminho/absoluto/downloads
 ```
 
-> ⚠️ `BASE_DOWNLOAD_DIR` precisa ser **absoluto** (começar com `/` no Linux/macOS ou `C:/` no Windows).
+> ⚠️ `BASE_DOWNLOAD_DIR` precisa ser **absoluto**.
 
-Opcionais (deixe em branco se não quiser usar):
-- `IG_USER` / `IG_PASS` — conta descartável do Instagram para fallback
-- `FIREFOX_PROFILE_PATH` — para reaproveitar cookies de sites logados
+Opcionais úteis:
+- `IG_USER` / `IG_PASS` — conta descartável do Instagram (fallback)
+- `FIREFOX_PROFILE_PATH` — caminho do perfil pra reaproveitar cookies
 
-<details>
-<summary><b>🦊 Dica: Firefox dockerizado dedicado ao bot (recomendado em servidor)</b></summary>
-
-Em vez de apontar o bot para o seu Firefox pessoal, rode um Firefox isolado em Docker com **VNC via web**. Vantagens:
-
-- 🔒 Cookies e sessões isolados do seu navegador pessoal
-- 🖥️ Funciona em servidor headless (sem GUI)
-- 🔄 Faz login UMA vez pelo navegador web e os cookies ficam persistidos no volume
-- 🧼 Se um site bloquear a sessão, é só apagar o volume e relogar sem afetar o navegador principal
-
-#### 1. Subir o container
-
-```bash
-docker run -d \
-  --name firefox-bot \
-  --restart unless-stopped \
-  -p 5800:5800 \
-  -v /caminho/absoluto/para/firefox-bot:/config \
-  --shm-size 2g \
-  jlesage/firefox
-```
-
-Substitua `/caminho/absoluto/para/firefox-bot` pela pasta que você quer dedicar ao perfil. Exemplos:
-- Linux: `/home/seu_user/docker/firefox-bot`
-- Windows: `C:/docker/firefox-bot`
-
-#### 2. Fazer login nos sites
-
-Abra no seu navegador pessoal:
-```
-http://localhost:5800
-```
-(ou `http://IP-do-servidor:5800` se Docker estiver em outra máquina)
-
-Aparece o Firefox em tela cheia. Entre no YouTube, Instagram, Reddit, e faça login em cada um. O Firefox já salva tudo automaticamente no volume montado.
-
-#### 3. Encontrar o caminho do perfil
-
-Dentro do container, o perfil fica em:
-```
-/config/.mozilla/firefox/<HASH>.default-release
-```
-
-Para descobrir o `<HASH>`:
-
-```bash
-docker exec firefox-bot ls /config/.mozilla/firefox/ | grep default-release
-```
-
-O output é algo como `xxxxxxxx.default-release`.
-
-#### 4. Apontar o bot para o volume
-
-No seu `.env`:
-
-```ini
-FIREFOX_PROFILE_PATH=/caminho/absoluto/para/firefox-bot/.mozilla/firefox/xxxxxxxx.default-release
-```
-
-**Importante:** use o caminho do **host**, não o caminho interno do container. O bot precisa acessar o `cookies.sqlite` diretamente — ele não fala com o container.
-
-#### 5. (Opcional) Parar o Firefox quando não estiver usando
-
-O container ocupa memória. Se você só precisa dele para revalidar login esporadicamente:
-
-```bash
-docker stop firefox-bot                # para
-docker start firefox-bot               # inicia
-```
-
-O bot continua lendo os cookies normalmente, mesmo com o container parado — o `cookies.sqlite` no volume é acessível.
-
-</details>
-
-> 💡 O `.env_example` lista ~70 outras variáveis de **customização avançada** (timeouts, tamanhos de pool, qualidade máxima de vídeo, prompts por chat/usuário, User-Agents, etc). Todas têm defaults sensatos — só adicione ao seu `.env` o que quiser mudar.
-
----
-
-### 7️⃣ Rodar
+### 4. Rodar
 
 ```bash
 python mediaraven.py
 ```
 
-Se tudo certo, você vê:
-```
-🦕 Deno encontrado em: ...
-🎬 ffmpeg encontrado em: ...
-🔌 Conectando ao Servidor Local em: http://127.0.0.1:8081/bot
-🌐 Sessão aiohttp global iniciada (timeout default 30s).
-🌐 Iniciando Playwright (Navegador Global)...
-✅ Todos os serviços globais prontos!
-🤖 Bot Iniciado...
-```
-
-Manda um link pro bot e se prepara. 🎉
-
 ---
 
-## 🎨 Personalizar mensagens
+## ⚙️ Customização
 
-Copie `messages.example.json` para `messages.json` e altere qualquer frase. O bot recarrega ao reiniciar. Você pode trocar emojis, idioma, tom — tudo.
+**Mensagens:** copie `messages.example.json` pra `messages.json` e edite. Recarrega no restart.
 
-Exemplos do que dá pra customizar:
-- Emojis de reação ao receber um link
-- Mensagens enquanto baixa ("Aguenta aí, tô terminando...")
-- Prefixos de legenda (`📄`, `🔗`)
-- Label do botão "ORIGINAL" na escolha de idioma
-
----
-
-## ⚙️ Customização avançada
-
-Tudo que é hardcoded em outros bots aqui é env var. Alguns destaques:
-
-### 🎚️ Prompts interativos
-
-Cada prompt (baixar/ignorar, legenda, idioma) pode ser ligado ou desligado por **chat** ou por **usuário**. Precedência: `OFF_USERS` > `ON_USERS` > `OFF_CHATS` > default (ligado).
+**Envs:** `.env_example` documenta cada uma com defaults sensatos. Destaques:
 
 ```ini
-# No grupo -100123 o bot baixa sem perguntar, mas o usuário 555 sempre vê o prompt:
-PROMPT_DOWNLOAD_OFF_CHATS=-100123
-PROMPT_DOWNLOAD_ON_USERS=555
+YTDLP_MAX_HEIGHT=1920          # 1080p (use 720 em conexão lenta, 4320 em 8K)
+YTDLP_WORKERS=5                # downloads simultâneos
+PW_CONCURRENCY=3               # páginas Playwright simultâneas
+SCRAPE_GALLERY_DL_ENABLE=yes   # gallery-dl no scraper genérico
+SCRAPE_SCREENSHOT_FALLBACK=yes # oferecer screenshot quando nada funciona
+SCRAPE_PAYWALL_BYPASS=yes      # Googlebot UA + archive.ph em paywall soft
+SCRAPE_ARTICLE_EXTRACT=yes     # extrai corpo de artigo como caption
+LOG_LEVEL=DEBUG                # debug pontual
 ```
 
-Mesmo esquema para `PROMPT_CAPTION_*` e `PROMPT_LANG_*`.
+**Prompts por chat/usuário:** `PROMPT_DOWNLOAD_OFF_CHATS`, `PROMPT_CAPTION_ON_USERS`, etc. — precedência `OFF_USERS > ON_USERS > OFF_CHATS > default`.
 
-### 📐 Qualidade, concorrência e timeouts
+> 🔒 **Privacidade técnica:** o que o usuário vê no Telegram não expõe `yt-dlp`/`Playwright`/`gallery-dl`. Só "baixando…" → "enviando N arquivos" → mensagem some, ou uma mensagem genérica de falha + retry. Os logs (`bot.log`) preservam tudo pra debug.
 
-```ini
-YTDLP_MAX_HEIGHT=1920           # 1080p. Use 720 em conexão limitada ou 4320 em 8K.
-YTDLP_WORKERS=5                 # downloads yt-dlp simultâneos
-PW_CONCURRENCY=3                # páginas Playwright simultâneas
-MAX_URLS_PER_MESSAGE=20         # anti paste-bomb
-TELEGRAM_UPLOAD_TIMEOUT=600     # timeout de upload (segundos)
-ASK_DL_TIMEOUT=5.0              # tempo para clicar "baixar/ignorar"
-```
+<details>
+<summary><b>🦊 Firefox dockerizado pra cookies (recomendado em servidor)</b></summary>
 
-### 📊 Observabilidade
-
-```ini
-LOG_LEVEL=DEBUG                 # mais verboso para debug pontual
-LOG_MAX_BYTES=20971520          # tamanho de cada arquivo de log
-LOG_BACKUP_COUNT=5              # quantos backups manter
-METRICS_LOG_INTERVAL_MIN=30     # log de métricas agregadas
-```
-
-Consulte `.env_example` para a lista completa — cada variável tem um comentário explicando para que serve.
-
----
-
-## 🧪 Rodando os testes
+Em vez de usar seu Firefox pessoal, suba um isolado com VNC web:
 
 ```bash
-# com o venv ativo
+docker run -d --name firefox-bot --restart unless-stopped \
+  -p 5800:5800 -v /caminho/firefox-bot:/config --shm-size 2g \
+  jlesage/firefox
+```
+
+Acesse `http://localhost:5800`, faça login nos sites, depois aponte:
+
+```bash
+docker exec firefox-bot ls /config/.mozilla/firefox/ | grep default-release
+# → xxxxxxxx.default-release
+```
+
+```ini
+FIREFOX_PROFILE_PATH=/caminho/firefox-bot/.mozilla/firefox/xxxxxxxx.default-release
+```
+
+Use o caminho do **host** (não o do container — o bot lê o `cookies.sqlite` direto). Pode parar o container quando não precisar; o bot continua lendo o arquivo.
+</details>
+
+---
+
+## 🧪 Testes
+
+```bash
 pip install -r requirements-dev.txt
 pytest
 ```
-
-195 testes cobrem: parsing de config, controle de prompts por chat/usuário, extração de URLs, detecção de plataforma, helpers do dispatcher, fluxo de fallbacks, cookies do Firefox, métricas, validação de mensagens, imagens/URL helpers, lifecycle, extração de mídia do Threads via JSON SSR, extração de mídia do X via `__INITIAL_STATE__` e GraphQL, extração de mídia do Instagram via página de embed, normalização de URL Reddit pra `old.reddit.com`, caption do Reddit com title+selftext.
 
 ---
 
 ## 📂 Estrutura
 
 ```
-mediaraven/
-├── mediaraven.py            ← ponto de entrada
-├── config.py                ← leitura do .env + validação + 70+ env vars
-├── handlers.py              ← callbacks e orquestração do Telegram
-├── telegram_io.py           ← envio de mídias
-├── utils.py                 ← helpers (download, ffmpeg, imagens)
-├── metrics.py               ← contadores de sucesso/falha por plataforma
-├── messages.json            ← TODAS as mensagens user-facing
-├── downloaders/
-│   ├── dispatcher.py        ← orquestrador
-│   ├── _platform.py         ← detecção por domínio
-│   ├── _ytdlp.py            ← wrappers do yt-dlp
-│   ├── _languages.py        ← multi-idioma do YouTube
-│   ├── _caption.py          ← legendas HTML
-│   ├── instagram_embed.py   ← Instagram via /embed/captioned/ (sem login, primeiro)
-│   ├── instagram.py         ← fallback Instagrapi (último recurso, com login)
-│   ├── reddit_json.py       ← API pública do Reddit
-│   ├── reddit_playwright.py ← Playwright no Reddit (NSFW, spoilers)
-│   ├── threads.py           ← extração JSON SSR do Threads (Playwright + parse)
-│   ├── x.py                 ← extração do X via __INITIAL_STATE__ (guest) / GraphQL (auth)
-│   └── fallback.py          ← scraper genérico
-└── lifecycle/
-    ├── services.py          ← init/stop globais
-    ├── startup.py           ← deno, ffmpeg, limpeza inicial
-    ├── chat_lock.py         ← locks por chat (serializa downloads)
-    ├── instagram_login.py   ← login IG em background
-    ├── playwright_refresh.py← reciclagem do Playwright por RSS (psutil)
-    └── metrics_log.py       ← log periódico de métricas
+mediaraven.py            ponto de entrada
+config.py                .env + 80+ envs
+handlers.py              orquestração Telegram
+telegram_io.py           upload de mídias
+utils.py                 download/ffmpeg/imagens
+messages.json            strings user-facing
+downloaders/
+  dispatcher.py          orquestrador
+  _platform.py _ytdlp.py _languages.py _caption.py
+  instagram_embed.py     IG via /embed/ (sem login)
+  instagram.py           IG via Instagrapi (com login)
+  reddit_json.py         Reddit API pública
+  reddit_playwright.py   Reddit headless (NSFW/spoilers)
+  threads.py             Threads via JSON SSR
+  x.py                   X via __INITIAL_STATE__ + GraphQL
+  fallback.py            scraper genérico em cascata
+  _scrape_helpers.py     URL rewrite, dedupe, parsers
+lifecycle/               init, shutdown, refresh, métricas
 ```
 
 ---
 
 ## ❓ Problemas comuns
 
-<details>
-<summary><b>"Config inválida: BASE_DOWNLOAD_DIR deve ser absoluto"</b></summary>
-
-Seu `.env` está com `BASE_DOWNLOAD_DIR=./downloads` ou similar. Troque por um caminho absoluto como `/home/seu_user/downloads` ou `C:/mediaraven/downloads`.
-</details>
-
-<details>
-<summary><b>Bot não responde em grupos</b></summary>
-
-Desative a **Group Privacy** do bot no BotFather (passo 3 do tutorial).
-</details>
-
-<details>
-<summary><b>"ffmpeg não encontrado no PATH"</b></summary>
-
-O bot sobe mesmo assim, mas posts do Instagram com áudio+imagem não vão funcionar. Instale o ffmpeg e reinicie.
-</details>
-
-<details>
-<summary><b>"Invalid file http url specified"</b></summary>
-
-Seu servidor Bot API Local não está acessível. Confira se o Docker tá rodando e se `LOCAL_API_HOST` no `.env` aponta para o host:porta certos.
-</details>
-
-<details>
-<summary><b>Instagram fica pedindo login/challenge</b></summary>
-
-Use uma **conta descartável** no `.env`, não a principal. O Instagram pode bloquear contas que logam via API com frequência. Delete `ig_session.json` e reinicie se travar.
-</details>
+- **`BASE_DOWNLOAD_DIR deve ser absoluto`** → use caminho com `/` ou `C:/`.
+- **Bot não responde em grupo** → desligue Group Privacy no BotFather.
+- **`ffmpeg não encontrado`** → instale; sem ele, IG com áudio não funciona.
+- **`Invalid file http url specified`** → Bot API local não tá acessível; confira o Docker e `LOCAL_API_HOST`.
+- **Instagram pede login/challenge** → use conta descartável; delete `ig_session.json` e reinicie se travar.
 
 ---
 
 ## 📜 Licença
 
-[MIT](LICENSE) — livre para usar, modificar e distribuir.
-
-Respeite os Termos de Serviço de cada plataforma da qual você baixa conteúdo.
+[MIT](LICENSE). Respeite os ToS de cada plataforma de onde baixa conteúdo.

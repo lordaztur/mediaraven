@@ -15,6 +15,7 @@ from handlers import (
     handle_message,
     lang_callback,
     retry_callback,
+    screenshot_callback,
 )
 from lifecycle import init_deno, init_ffmpeg, init_globals, stop_globals
 from messages import msg
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(retry_callback, pattern=r"^retry_"))
     application.add_handler(CallbackQueryHandler(lang_callback, pattern=r"^lang\|"))
     application.add_handler(CallbackQueryHandler(caption_callback, pattern=r"^cap\|"))
+    application.add_handler(CallbackQueryHandler(screenshot_callback, pattern=r"^scrn\|"))
     application.add_handler(CallbackQueryHandler(download_confirm_callback, pattern=r"^dl\|"))
 
     print(msg("startup.ready"))

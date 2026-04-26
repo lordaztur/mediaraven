@@ -11,21 +11,27 @@ import state
 from config import (
     ALLOWED_CHAT_ID,
     ALLOWED_USER_ID,
+    ASK_ARTICLE_DEFAULT,
+    ASK_ARTICLE_TIMEOUT,
     ASK_CAPTION_DEFAULT,
     ASK_CAPTION_TIMEOUT,
     ASK_DL_DEFAULT,
     ASK_DL_TIMEOUT,
     ASK_LANG_TIMEOUT,
+    ASK_SCREENSHOT_DEFAULT,
+    ASK_SCREENSHOT_TIMEOUT,
     BASE_DOWNLOAD_DIR,
     MAX_URLS_PER_MESSAGE,
+    SCRAPE_SCREENSHOT_FALLBACK,
     TELEGRAM_UPLOAD_TIMEOUT,
     should_show_prompt,
 )
 from downloaders.dispatcher import download_media
+from downloaders.fallback import take_page_screenshot
 from lifecycle import get_chat_lock
 from messages import msg, msg_list
 from telegram_io import send_downloaded_media
-from utils import cycle_status_message, safe_cleanup
+from utils import cycle_status_message, safe_cleanup, safe_url
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +82,14 @@ async def caption_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         update, context, 'caption_futures',
         msg("callback_alerts.caption_expired"),
         msg("callback_alerts.caption_wrong_user"),
+    )
+
+
+async def screenshot_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await _resolve_future_callback(
+        update, context, 'screenshot_futures',
+        msg("callback_alerts.screenshot_expired"),
+        msg("callback_alerts.screenshot_wrong_user"),
     )
 
 
@@ -193,6 +207,8 @@ async def _ask_caption_inclusion(
     suffix: str,
     user_id: Optional[int],
     idx: int,
+    timeout: float = ASK_CAPTION_TIMEOUT,
+    default: str = ASK_CAPTION_DEFAULT,
 ) -> bool:
     req_key = f"cap_{message_id}_{idx}"
     markup = _yes_no_markup(
@@ -206,9 +222,62 @@ async def _ask_caption_inclusion(
     )
     choice = await _ask_via_future(
         context, 'caption_futures', req_key, markup, user_id,
-        timeout=ASK_CAPTION_TIMEOUT, default=ASK_CAPTION_DEFAULT,
+        timeout=timeout, default=default,
     )
     return choice == 'yes'
+
+
+async def _ask_screenshot_offer(
+    context: ContextTypes.DEFAULT_TYPE,
+    status_msg: Any,
+    message_id: int,
+    suffix: str,
+    user_id: Optional[int],
+    idx: int,
+) -> bool:
+    req_key = f"scrn_{message_id}_{idx}"
+    markup = _yes_no_markup(
+        "scrn", req_key,
+        msg("buttons.screenshot_yes"), msg("buttons.screenshot_no"),
+    )
+    await status_msg.edit_text(
+        msg("prompts.screenshot_offer", suffix=suffix),
+        parse_mode='HTML',
+        reply_markup=markup,
+    )
+    choice = await _ask_via_future(
+        context, 'screenshot_futures', req_key, markup, user_id,
+        timeout=ASK_SCREENSHOT_TIMEOUT, default=ASK_SCREENSHOT_DEFAULT,
+    )
+    return choice == 'yes'
+
+
+async def _try_screenshot_offer(
+    context: ContextTypes.DEFAULT_TYPE,
+    status_msg: Any,
+    message_id: int,
+    suffix: str,
+    user_id: Optional[int],
+    idx: int,
+    unique_folder: Optional[str],
+    url: str,
+    is_retry: bool,
+) -> list:
+    if is_retry or SCRAPE_SCREENSHOT_FALLBACK != "yes" or unique_folder is None:
+        return []
+    try:
+        wants = await _ask_screenshot_offer(context, status_msg, message_id, suffix, user_id, idx)
+    except Exception as e:
+        logger.debug(f"Falha no prompt de screenshot: {e}")
+        return []
+    if not wants:
+        return []
+    await _safe_edit(status_msg, msg("status.screenshot_taking", suffix=suffix), parse_mode='HTML')
+    shot = await take_page_screenshot(os.path.join(unique_folder, "content"), url)
+    if shot:
+        return [shot]
+    logger.warning(f"⚠️ Screenshot falhou para {url}")
+    return []
 
 
 async def _acquire_chat_lock(status_msg: Any, chat_id: int, suffix: str) -> asyncio.Lock:
@@ -278,7 +347,6 @@ async def _register_retry_and_prompt(
     url: str,
     user_id: Optional[int],
     target_lang: Optional[str],
-    status_or_error: str,
     suffix: str,
 ) -> None:
     retry_id = f"retry_{message_id}_{idx}"
@@ -289,7 +357,8 @@ async def _register_retry_and_prompt(
     markup = InlineKeyboardMarkup(
         [[InlineKeyboardButton(msg("buttons.retry"), callback_data=retry_id)]]
     )
-    await _safe_edit(status_msg, f"{status_or_error}{suffix}", parse_mode='HTML', reply_markup=markup)
+    text = f"{msg('downloader_status.generic_fail')}{suffix}"
+    await _safe_edit(status_msg, text, parse_mode='HTML', reply_markup=markup)
 
 
 async def _send_files_and_cleanup_status(
@@ -302,13 +371,19 @@ async def _send_files_and_cleanup_status(
     suffix: str,
     user_id: Optional[int],
     idx: int,
+    is_article: bool = False,
 ) -> None:
     caption_to_send = None
     if desc_text:
+        timeout = ASK_ARTICLE_TIMEOUT if is_article else ASK_CAPTION_TIMEOUT
+        default = ASK_ARTICLE_DEFAULT if is_article else ASK_CAPTION_DEFAULT
         if should_show_prompt("caption", chat_id, user_id or 0):
-            if await _ask_caption_inclusion(context, status_msg, message_id, suffix, user_id, idx):
+            if await _ask_caption_inclusion(
+                context, status_msg, message_id, suffix, user_id, idx,
+                timeout=timeout, default=default,
+            ):
                 caption_to_send = desc_text
-        elif ASK_CAPTION_DEFAULT == 'yes':
+        elif default == 'yes':
             caption_to_send = desc_text
 
     await _safe_edit(status_msg, msg("status.sending", count=len(files), suffix=suffix))
@@ -359,7 +434,7 @@ async def process_media_request(
         link_folder = os.path.join(unique_folder, "content")
 
         detect_lang = should_show_prompt("lang", chat_id, user_id or 0)
-        files, status_or_error, desc_text = await download_media(
+        files, status_or_error, desc_text, is_article = await download_media(
             url, link_folder, target_lang, detect_languages=detect_lang,
         )
 
@@ -383,22 +458,34 @@ async def process_media_request(
                 user_id=user_id, is_retry=is_retry,
             )
 
+        if status_or_error:
+            outcome = "✅" if files else "❌"
+            logger.info(f"📊 {outcome} {status_or_error} | {safe_url(url)}")
+
         if not files:
-            if is_retry:
-                await _safe_edit(
-                    status_msg,
-                    msg("status.retry_failed", status=status_or_error, suffix=suffix),
-                    parse_mode='HTML',
-                )
+            shot_files = await _try_screenshot_offer(
+                context, status_msg, message_id, suffix, user_id, idx,
+                unique_folder, url, is_retry,
+            )
+            if shot_files:
+                files = shot_files
             else:
-                await _register_retry_and_prompt(
-                    context, status_msg, message_id, idx, url, user_id, target_lang,
-                    status_or_error, suffix,
-                )
-            return
+                if is_retry:
+                    await _safe_edit(
+                        status_msg,
+                        msg("status.retry_failed", suffix=suffix),
+                        parse_mode='HTML',
+                    )
+                else:
+                    await _register_retry_and_prompt(
+                        context, status_msg, message_id, idx, url, user_id, target_lang,
+                        suffix,
+                    )
+                return
 
         await _send_files_and_cleanup_status(
             context, chat_id, message_id, status_msg, files, desc_text, suffix, user_id, idx,
+            is_article=is_article,
         )
 
     except Exception:

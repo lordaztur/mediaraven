@@ -10,8 +10,9 @@ from typing import Optional
 import metrics
 import state
 from config import FIREFOX_PROFILE_PATH
-from messages import msg
 from utils import safe_url
+
+from messages import msg
 
 from ._caption import _build_caption
 from ._languages import (
@@ -36,7 +37,7 @@ from ._ytdlp import (
     _yt_dlp_extract,
 )
 
-from .fallback import scrape_fallback
+from .fallback import fetch_article_caption, scrape_fallback
 from .instagram import download_instagram_instagrapi
 from .instagram_embed import download_instagram_embed
 from .reddit_json import download_reddit_json
@@ -72,20 +73,22 @@ async def _run_platform_fallbacks(
     url: str,
     unique_folder: str,
     platform: Platform,
-) -> Optional[tuple[list[str], str, str]]:
+) -> Optional[tuple[list[str], str, str, bool]]:
     if platform.instagram:
         ig_files, ig_status, ig_cap = await download_instagram_instagrapi(url, unique_folder)
         if ig_files:
-            return ig_files, ig_status, ig_cap
+            ig_cap, ig_art = await _enrich_caption_if_weak(url, ig_cap)
+            return ig_files, ig_status, ig_cap, ig_art
 
     if platform.reddit:
         reddit_pw_files, reddit_pw_status, reddit_pw_cap = await download_reddit_playwright(url, unique_folder)
         if reddit_pw_files:
-            return reddit_pw_files, reddit_pw_status, reddit_pw_cap
+            reddit_pw_cap, reddit_pw_art = await _enrich_caption_if_weak(url, reddit_pw_cap)
+            return reddit_pw_files, reddit_pw_status, reddit_pw_cap, reddit_pw_art
 
-    scrape_files, scrape_status = await scrape_fallback(url, unique_folder)
+    scrape_files, scrape_status, scrape_caption, scrape_is_article = await scrape_fallback(url, unique_folder)
     if scrape_files:
-        return scrape_files, scrape_status, ""
+        return scrape_files, scrape_status, scrape_caption, scrape_is_article
 
     return None
 
@@ -97,17 +100,29 @@ def _platform_label(platform: Platform) -> str:
     return 'other'
 
 
+def _caption_is_weak(caption: str) -> bool:
+    if not caption or not caption.strip():
+        return True
+    link_prefix = msg("caption.link_prefix")
+    stripped = caption.strip()
+    return stripped.startswith(link_prefix) and stripped.count('<a ') <= 1
+
+
+async def _enrich_caption_if_weak(url: str, caption: str) -> tuple[str, bool]:
+    if not _caption_is_weak(caption):
+        return caption, False
+    article_caption, found = await fetch_article_caption(url)
+    if found:
+        return article_caption, True
+    return caption, False
+
+
 async def download_media(
     url: str,
     unique_folder: str,
     target_lang: Optional[str] = None,
     detect_languages: bool = True,
-) -> tuple[list, str, str]:
-    """Para MULTILANG, `files` no retorno é list[tuple[code, label]].
-
-    Se `detect_languages=False`, a detecção de múltiplas trilhas de áudio do
-    YouTube é pulada e o yt-dlp baixa direto com a seleção de formato padrão.
-    """
+) -> tuple[list, str, str, bool]:
     started = time.monotonic()
     platform_label = 'other'
     try:
@@ -126,31 +141,35 @@ async def download_media(
             logger.info("🧵 Link do Threads detectado, redirecionando direto para Playwright.")
             files, status_info = await download_threads(url, unique_folder)
             if files:
+                caption, is_article = await _enrich_caption_if_weak(url, "")
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return files, status_info, ""
+                return files, status_info, caption, is_article
             metrics.record_failure(platform_label, time.monotonic() - started)
-            return [], msg("downloader_status.threads_fail"), ""
+            return [], msg("downloader_status.threads_fail"), "", False
 
         if platform.x:
             logger.info("🐦 Link do X detectado, redirecionando direto para handler dedicado.")
             files, status_info, x_caption = await download_x(url, unique_folder)
             if files:
+                x_caption, x_is_article = await _enrich_caption_if_weak(url, x_caption)
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return files, status_info, x_caption
+                return files, status_info, x_caption, x_is_article
             metrics.record_failure(platform_label, time.monotonic() - started)
-            return [], msg("downloader_status.x_fail"), ""
+            return [], msg("downloader_status.x_fail"), "", False
 
         if platform.instagram:
             embed_files, embed_status, embed_cap = await download_instagram_embed(url, unique_folder)
             if embed_files:
+                embed_cap, embed_art = await _enrich_caption_if_weak(url, embed_cap)
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return embed_files, embed_status, embed_cap
+                return embed_files, embed_status, embed_cap, embed_art
 
         if platform.reddit:
             rj_files, rj_status, rj_cap = await download_reddit_json(url, unique_folder)
             if rj_files:
+                rj_cap, rj_art = await _enrich_caption_if_weak(url, rj_cap)
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return rj_files, rj_status, rj_cap
+                return rj_files, rj_status, rj_cap, rj_art
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
@@ -165,17 +184,18 @@ async def download_media(
             lang_buttons = await _detect_youtube_languages(base_opts, url, has_firefox_cookie)
             if lang_buttons:
                 metrics.record_multilang(platform_label)
-                return lang_buttons, "MULTILANG", ""
+                return lang_buttons, "MULTILANG", "", False
 
         downloaded_files, info_dict = await _run_ytdlp_with_cookie_fallback(
             base_opts, url, unique_folder, has_firefox_cookie, target_lang
         )
 
-        caption, text_content = _build_caption(info_dict, url)
+        caption, _ = _build_caption(info_dict, url)
 
         if downloaded_files:
+            caption, yt_is_article = await _enrich_caption_if_weak(url, caption)
             metrics.record_success(platform_label, time.monotonic() - started)
-            return downloaded_files, msg("downloader_status.ytdlp_success"), caption
+            return downloaded_files, msg("downloader_status.ytdlp_success"), caption, yt_is_article
 
         logger.warning(f"⚠️ Falha no yt-dlp para {safe_url(url)}. Iniciando Fallbacks.")
         _wipe_folder(unique_folder)
@@ -185,13 +205,8 @@ async def download_media(
             metrics.record_success(platform_label, time.monotonic() - started)
             return fallback_result
 
-        if info_dict.get('title') or info_dict.get('description'):
-            logger.info("📄 Só texto encontrado, enviando...")
-            metrics.record_failure(platform_label, time.monotonic() - started)
-            return [], text_content, ""
-
         metrics.record_failure(platform_label, time.monotonic() - started)
-        return [], msg("downloader_status.generic_fail"), ""
+        return [], msg("downloader_status.generic_fail"), "", False
     except Exception:
         metrics.record_failure(platform_label, time.monotonic() - started)
         raise
