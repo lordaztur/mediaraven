@@ -10,7 +10,7 @@ theme:
   name: material
   language: pt
   logo: assets/logo.svg
-  favicon: assets/favicon.png
+  favicon: assets/logo.svg
   font:
     text: Inter
     code: JetBrains Mono
@@ -19,13 +19,13 @@ theme:
       toggle: { icon: material/brightness-auto, name: Sistema }
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: indigo
+      primary: teal
+      accent: teal
       toggle: { icon: material/brightness-7, name: Modo escuro }
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: indigo
+      primary: teal
+      accent: teal
       toggle: { icon: material/brightness-4, name: Modo claro }
   features:
     - navigation.tabs
