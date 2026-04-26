@@ -1,0 +1,223 @@
+{
+  "cookies": {
+    "banco_de_cookies": "⚠️ Firefox cookies database not found at: {db_path}",
+    "erro_ao_ler": "❌ Error reading Firefox cookies: {e}"
+  },
+  "_languages": {
+    "buscando_trilhas_de": "🔍 Looking for language tracks ({mode}) for: {arg0}",
+    "falha_na_extra_o": "⚠️ Language extraction failed ({mode}): {e}",
+    "o_yt_dlp": "⚠️ yt-dlp returned no format list during the language check.",
+    "m_ltiplos_idiomas_detectados": "🌍 Multiple languages detected: {buttons}",
+    "erro_cr_tico_ao": "⚠️ Critical error checking languages: {e}"
+  },
+  "_platform": {
+    "resolvendo_link_encurtado": "🔄 Resolving short link: {arg0}",
+    "link_resolvido_x": "✅ Link resolved: {arg0}",
+    "falha_ao_resolver": "⚠️ Failed to resolve Reddit redirect: {e}",
+    "resolvendo_share_url": "🔄 Resolving Facebook share URL: {arg0}",
+    "link_resolvido_x_2": "✅ Link resolved: {arg0}",
+    "falha_ao_resolver_2": "⚠️ Failed to resolve Facebook redirect: {e}",
+    "convertendo_short_para": "🔄 Converting Short to standard URL: {arg0}",
+    "falha_ao_converter": "Failed to convert Shorts: {e}"
+  },
+  "_scrape_helpers": {
+    "trafilatura_n_o_instalado": "trafilatura not installed, skipping article extraction.",
+    "trafilatura_extract_falhou": "trafilatura.extract failed: {e}"
+  },
+  "_ytdlp": {
+    "falha_ao_remover": "Failed to remove {full_path}: {e}",
+    "usando_cookies_globais": "🍪 Using global Firefox profile cookies...",
+    "download_bem_sucedido": "✅ Download succeeded on attempt: {mode}",
+    "yt_dlp_falhou": "⚠️ yt-dlp failed to download files on attempt '{mode}'",
+    "yt_dlp_exce_o": "⚠️ yt-dlp exception on attempt '{mode}': {e}",
+    "stack_trace_last_exc": "Stack trace of the last yt-dlp exception:"
+  },
+  "dispatcher": {
+    "link_do_threads": "🧵 Threads link detected, routing directly to Playwright.",
+    "link_do_x": "🐦 X link detected, routing directly to dedicated handler.",
+    "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
+    "deno_js_engine": "🦕 Deno JS Engine activated for YouTube bypass: {arg0}",
+    "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks."
+  },
+  "fallback": {
+    "curl_cffi_falhou": "curl_cffi failed for {arg0}: {e}",
+    "fast_path_http": "Fast-path HTTP {arg0} for {arg1}",
+    "tentando_archive_ph": "📚 Trying archive.ph for: {arg0}",
+    "paywall_detectado_em": "🔒 Paywall detected at {arg0} — trying Googlebot UA.",
+    "googlebot_ua_passou": "✅ Googlebot UA bypassed paywall at {arg0}",
+    "archive_ph_retornou": "✅ archive.ph returned content for {arg0}",
+    "paywall_n_o_vencido": "❌ Paywall not bypassed for {arg0}",
+    "handle_response_x": "handle_response: {e}",
+    "scroll_falhou_x": "scroll failed: {e}",
+    "page_content_falhou": "page.content failed: {e}",
+    "erro_scraper_playwright": "❌ Playwright Scraper error: {e}",
+    "async_download_falhou": "⚠️ async_download failed: {e}",
+    "download_task_exception": "Download task exception: {r}",
+    "yt_dlp_generic": "yt-dlp generic exception: {e}",
+    "yt_dlp_generic_2": "yt-dlp generic executor failed: {e}",
+    "gallery_dl_extractor": "gallery-dl extractor.find failed: {e}",
+    "gallery_dl_config": "gallery-dl config.load failed: {e}",
+    "gallery_dl_job": "gallery-dl job exception: {e}",
+    "gallery_dl_executor": "gallery-dl executor failed: {e}",
+    "tentando_yt_dlp": "🪟 Trying yt-dlp generic on iframe: {arg0}",
+    "falha_screenshot_x": "⚠️ Screenshot failed: {e}",
+    "iniciando_scraping_multi": "🕸️ Starting Multi-Tier Scraping for: {arg0}",
+    "tentando_yt_dlp_2": "🧩 Trying yt-dlp in generic mode...",
+    "tentando_gallery_dl": "🖼️ Trying gallery-dl...",
+    "prepare_stats": "🧹 _prepare_for_download: {n_in} entry(ies) → {n_out} (junk={junked}, dedupe={deduped})",
+    "gallery_dl_timeout": "⚠️ gallery-dl timeout ({timeout}s) for {url}",
+    "facebook_image_only_dropped": "⚠️ Scraper found {n} media items for Facebook, but none are video — likely UI junk. Discarding.",
+    "article_detected": "📰 Article detected ({body_len} chars body, {caption_len} chars caption) at {url}",
+    "combined_stats": "🔎 Combined: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (after dedupe), {n_iframes} embed iframe(s)."
+  },
+  "instagram": {
+    "iniciando_instagrapi_para": "📸 Starting Instagrapi for: {arg0}",
+    "cliente_instagrapi_n_o": "❌ Instagrapi client is not logged in.",
+    "buscando_udio_e": "🕵️ Looking for audio and metadata...",
+    "erro_ao_buscar": "⚠️ Error fetching raw JSON: {e}",
+    "instagrapi_falhou_x": "❌ Instagrapi failed: {e}",
+    "fila_do_instagrapi": "📮 Instagrapi queue has {queue_size} jobs waiting (threshold={IG_QUEUE_WARN_THRESHOLD}).",
+    "baixando_udio_puro": "🎵 Downloading raw audio...",
+    "erro_ao_baixar": "⚠️ Error downloading audio: {e}",
+    "transformando_foto_em": "🎬 Turning photo into video with the music...",
+    "falha_ao_remover": "Failed to remove image after merge ({img_path}): {e}",
+    "falha_ao_remover_2": "Failed to remove temporary audio ({audio_path}): {e}"
+  },
+  "instagram_embed": {
+    "contextjson_parse_falhou": "contextJSON parse failed: {e}",
+    "curl_cffi_falhou": "⚠️ curl_cffi failed for IG embed: {e}",
+    "ig_embed_http": "IG embed HTTP {arg0}",
+    "tentando_ig_embed": "📸 Trying IG embed (guest) for: {arg0}",
+    "n_o_consegui_extrair": "Couldn't extract shortcode from URL: {arg0}",
+    "ig_embed_sem": "IG embed without shortcode_media for {shortcode}",
+    "ig_embed_post": "📸 IG embed: post {shortcode} is photo+music — delegating to Instagrapi (needs ffmpeg merge)",
+    "ig_embed_sem_2": "IG embed with no extractable media for {shortcode}",
+    "erro_ao_baixar": "⚠️ Error downloading IG embed media: {e}",
+    "downloads_all_failed": "📸 IG embed: {n} URLs found but downloads failed for {shortcode}"
+  },
+  "reddit_json": {
+    "iniciando_extra_o_via": "👽 Starting JSON extraction for Reddit: {arg0}",
+    "usando_x_cookies": "🍪 Using {arg0} Firefox cookies for the Scraper/API.",
+    "post_v_deo": "👽 Post is video — delegating to yt-dlp (which handles DASH merge).",
+    "erro_ao_ler": "⚠️ Error reading Reddit JSON (aiohttp): {e}",
+    "erro_ao_processar": "⚠️ Error processing Reddit image: {e}"
+  },
+  "reddit_playwright": {
+    "iniciando_extra_o_via": "👽 Starting Playwright extraction for Reddit: {arg0}",
+    "for_ando_old_reddit": "👽 Forcing old.reddit.com: {arg0}",
+    "bot_o_nsfw_n_o": "NSFW button not found/clickable: {e}",
+    "falha_ao_clicar": "Failed to click unblur #{i}: {e}",
+    "falha_ao_clicar_2": "Failed to click shadow unblur #{i}: {e}",
+    "erro_ao_tentar": "⚠️ Error trying to remove Reddit blur: {e}",
+    "post_principal_detectado": "👽 Main post detected. Looking for media in the Shadow Tree...",
+    "meta_og_title": "Meta og:title not found: {e}",
+    "erro_no_playwright": "⚠️ Playwright error loading the page: {e}",
+    "erro_ao_baixar": "⚠️ Error downloading Reddit image: {e}"
+  },
+  "threads": {
+    "playwright_erro_carregando": "⚠️ Playwright error loading {arg0}: {e}",
+    "iniciando_extra_o_via": "🧵 Starting JSON SSR extraction for Threads: {arg0}",
+    "n_o_consegui_extrair": "⚠️ Couldn't extract post code from URL: {arg0}",
+    "post_x_n_o": "⚠️ Post {code} not found in HTML JSON scripts",
+    "post_x_sem": "📝 Post {code} without media — sending text only.",
+    "erro_ao_baixar": "⚠️ Error downloading Threads media: {e}",
+    "no_media_found": "⚠️ No media found in post {code} (media_type={media_type})"
+  },
+  "x": {
+    "display_text_range": "display_text_range slice failed: {e}",
+    "curl_cffi_falhou": "⚠️ curl_cffi failed for X (guest): {e}",
+    "x_guest_http": "X guest HTTP {arg0} for {arg1}",
+    "x_graphql_parse": "X graphql parse failed: {e}",
+    "playwright_erro_carregando": "⚠️ Playwright error loading {arg0}: {e}",
+    "iniciando_extra_o_para": "🐦 Starting extraction for X: {arg0}",
+    "n_o_consegui_extrair": "⚠️ Couldn't extract tweet ID: {arg0}",
+    "tweet_x_guest": "🔒 Tweet {tweet_id}: guest empty, trying authenticated Playwright",
+    "tweet_x_sem": "📝 Tweet {tweet_id} without media — sending text only.",
+    "nenhuma_m_dia_encontrada": "⚠️ No media found in tweet {tweet_id}",
+    "erro_ao_baixar": "⚠️ Error downloading X media: {e}",
+    "downloads_all_failed": "⚠️ Tweet {tweet_id}: {n} URLs found but downloads failed"
+  },
+  "handlers": {
+    "falha_no_prompt": "Screenshot prompt failed: {e}",
+    "screenshot_falhou_para": "⚠️ Screenshot failed for {url}",
+    "falha_ao_atualizar": "Failed to update 'queue_busy' status: {e}",
+    "falha_silenciosa_em": "Silent failure in edit_text: {e}",
+    "falha_silenciosa_em_2": "Silent failure in delete: {e}",
+    "x_x_x": "📊 {outcome} {status_or_error} | {arg0}",
+    "falha_ao_setar": "Failed to set reaction: {e}",
+    "urls_exceed_limit": "Message with {n} URLs exceeds the limit; processing only the first {max}.",
+    "allowed_user_outside_whitelist": "👤 Allowed user {user_id} used the bot in chat {chat_id} (outside whitelist) — {n} URL(s)."
+  },
+  "instagram_login": {
+    "falha_ao_aplicar": "Failed to apply chmod 0600 on {path}: {e}",
+    "credenciais_do_instagram": "⚠️ Instagram credentials not configured (.env). Instagrapi will not work.",
+    "carregando_sess_o_salva": "🍪 Loading saved Instagrapi session...",
+    "autenticando_instagrapi": "🔐 Authenticating Instagrapi...",
+    "instagrapi_logado_e": "✅ Instagrapi logged in and ready to use!",
+    "erro_ao_inicializar": "❌ Error initializing Instagrapi: {e}",
+    "login_do_instagram": "⌛ Instagram login exceeded {timeout}s. Continuing without Instagrapi (login keeps running in background).",
+    "falha_inesperada_no": "❌ Unexpected failure in init_instagrapi_async: {e}"
+  },
+  "metrics_log": {
+    "falha_ao_logar": "Failed to log metrics: {e}"
+  },
+  "playwright_refresh": {
+    "falha_ao_ler": "Failed to read RSS via psutil: {e}",
+    "iniciando_limpeza_de": "♻️ Starting memory cleanup ({reason}): Recreating Playwright context...",
+    "x_cookies_do": "✅ {arg0} Firefox cookies loaded into Playwright!",
+    "erro_ao_injetar": "⚠️ Error injecting cookies into Playwright: {e}",
+    "contexto_playwright_recriado": "✅ Playwright context recreated and RAM freed!",
+    "erro_ao_recriar": "❌ Error recreating Playwright context: {e}"
+  },
+  "services": {
+    "sess_o_aiohttp_global": "🌐 Global aiohttp session started (default timeout {AIOHTTP_TOTAL_TIMEOUT}s).",
+    "iniciando_playwright_navegador": "🌐 Starting Playwright (Global Browser)...",
+    "x_cookies_do": "✅ {arg0} Firefox cookies loaded into Playwright!",
+    "erro_ao_injetar": "⚠️ Error injecting cookies into Playwright: {e}",
+    "contexto_playwright_pronto": "✅ Playwright context ready with cookies loaded!",
+    "todos_os_servi_os": "✅ All global services ready!",
+    "tarefa_de_limpeza": "🧹 Memory cleanup task scheduled.",
+    "login_do_instagrapi": "📸 Instagrapi login started in background.",
+    "log_peri_dico_de": "📊 Periodic metrics logging scheduled.",
+    "desligando_servi_os_globais": "🛑 Shutting down global services...",
+    "aguardando_x_download": "⏳ Waiting for {arg0} download(s) in progress (up to {SHUTDOWN_TASKS_TIMEOUT}s)...",
+    "downloads_pendentes_finalizados": "✅ Pending downloads finished.",
+    "x_task_s": "⚠️ {arg0} task(s) didn't finish in time; cancelling.",
+    "falha_ao_desligar": "Failed to shut down {pool_name}: {e}",
+    "shutdown_completo": "✅ Shutdown complete."
+  },
+  "startup": {
+    "deno_encontrado_em": "🦕 Deno found at: {arg0} (Ready for YouTube bypass)",
+    "ffmpeg_encontrado_em": "🎬 ffmpeg found at: {arg0}",
+    "limpeza_inicial_pastas": "🧹 Initial cleanup: Residual temporary folders removed.",
+    "erro_na_limpeza": "⚠️ Error during initial cleanup: {e}",
+    "ffmpeg_not_found": "⚠️ ffmpeg not found in PATH. Instagram posts with audio+image won't work. Linux: apt install ffmpeg | Windows: choco install ffmpeg"
+  },
+  "telegram_io": {
+    "flood_control_telegram": "⏳ Flood control! Telegram asked us to wait {arg0}s. Pausing...",
+    "timeout_no_envio": "⏳ Timeout while sending. Retrying...",
+    "erro_fatal_ao": "❌ Fatal error sending single media: {e}",
+    "flood_control_de": "⏳ Group flood control! Waiting {arg0}s before resending the 10 files...",
+    "timeout_no_envio_2": "⏳ Timeout sending media_group. Retrying in 5s...",
+    "erro_desconhecido_ao": "⚠️ Unknown error sending media_group: {e}"
+  },
+  "utils": {
+    "normalize_image_falhou": "normalize_image failed for {filepath}: {e}",
+    "falha_final_ao": "⚠️ Final failure cleaning folder '{folder}': {e}",
+    "skip_content_type": "⏭️ Skip (Content-Type {ct}): {url}",
+    "download_produziu_arquivo": "Download produced empty file: {filepath}",
+    "skip_http_x": "⏭️ Skip (HTTP {arg0}): {url}",
+    "erro_no_aiohttp": "⚠️ Error in aiohttp download ({url}): {e}",
+    "erro_pw_request": "⚠️ PW request error: {e}",
+    "skip_pw_http": "⏭️ Skip PW (HTTP {arg0}): {url}",
+    "skip_pw_corpo": "⏭️ Skip PW (empty body): {url}",
+    "erro_escrevendo_pw": "⚠️ Error writing PW download: {e}",
+    "ffmpeg_remux_falhou": "⚠️ ffmpeg remux failed: {arg0}",
+    "ffmpeg_remux_timeout": "⚠️ ffmpeg remux timeout ({timeout}s) for {input_url}",
+    "erro_fatal_no": "⚠️ Fatal error in ffmpeg remux: {e}",
+    "erro_ffmpeg_x": "⚠️ FFmpeg error: {err_msg}",
+    "ffmpeg_travou_e": "⚠️ FFmpeg froze and was interrupted (60s timeout).",
+    "erro_fatal_no_2": "⚠️ Fatal error in FFmpeg Merge: {e}",
+    "skip_image_too_small": "⏭️ Skip (image {width}x{height} < min_size {min_size}): {filepath}"
+  }
+}

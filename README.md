@@ -10,6 +10,8 @@
 [![Playwright](https://img.shields.io/badge/playwright-1.58-2EAD33?style=flat&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
 
+🇺🇸 [English](README.en.md)
+
 </div>
 
 ---

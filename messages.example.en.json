@@ -1,0 +1,104 @@
+{
+  "startup": {
+    "token_missing": "❌ Error: Token not configured.",
+    "connecting": "🔌 MediaRaven v{version} — Connecting to Local Server at: {api_url}",
+    "ready": "🤖 Bot started..."
+  },
+
+  "buttons": {
+    "download_yes": "✅ Download",
+    "download_no": "❌ Ignore",
+    "caption_yes": "✅ Yes",
+    "caption_no": "❌ No",
+    "screenshot_yes": "👍 Yes",
+    "screenshot_no": "👎 No",
+    "retry": "🔄 Try again"
+  },
+
+  "prompts": {
+    "link_detected": "🔗 <b>Link detected</b>\n\nYou have 5 seconds to choose or I'll start the download.{suffix}",
+    "language_detected": "🌍 <b>Multiple languages detected!</b>\n\nYou have 10s to choose or I'll download the original.{suffix}",
+    "caption_found": "📝 <b>Description found!</b>\nDo you want to include it as caption?\n\nYou have 5s to choose or I'll send without caption.{suffix}",
+    "screenshot_offer": "🖼️ Couldn't extract any media from this link. Send a screenshot of the page instead?\n\nIf you don't reply in 5 seconds, I'll send the screenshot.{suffix}"
+  },
+
+  "callback_alerts": {
+    "dl_expired": "⚠️ This option has expired.",
+    "dl_wrong_user": "🚫 Only the user who sent the link can choose!",
+    "lang_expired": "⚠️ This option expired or the bot already chose on its own.",
+    "lang_wrong_user": "🚫 Only the user who sent the link can choose the language!",
+    "caption_expired": "⚠️ This option expired or was already answered.",
+    "caption_wrong_user": "🚫 Only the user who sent the link can choose the caption!",
+    "screenshot_expired": "⚠️ This option expired or was already answered.",
+    "screenshot_wrong_user": "🚫 Only the user who sent the link can choose!",
+    "retry_expired": "⚠️ This link has expired.",
+    "retry_wrong_user": "🚫 Only the user who sent the link can retry!"
+  },
+
+  "status": {
+    "download_ignored": "❌ Download ignored by user.{suffix}",
+    "queue_busy": "⏳ Queue busy. Please wait...{suffix}",
+    "downloading": "📥 Downloading media...{suffix}",
+    "screenshot_taking": "📸 Capturing screenshot of the page...{suffix}",
+    "sending": "📤 Sending {count} files...{suffix}",
+    "retry_failed": "❌ Retry failed.{suffix}",
+    "internal_error": "❌ Internal error sending the files.{suffix}"
+  },
+
+  "status_cycle": [
+    "📥 Downloading media...{suffix}",
+    "📥 Processing content...{suffix}",
+    "📥 Finalizing download...{suffix}",
+    "📥 Almost there...{suffix}",
+    "📥 Just a moment longer...{suffix}"
+  ],
+
+  "downloader_status": {
+    "ytdlp_success": "✅ yt-dlp",
+    "threads_fail": "⚠️ Failed to process this Threads link.",
+    "generic_fail": "❌ Couldn't download the media.",
+    "instagram_embed": "📸 IG Embed ({media_type})",
+    "instagram_embed_fail": "⚠️ Failed to extract via Instagram embed.",
+    "instagrapi": "📸 Instagrapi ({media_type})",
+    "instagrapi_fail": "⚠️ Failed to download from Instagram.",
+    "reddit_json": "👽 Native API (Images)",
+    "reddit_json_fail": "⚠️ Failed to extract Reddit images.",
+    "reddit_playwright": "👽 Playwright (Images)",
+    "reddit_playwright_fail": "⚠️ Failed to extract Reddit images.",
+    "threads_playwright": "🧵 Playwright Threads ({media_type})",
+    "threads_text_only": "🧵 Threads (Text)",
+    "threads_playwright_fail": "⚠️ Failed to extract Threads media.",
+    "x": "🐦 X ({media_type}) [{count} files]",
+    "x_text_only": "🐦 X (Text)",
+    "x_fail": "⚠️ Failed to extract X media.",
+    "scraper": "🕸️ Scraper Deep Search ({media_type}) [{count} files]",
+    "scraper_fail": "⚠️ No media found on the page.",
+    "scraper_paywall": "🔒 Content blocked (paywall or login).",
+    "scraper_fast_path": "⚡ Scraper Fast Path ({media_type}) [{count} files]",
+    "scraper_generic_ytdlp": "🧩 yt-dlp Generic ({media_type}) [{count} files]",
+    "scraper_gallerydl": "🖼️ gallery-dl ({media_type}) [{count} files]",
+    "playwright_not_running": "⚠️ System unavailable right now, please try again in a moment."
+  },
+
+  "media_type_labels": {
+    "ig_video_music": "Video with Music",
+    "ig_video": "Video",
+    "ig_album": "Image/Album",
+    "threads_video": "Video",
+    "threads_album": "Image/Carousel",
+    "x_video": "Video",
+    "x_album": "Image/Carousel",
+    "scraper_video_mixed": "Video/Mixed",
+    "scraper_images": "Images",
+    "scraper_video": "Video"
+  },
+
+  "caption": {
+    "link_original_label": "Original Link",
+    "title_prefix": "📄 ",
+    "link_prefix": "🔗 ",
+    "original_lang_label": "ORIGINAL"
+  },
+
+  "reactions": ["🔥", "⚡", "👀", "🗿", "👨‍💻"]
+}
