@@ -18,9 +18,10 @@
 
 Cole um link, recebe a mídia. Suporta **YouTube** (com seleção de idioma quando há dublagem), **Instagram**, **Reddit** (incluindo NSFW), **Threads**, **X/Twitter**, **Facebook** e **qualquer outro site** via scraper genérico (HTTP + Playwright em paralelo, com yt-dlp generic e gallery-dl como fallbacks).
 
-- Envia arquivos até **2 GB** (Bot API local)
+- Envia arquivos até **2 GB** via Bot API local (**4 GB** se a conta dona do bot for Telegram Premium)
 - Reaproveita cookies do **Firefox** pra burlar bloqueios
 - **Bypass de paywall soft** (Googlebot UA + archive.ph) e extração do corpo do artigo como caption
+- **Posts só de texto** (Threads, X) viram mensagem de texto formatada com `📄 @user` + corpo + link
 - Mensagens user-facing 100% customizáveis via `messages.json`
 - Whitelist por chat e por usuário
 - 80+ envs de tuning (timeouts, concorrência, qualidade, etc.)
@@ -103,7 +104,7 @@ python mediaraven.py
 
 ## ⚙️ Customização
 
-**Mensagens:** copie `messages.example.json` pra `messages.json` e edite. Recarrega no restart.
+**Mensagens:** copie `messages.example.json` pra `messages.json` (interface do bot) ou `log_messages.example.json` pra `log_messages.json` (logs internos) e edite. Recarrega no restart. Keys faltando viram `<<missing log key: X>>` (não crasha).
 
 **Envs:** `.env_example` documenta cada uma com defaults sensatos. Destaques:
 
@@ -162,11 +163,13 @@ pytest
 
 ```
 mediaraven.py            ponto de entrada
-config.py                .env + 80+ envs
+version.py               __version__
+config.py                .env + 80+ envs + setup_logging
 handlers.py              orquestração Telegram
 telegram_io.py           upload de mídias
 utils.py                 download/ffmpeg/imagens
 messages.json            strings user-facing
+log_messages.json        strings de log (~180 chaves)
 downloaders/
   dispatcher.py          orquestrador
   _platform.py _ytdlp.py _languages.py _caption.py
@@ -187,7 +190,7 @@ lifecycle/               init, shutdown, refresh, métricas
 
 - **`BASE_DOWNLOAD_DIR deve ser absoluto`** → use caminho com `/` ou `C:/`.
 - **Bot não responde em grupo** → desligue Group Privacy no BotFather.
-- **`ffmpeg não encontrado`** → instale; sem ele, IG com áudio não funciona.
+- **`ffmpeg não encontrado`** → instale; sem ele, posts do IG com música avulsa não funcionam.
 - **`Invalid file http url specified`** → Bot API local não tá acessível; confira o Docker e `LOCAL_API_HOST`.
 - **Instagram pede login/challenge** → use conta descartável; delete `ig_session.json` e reinicie se travar.
 
