@@ -12,7 +12,7 @@ import state
 from config import FIREFOX_PROFILE_PATH
 from utils import safe_url
 
-from messages import msg
+from messages import lmsg, msg
 
 from ._caption import _build_caption
 from ._languages import (
@@ -150,7 +150,7 @@ async def download_media(
             url = _normalize_youtube_url(url)
 
         if platform.threads:
-            logger.info("🧵 Link do Threads detectado, redirecionando direto para Playwright.")
+            logger.info(lmsg("dispatcher.link_do_threads"))
             files, status_info, threads_cap = await download_threads(url, unique_folder)
             if files:
                 return await _finalize_success(files, status_info, threads_cap, url, platform_label, started)
@@ -161,7 +161,7 @@ async def download_media(
             return [], msg("downloader_status.threads_fail"), "", False
 
         if platform.x:
-            logger.info("🐦 Link do X detectado, redirecionando direto para handler dedicado.")
+            logger.info(lmsg("dispatcher.link_do_x"))
             files, status_info, x_caption = await download_x(url, unique_folder)
             if files:
                 return await _finalize_success(files, status_info, x_caption, url, platform_label, started)
@@ -183,9 +183,9 @@ async def download_media(
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
-            logger.warning("⚠️ Atenção: Deno não encontrado! Downloads do YouTube podem falhar por JS Challenges.")
+            logger.warning(lmsg("dispatcher.aten_o_deno_n_o"))
         elif platform.youtube and state.DENO_PATH:
-            logger.info(f"🦕 Deno JS Engine ativado para bypass do YouTube: {state.DENO_PATH}")
+            logger.info(lmsg("dispatcher.deno_js_engine", arg0=state.DENO_PATH))
 
         base_opts = _build_ytdlp_base_opts(unique_folder)
         _apply_format_selection(base_opts, platform, target_lang)
@@ -208,7 +208,7 @@ async def download_media(
                 caption, url, platform_label, started,
             )
 
-        logger.warning(f"⚠️ Falha no yt-dlp para {safe_url(url)}. Iniciando Fallbacks.")
+        logger.warning(lmsg("dispatcher.falha_no_yt", arg0=safe_url(url)))
         _wipe_folder(unique_folder)
 
         fallback_result = await _run_platform_fallbacks(url, unique_folder, platform)

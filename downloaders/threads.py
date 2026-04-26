@@ -6,7 +6,7 @@ from typing import Optional
 
 import state
 from config import PW_GOTO_TIMEOUT_MS, THREADS_MIN_IMAGE_SIZE
-from messages import msg
+from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
 from ._caption import _build_caption
@@ -124,14 +124,14 @@ async def _fetch_html(url: str) -> Optional[str]:
             await page.wait_for_timeout(2000)
             return await page.content()
         except Exception as e:
-            logger.warning(f"⚠️ Playwright erro carregando {safe_url(url)}: {e}")
+            logger.warning(lmsg("threads.playwright_erro_carregando", arg0=safe_url(url), e=e))
             return None
         finally:
             await page.close()
 
 
 async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str, str]:
-    logger.info(f"🧵 Iniciando extração via JSON SSR para Threads: {safe_url(url)}")
+    logger.info(lmsg("threads.iniciando_extra_o_via", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -141,7 +141,7 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
 
     code = _extract_post_code(url)
     if not code:
-        logger.warning(f"⚠️ Não consegui extrair código do post da URL: {safe_url(url)}")
+        logger.warning(lmsg("threads.n_o_consegui_extrair", arg0=safe_url(url)))
         return [], msg("downloader_status.threads_playwright_fail"), ""
 
     html = await _fetch_html(url)
@@ -150,18 +150,19 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
 
     post = _parse_post_from_html(html, code)
     if post is None:
-        logger.warning(f"⚠️ Post {code} não encontrado em scripts JSON do HTML")
+        logger.warning(lmsg("threads.post_x_n_o", code=code))
         return [], msg("downloader_status.threads_playwright_fail"), ""
 
     caption = _build_threads_caption(post, url)
     media_items = _extract_media(post)
     if not media_items:
         if caption:
-            logger.info(f"📝 Post {code} sem mídia — entregando texto.")
+            logger.info(lmsg("threads.post_x_sem", code=code))
             return [], msg("downloader_status.threads_text_only"), caption
-        logger.warning(
-            f"⚠️ Nenhuma mídia encontrada no post {code} (media_type={post.get('media_type')})"
-        )
+        logger.warning(lmsg(
+            "threads.no_media_found",
+            code=code, media_type=post.get('media_type'),
+        ))
         return [], msg("downloader_status.threads_playwright_fail"), ""
 
     downloaded_files: list[str] = []
@@ -171,7 +172,7 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
         try:
             success = await async_download_file(m_url, filepath)
         except Exception as e:
-            logger.error(f"⚠️ Erro ao baixar mídia do Threads: {e}")
+            logger.error(lmsg("threads.erro_ao_baixar", e=e))
             continue
         if not success:
             continue

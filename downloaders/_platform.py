@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import state
 from config import AIOHTTP_UA_DEFAULT
 from utils import safe_url
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -57,15 +58,15 @@ async def _resolve_short_reddit_url(url: str) -> str:
     if not _detect_platform(url).reddit or "/s/" not in url:
         return url
     try:
-        logger.info(f"🔄 Resolvendo link encurtado: {safe_url(url)}")
+        logger.info(lmsg("_platform.resolvendo_link_encurtado", arg0=safe_url(url)))
         headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
         async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
             new_url = str(resp.url)
         if new_url != url:
-            logger.info(f"✅ Link resolvido: {safe_url(new_url)}")
+            logger.info(lmsg("_platform.link_resolvido_x", arg0=safe_url(new_url)))
         return new_url
     except Exception as e:
-        logger.warning(f"⚠️ Falha ao resolver redirect Reddit: {e}")
+        logger.warning(lmsg("_platform.falha_ao_resolver", e=e))
         return url
 
 
@@ -79,15 +80,15 @@ async def _resolve_facebook_share_url(url: str) -> str:
     if '/share/' not in parsed.path:
         return url
     try:
-        logger.info(f"🔄 Resolvendo share URL do Facebook: {safe_url(url)}")
+        logger.info(lmsg("_platform.resolvendo_share_url", arg0=safe_url(url)))
         headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
         async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
             new_url = str(resp.url)
         if new_url != url:
-            logger.info(f"✅ Link resolvido: {safe_url(new_url)}")
+            logger.info(lmsg("_platform.link_resolvido_x_2", arg0=safe_url(new_url)))
         return new_url
     except Exception as e:
-        logger.warning(f"⚠️ Falha ao resolver redirect Facebook: {e}")
+        logger.warning(lmsg("_platform.falha_ao_resolver_2", e=e))
         return url
 
 
@@ -98,7 +99,7 @@ def _normalize_youtube_url(url: str) -> str:
         try:
             video_id = url.split("/shorts/")[1].split("?")[0]
             url = f"https://www.youtube.com/watch?v={video_id}"
-            logger.info(f"🔄 Convertendo Short para URL normal: {safe_url(url)}")
+            logger.info(lmsg("_platform.convertendo_short_para", arg0=safe_url(url)))
         except Exception as e:
-            logger.debug(f"Falha ao converter Shorts: {e}")
+            logger.debug(lmsg("_platform.falha_ao_converter", e=e))
     return url

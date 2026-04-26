@@ -29,7 +29,7 @@ from config import (
 from downloaders.dispatcher import download_media
 from downloaders.fallback import take_page_screenshot
 from lifecycle import get_chat_lock
-from messages import msg, msg_list
+from messages import lmsg, msg, msg_list
 from telegram_io import send_downloaded_media
 from utils import cycle_status_message, safe_cleanup, safe_url
 
@@ -268,7 +268,7 @@ async def _try_screenshot_offer(
     try:
         wants = await _ask_screenshot_offer(context, status_msg, message_id, suffix, user_id, idx)
     except Exception as e:
-        logger.debug(f"Falha no prompt de screenshot: {e}")
+        logger.debug(lmsg("handlers.falha_no_prompt", e=e))
         return []
     if not wants:
         return []
@@ -276,7 +276,7 @@ async def _try_screenshot_offer(
     shot = await take_page_screenshot(os.path.join(unique_folder, "content"), url)
     if shot:
         return [shot]
-    logger.warning(f"⚠️ Screenshot falhou para {url}")
+    logger.warning(lmsg("handlers.screenshot_falhou_para", url=url))
     return []
 
 
@@ -286,7 +286,7 @@ async def _acquire_chat_lock(status_msg: Any, chat_id: int, suffix: str) -> asyn
         try:
             await status_msg.edit_text(msg("status.queue_busy", suffix=suffix))
         except Exception as e:
-            logger.debug(f"Falha ao atualizar status 'queue_busy': {e}")
+            logger.debug(lmsg("handlers.falha_ao_atualizar", e=e))
     await lock.acquire()
     return lock
 
@@ -295,14 +295,14 @@ async def _safe_edit(status_msg: Any, text: str, **kwargs) -> None:
     try:
         await status_msg.edit_text(text, **kwargs)
     except Exception as e:
-        logger.debug(f"Falha silenciosa em edit_text: {e}")
+        logger.debug(lmsg("handlers.falha_silenciosa_em", e=e))
 
 
 async def _safe_delete(status_msg: Any) -> None:
     try:
         await status_msg.delete()
     except Exception as e:
-        logger.debug(f"Falha silenciosa em delete: {e}")
+        logger.debug(lmsg("handlers.falha_silenciosa_em_2", e=e))
 
 
 def _build_suffix(idx: int, total: int, target_lang: Optional[str]) -> str:
@@ -460,7 +460,7 @@ async def process_media_request(
 
         if status_or_error:
             outcome = "✅" if files else "❌"
-            logger.info(f"📊 {outcome} {status_or_error} | {safe_url(url)}")
+            logger.info(lmsg("handlers.x_x_x", outcome=outcome, status_or_error=status_or_error, arg0=safe_url(url)))
 
         if not files and desc_text:
             await context.bot.send_message(
@@ -542,9 +542,10 @@ def _extract_urls_from_update(update: Update) -> list[str]:
 
     deduped = list(dict.fromkeys(urls))
     if len(deduped) > MAX_URLS_PER_MESSAGE:
-        logger.warning(
-            f"Mensagem com {len(deduped)} URLs excede o limite; processando apenas as primeiras {MAX_URLS_PER_MESSAGE}."
-        )
+        logger.warning(lmsg(
+            "handlers.urls_exceed_limit",
+            n=len(deduped), max=MAX_URLS_PER_MESSAGE,
+        ))
         return deduped[:MAX_URLS_PER_MESSAGE]
     return deduped
 
@@ -563,16 +564,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     if is_allowed_user and not is_whitelisted_chat:
-        logger.info(
-            f"👤 Usuário permitido {user_id} usou o bot em chat {chat_id} (fora da whitelist) — {len(urls)} URL(s)."
-        )
+        logger.info(lmsg(
+            "handlers.allowed_user_outside_whitelist",
+            user_id=user_id, chat_id=chat_id, n=len(urls),
+        ))
 
     try:
         reactions = msg_list("reactions")
         if reactions:
             await update.message.set_reaction(reaction=random.choice(reactions))
     except Exception as e:
-        logger.debug(f"Falha ao setar reação: {e}")
+        logger.debug(lmsg("handlers.falha_ao_setar", e=e))
 
     total_urls = len(urls)
     for idx, url in enumerate(urls, start=1):

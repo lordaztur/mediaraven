@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import state
 from config import FIREFOX_PROFILE_PATH
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 def extract_firefox_cookies() -> list[dict]:
     db_path = os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite')
     if not os.path.exists(db_path):
-        logger.warning(f"⚠️ Banco de cookies do Firefox não encontrado em: {db_path}")
+        logger.warning(lmsg("cookies.banco_de_cookies", db_path=db_path))
         return []
 
     fd, temp_db = tempfile.mkstemp(suffix=".sqlite")
@@ -54,7 +55,7 @@ def extract_firefox_cookies() -> list[dict]:
             })
         conn.close()
     except Exception as e:
-        logger.error(f"❌ Erro ao ler cookies do Firefox: {e}")
+        logger.error(lmsg("cookies.erro_ao_ler", e=e), exc_info=True)
     finally:
         if os.path.exists(temp_db):
             os.remove(temp_db)

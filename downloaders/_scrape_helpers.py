@@ -9,6 +9,7 @@ import logging
 import re
 from typing import Iterable, Optional
 from urllib.parse import parse_qs, urljoin, urlparse, urlunparse
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -344,7 +345,7 @@ def extract_article(
     try:
         import trafilatura
     except ImportError:
-        logger.debug("trafilatura não instalado, pulando extração de artigo.")
+        logger.debug(lmsg("_scrape_helpers.trafilatura_n_o_instalado"))
         return None
     try:
         body = trafilatura.extract(
@@ -356,7 +357,7 @@ def extract_article(
             favor_precision=True,
         )
     except Exception as e:
-        logger.debug(f"trafilatura.extract falhou: {e}")
+        logger.debug(lmsg("_scrape_helpers.trafilatura_extract_falhou", e=e))
         return None
     if not body or len(body.strip()) < min_chars:
         return None

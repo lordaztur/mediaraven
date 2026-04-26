@@ -9,7 +9,7 @@ from curl_cffi import requests as curl_requests
 
 import state
 from config import IG_CAPTION_MAX
-from messages import msg
+from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
 from ._caption import _build_caption
@@ -43,7 +43,7 @@ def _parse_context_json(html_text: str) -> Optional[dict]:
         decoded = json.loads('"' + raw + '"')
         return json.loads(decoded)
     except (json.JSONDecodeError, ValueError) as e:
-        logger.debug(f"contextJSON parse falhou: {e}")
+        logger.debug(lmsg("instagram_embed.contextjson_parse_falhou", e=e))
         return None
 
 
@@ -114,23 +114,23 @@ async def _fetch_embed_html(shortcode: str) -> Optional[str]:
             lambda: curl_requests.get(url, impersonate="chrome", timeout=15, allow_redirects=True),
         )
     except Exception as e:
-        logger.warning(f"⚠️ curl_cffi falhou pro IG embed: {e}")
+        logger.warning(lmsg("instagram_embed.curl_cffi_falhou", e=e))
         return None
     if r.status_code != 200:
-        logger.debug(f"IG embed HTTP {r.status_code}")
+        logger.debug(lmsg("instagram_embed.ig_embed_http", arg0=r.status_code))
         return None
     return r.text
 
 
 async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[str], str, str]:
-    logger.info(f"📸 Tentando IG embed (guest) para: {safe_url(url)}")
+    logger.info(lmsg("instagram_embed.tentando_ig_embed", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
     shortcode = _extract_shortcode(url)
     if not shortcode:
-        logger.debug(f"Não consegui extrair shortcode da URL: {safe_url(url)}")
+        logger.debug(lmsg("instagram_embed.n_o_consegui_extrair", arg0=safe_url(url)))
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     html_text = await _fetch_embed_html(shortcode)
@@ -143,16 +143,16 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
 
     media = _find_shortcode_media(data)
     if not media:
-        logger.debug(f"IG embed sem shortcode_media para {shortcode}")
+        logger.debug(lmsg("instagram_embed.ig_embed_sem", shortcode=shortcode))
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     if _has_unembedded_music(media):
-        logger.info(f"📸 IG embed: post {shortcode} é foto+música — delegando pra Instagrapi (precisa merge ffmpeg)")
+        logger.info(lmsg("instagram_embed.ig_embed_post", shortcode=shortcode))
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     items = _media_from_node(media)
     if not items:
-        logger.debug(f"IG embed sem mídia extraível para {shortcode}")
+        logger.debug(lmsg("instagram_embed.ig_embed_sem_2", shortcode=shortcode))
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     downloaded: list[str] = []
@@ -162,7 +162,7 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
         try:
             ok = await async_download_file(m_url, filepath)
         except Exception as e:
-            logger.error(f"⚠️ Erro ao baixar mídia do IG embed: {e}")
+            logger.error(lmsg("instagram_embed.erro_ao_baixar", e=e))
             continue
         if not ok:
             continue
@@ -175,9 +175,10 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
             downloaded.append(filepath)
 
     if not downloaded:
-        logger.warning(
-            f"📸 IG embed: {len(items)} URLs achadas mas downloads falharam para {shortcode}"
-        )
+        logger.warning(lmsg(
+            "instagram_embed.downloads_all_failed",
+            n=len(items), shortcode=shortcode,
+        ))
         return [], msg("downloader_status.instagram_embed_fail"), ""
 
     raw_caption = _extract_caption(media)

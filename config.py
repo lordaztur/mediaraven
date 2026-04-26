@@ -209,24 +209,41 @@ REDDIT_JSON_UA = _env_str(
 )
 
 
+_NOISY_LIBS = (
+    'httpx', 'httpcore', 'urllib3', 'asyncio', 'PIL',
+    'gallery_dl', 'telegram._utils', 'telegram.ext._updater',
+    'apscheduler', 'instagrapi.mixins', 'public_request',
+    'private_request', 'curl_cffi', 'playwright',
+    'trafilatura', 'htmldate', 'courlan', 'charset_normalizer',
+)
+
+
 def setup_logging() -> None:
     root = logging.getLogger()
     if root.handlers:
         return
     level = getattr(logging, LOG_LEVEL, logging.INFO)
-    logging.basicConfig(
-        level=level,
-        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-        handlers=[
-            RotatingFileHandler(
-                LOG_FILE_PATH,
-                maxBytes=LOG_MAX_BYTES,
-                backupCount=LOG_BACKUP_COUNT,
-                encoding='utf-8',
-            ),
-            logging.StreamHandler(),
-        ]
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s'
     )
+    file_handler = RotatingFileHandler(
+        LOG_FILE_PATH,
+        maxBytes=LOG_MAX_BYTES,
+        backupCount=LOG_BACKUP_COUNT,
+        encoding='utf-8',
+    )
+    file_handler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    root.setLevel(level)
+    root.addHandler(file_handler)
+    root.addHandler(stream_handler)
+
+    if level > logging.DEBUG:
+        for noisy in _NOISY_LIBS:
+            logging.getLogger(noisy).setLevel(logging.WARNING)
+
+    logging.captureWarnings(True)
 
 
 def validate_runtime_config() -> list[str]:

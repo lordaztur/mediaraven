@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 import state
 from config import FIREFOX_PROFILE_PATH
-from messages import msg
+from messages import lmsg, msg
 from utils import safe_url
 
 from ._ytdlp import _yt_dlp_extract
@@ -75,12 +75,12 @@ async def _detect_youtube_languages(
             if mode == "with_cookie":
                 extract_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
 
-            logger.info(f"🔍 Buscando trilhas de idioma ({mode}) para: {safe_url(url)}")
+            logger.info(lmsg("_languages.buscando_trilhas_de", mode=mode, arg0=safe_url(url)))
             info = await loop.run_in_executor(state.YTDLP_POOL, _yt_dlp_extract, extract_opts, url, False)
             if info:
                 break
         except Exception as e:
-            logger.warning(f"⚠️ Falha na extração de idiomas ({mode}): {e}")
+            logger.warning(lmsg("_languages.falha_na_extra_o", mode=mode, e=e))
 
     if not info:
         return None
@@ -95,7 +95,7 @@ async def _detect_youtube_languages(
                 formats = valid_entries[0]['formats']
 
         if not formats:
-            logger.warning("⚠️ O yt-dlp não retornou nenhuma lista de formatos na checagem.")
+            logger.warning(lmsg("_languages.o_yt_dlp"))
             return None
 
         langs_found: set[str] = set()
@@ -125,9 +125,9 @@ async def _detect_youtube_languages(
 
         buttons = _build_lang_buttons(langs_found, original_lang, has_untagged_audio)
         if len(buttons) > 1:
-            logger.info(f"🌍 Múltiplos idiomas detectados: {buttons}")
+            logger.info(lmsg("_languages.m_ltiplos_idiomas_detectados", buttons=buttons))
             return buttons
         return None
     except Exception as e:
-        logger.error(f"⚠️ Erro crítico ao checar idiomas: {e}")
+        logger.error(lmsg("_languages.erro_cr_tico_ao", e=e))
         return None

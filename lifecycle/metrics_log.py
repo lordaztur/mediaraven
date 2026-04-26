@@ -3,6 +3,7 @@ import logging
 
 import metrics
 from config import METRICS_LOG_INTERVAL_MIN
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -16,4 +17,4 @@ async def periodic_metrics_log() -> None:
         try:
             logger.info(metrics.format_summary())
         except Exception as e:
-            logger.debug(f"Falha ao logar métricas: {e}")
+            logger.debug(lmsg("metrics_log.falha_ao_logar", e=e))

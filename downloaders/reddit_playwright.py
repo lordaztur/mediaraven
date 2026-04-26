@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import state
 from config import PW_GOTO_TIMEOUT_MS
-from messages import msg
+from messages import lmsg, msg
 from utils import async_download_file, safe_url
 
 from .reddit_common import build_reddit_caption, clean_reddit_media_url, is_reddit_media_url, looks_like_image
@@ -28,7 +28,7 @@ def _force_old_reddit(url: str) -> str:
 
 
 async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list[str], str, str]:
-    logger.info(f"👽 Iniciando extração via Playwright para Reddit: {safe_url(url)}")
+    logger.info(lmsg("reddit_playwright.iniciando_extra_o_via", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
@@ -44,7 +44,7 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
 
     target_url = _force_old_reddit(url)
     if target_url != url:
-        logger.info(f"👽 Forçando old.reddit.com: {safe_url(target_url)}")
+        logger.info(lmsg("reddit_playwright.for_ando_old_reddit", arg0=safe_url(target_url)))
 
     async with state.PW_SEMAPHORE:
         page = await state.PW_CONTEXT.new_page()
@@ -59,7 +59,7 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                     await nsfw_button.first.click(timeout=2000)
                     await page.wait_for_timeout(1500)
             except Exception as e:
-                logger.debug(f"Botão NSFW não encontrado/clicável: {e}")
+                logger.debug(lmsg("reddit_playwright.bot_o_nsfw_n_o", e=e))
 
             try:
                 unblur_buttons = page.locator('button', has_text=re.compile(r'(View spoiler|View NSFW content|Click to see)', re.IGNORECASE))
@@ -68,7 +68,7 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                         try:
                             await unblur_buttons.nth(i).click(timeout=1500)
                         except Exception as e:
-                            logger.debug(f"Falha ao clicar unblur #{i}: {e}")
+                            logger.debug(lmsg("reddit_playwright.falha_ao_clicar", i=i, e=e))
                     await page.wait_for_timeout(1000)
 
                 shadow_buttons = page.locator('shreddit-blurred-container button')
@@ -77,14 +77,14 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                         try:
                             await shadow_buttons.nth(i).click(timeout=1500)
                         except Exception as e:
-                            logger.debug(f"Falha ao clicar shadow unblur #{i}: {e}")
+                            logger.debug(lmsg("reddit_playwright.falha_ao_clicar_2", i=i, e=e))
                     await page.wait_for_timeout(1000)
             except Exception as e:
-                logger.warning(f"⚠️ Erro ao tentar remover blur do Reddit: {e}")
+                logger.warning(lmsg("reddit_playwright.erro_ao_tentar", e=e))
 
             main_post = page.locator('shreddit-post').first
             if await main_post.count() > 0:
-                logger.info("👽 Post principal detectado. Buscando mídias na Shadow Tree...")
+                logger.info(lmsg("reddit_playwright.post_principal_detectado"))
                 images = await main_post.locator('img').all()
                 for img in images:
                     src = await img.get_attribute('src')
@@ -113,10 +113,10 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                 if og_title_attr:
                     og_title = og_title_attr.strip()
             except Exception as e:
-                logger.debug(f"Meta og:title não encontrada: {e}")
+                logger.debug(lmsg("reddit_playwright.meta_og_title", e=e))
 
         except Exception as e:
-            logger.warning(f"⚠️ Erro no Playwright ao carregar a página: {e}")
+            logger.warning(lmsg("reddit_playwright.erro_no_playwright", e=e))
         finally:
             await page.close()
 
@@ -131,7 +131,7 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
                 downloaded_files.append(filepath)
                 count += 1
         except Exception as e:
-            logger.error(f"⚠️ Erro ao baixar imagem do Reddit: {e}")
+            logger.error(lmsg("reddit_playwright.erro_ao_baixar", e=e))
 
     if downloaded_files:
         caption = build_reddit_caption(og_title, "", url)

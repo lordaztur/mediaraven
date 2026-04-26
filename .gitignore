@@ -7,6 +7,7 @@
 
 # Mensagens customizadas (cada usuário tem as suas)
 messages.json
+log_messages.json
 
 # Sessão persistida do Instagrapi (equivale a credenciais)
 ig_session.json

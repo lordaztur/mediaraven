@@ -19,6 +19,7 @@ from handlers import (
 )
 from lifecycle import init_deno, init_ffmpeg, init_globals, stop_globals
 from messages import msg
+from version import __version__
 
 
 if __name__ == '__main__':
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     init_deno()
     init_ffmpeg()
 
-    print(msg("startup.connecting", api_url=LOCAL_API_URL))
+    print(msg("startup.connecting", api_url=LOCAL_API_URL, version=__version__))
 
     builder = ApplicationBuilder().token(TOKEN)
     builder.base_url(LOCAL_API_URL)

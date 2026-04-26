@@ -25,7 +25,7 @@ from config import (
     YTDLP_MAX_HEIGHT,
     YTDLP_SOCKET_TIMEOUT,
 )
-from messages import msg
+from messages import lmsg, msg
 from utils import (
     async_download_file,
     async_download_via_playwright,
@@ -91,10 +91,10 @@ async def _fetch_html(
             ),
         )
     except Exception as e:
-        logger.debug(f"curl_cffi falhou pra {safe_url(url)}: {e}")
+        logger.debug(lmsg("fallback.curl_cffi_falhou", arg0=safe_url(url), e=e))
         return None
     if r.status_code != 200:
-        logger.debug(f"Fast-path HTTP {r.status_code} pra {safe_url(url)}")
+        logger.debug(lmsg("fallback.fast_path_http", arg0=r.status_code, arg1=safe_url(url)))
         return None
     return r.text
 
@@ -108,7 +108,7 @@ def _looks_like_paywall(html: str) -> bool:
 
 async def _try_archive_today(url: str, timeout: int) -> Optional[str]:
     archive_url = f"https://archive.ph/newest/{quote(url, safe=':/?&=')}"
-    logger.info(f"📚 Tentando archive.ph para: {safe_url(url)}")
+    logger.info(lmsg("fallback.tentando_archive_ph", arg0=safe_url(url)))
     return await _fetch_html(archive_url, timeout=timeout)
 
 
@@ -122,18 +122,18 @@ async def _fetch_html_with_paywall_bypass(
     if SCRAPE_PAYWALL_BYPASS != "yes":
         return html, 'normal'
 
-    logger.info(f"🔒 Paywall detectado em {safe_url(url)} — tentando Googlebot UA.")
+    logger.info(lmsg("fallback.paywall_detectado_em", arg0=safe_url(url)))
     gbot_html = await _fetch_html(url, timeout=timeout, user_agent=_GOOGLEBOT_UA)
     if gbot_html and not _looks_like_paywall(gbot_html):
-        logger.info(f"✅ Googlebot UA passou do paywall em {safe_url(url)}")
+        logger.info(lmsg("fallback.googlebot_ua_passou", arg0=safe_url(url)))
         return gbot_html, 'googlebot'
 
     arch_html = await _try_archive_today(url, timeout=SCRAPE_ARCHIVE_TIMEOUT_S)
     if arch_html and not _looks_like_paywall(arch_html):
-        logger.info(f"✅ archive.ph retornou conteúdo para {safe_url(url)}")
+        logger.info(lmsg("fallback.archive_ph_retornou", arg0=safe_url(url)))
         return arch_html, 'archive'
 
-    logger.warning(f"❌ Paywall não vencido para {safe_url(url)}")
+    logger.warning(lmsg("fallback.paywall_n_o_vencido", arg0=safe_url(url)))
     return html, 'normal'
 
 
@@ -167,7 +167,7 @@ async def _gather_media_via_playwright(
                         if u.startswith('http'):
                             captured_responses.append((u, ct))
                 except Exception as e:
-                    logger.debug(f"handle_response: {e}")
+                    logger.debug(lmsg("fallback.handle_response_x", e=e))
 
             page.on("response", handle_response)
             await page.goto(page_url, wait_until="load", timeout=PW_GOTO_TIMEOUT_MS)
@@ -177,7 +177,7 @@ async def _gather_media_via_playwright(
                 try:
                     await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 except Exception as e:
-                    logger.debug(f"scroll falhou: {e}")
+                    logger.debug(lmsg("fallback.scroll_falhou_x", e=e))
                     break
                 await page.wait_for_timeout(SCRAPE_SCROLL_PAUSE_MS)
                 if len(captured_responses) == prev_count:
@@ -187,10 +187,10 @@ async def _gather_media_via_playwright(
             try:
                 page_html = await page.content()
             except Exception as e:
-                logger.debug(f"page.content falhou: {e}")
+                logger.debug(lmsg("fallback.page_content_falhou", e=e))
 
         except Exception as e:
-            logger.warning(f"❌ Erro Scraper Playwright: {e}")
+            logger.warning(lmsg("fallback.erro_scraper_playwright", e=e), exc_info=True)
         finally:
             if page is not None:
                 try:
@@ -240,9 +240,10 @@ def _prepare_for_download(
         seen_keys.add(key)
         out.append((normalized_kind, rewritten))
     if junked or deduped:
-        logger.info(
-            f"🧹 _prepare_for_download: {len(media)} entrada(s) → {len(out)} (junk={junked}, dedupe={deduped})"
-        )
+        logger.info(lmsg(
+            "fallback.prepare_stats",
+            n_in=len(media), n_out=len(out), junked=junked, deduped=deduped,
+        ))
     return out
 
 
@@ -274,7 +275,7 @@ async def _download_one(
             media_url, filepath, headers=headers, return_content_type=True,
         )
     except Exception as e:
-        logger.warning(f"⚠️ async_download falhou: {e}")
+        logger.warning(lmsg("fallback.async_download_falhou", e=e))
         result = (False, '')
 
     success, ct = (result if isinstance(result, tuple) else (result, ''))
@@ -311,7 +312,7 @@ async def _download_all(
     seen_paths: set[str] = set()
     for r in results:
         if isinstance(r, Exception):
-            logger.debug(f"Download task exception: {r}")
+            logger.debug(lmsg("fallback.download_task_exception", r=r))
             continue
         if r and r not in seen_paths and os.path.exists(r):
             seen_paths.add(r)
@@ -343,12 +344,12 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 ydl.extract_info(url, download=True)
         except Exception as e:
-            logger.debug(f"yt-dlp generic exception: {e}")
+            logger.debug(lmsg("fallback.yt_dlp_generic", e=e))
 
     try:
         await loop.run_in_executor(state.YTDLP_POOL, _run)
     except Exception as e:
-        logger.debug(f"yt-dlp generic executor falhou: {e}")
+        logger.debug(lmsg("fallback.yt_dlp_generic_2", e=e))
         return []
 
     if not os.path.exists(folder):
@@ -370,7 +371,7 @@ def _can_handle_with_gallery_dl(url: str) -> bool:
         from gallery_dl import extractor
         return extractor.find(url) is not None
     except Exception as e:
-        logger.debug(f"gallery-dl extractor.find falhou: {e}")
+        logger.debug(lmsg("fallback.gallery_dl_extractor", e=e))
         return False
 
 
@@ -403,7 +404,7 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
             try:
                 gdl_config.load()
             except Exception as e:
-                logger.debug(f"gallery-dl config.load falhou: {e}")
+                logger.debug(lmsg("fallback.gallery_dl_config", e=e))
             _GALLERY_DL_LOADED = True
 
         gdl_config.set(('extractor',), 'base-directory', folder + os.sep)
@@ -418,7 +419,7 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
             try:
                 gdl_job.DownloadJob(url).run()
             except Exception as e:
-                logger.debug(f"gallery-dl job exception: {e}")
+                logger.debug(lmsg("fallback.gallery_dl_job", e=e))
 
         try:
             await asyncio.wait_for(
@@ -426,11 +427,12 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
                 timeout=SCRAPE_GALLERY_DL_TIMEOUT_S,
             )
         except asyncio.TimeoutError:
-            logger.warning(
-                f"⚠️ gallery-dl timeout ({SCRAPE_GALLERY_DL_TIMEOUT_S}s) pra {safe_url(url)}"
-            )
+            logger.warning(lmsg(
+                "fallback.gallery_dl_timeout",
+                timeout=SCRAPE_GALLERY_DL_TIMEOUT_S, url=safe_url(url),
+            ))
         except Exception as e:
-            logger.debug(f"gallery-dl executor falhou: {e}")
+            logger.debug(lmsg("fallback.gallery_dl_executor", e=e))
 
     files_after = set(_list_files_in(folder))
     new_files = sorted(files_after - files_before)
@@ -439,7 +441,7 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
 
 async def _ytdlp_generic_iframes(iframes: list[str], folder: str) -> list[str]:
     for iframe_url in iframes:
-        logger.info(f"🪟 Tentando yt-dlp generic em iframe: {safe_url(iframe_url)}")
+        logger.info(lmsg("fallback.tentando_yt_dlp", arg0=safe_url(iframe_url)))
         files = await _ytdlp_generic(iframe_url, folder)
         if files:
             return files
@@ -461,7 +463,7 @@ async def take_page_screenshot(folder: str, url: str) -> Optional[str]:
             await page.wait_for_timeout(2000)
             await page.screenshot(path=out_path, full_page=False, type='jpeg', quality=85)
         except Exception as e:
-            logger.warning(f"⚠️ Falha screenshot: {e}")
+            logger.warning(lmsg("fallback.falha_screenshot_x", e=e))
             return None
         finally:
             if page is not None:
@@ -493,10 +495,7 @@ def _drop_facebook_image_only(files: list[str], page_url: str) -> list[str]:
     has_video = any(f.endswith('.mp4') for f in files)
     if has_video:
         return files
-    logger.warning(
-        f"⚠️ Scraper achou {len(files)} mídias para Facebook, "
-        "mas nenhuma é vídeo — provavelmente lixo de UI. Descartando."
-    )
+    logger.warning(lmsg("fallback.facebook_image_only_dropped", n=len(files)))
     return []
 
 
@@ -514,17 +513,17 @@ async def fetch_article_caption(url: str, html: Optional[str] = None) -> str:
         return ""
     title, body = result
     caption, _ = _build_caption({'title': title, 'description': body}, url)
-    logger.info(
-        f"📰 Artigo detectado ({len(body)} chars body, "
-        f"caption {len(caption)} chars) em {safe_url(url)}"
-    )
+    logger.info(lmsg(
+        "fallback.article_detected",
+        body_len=len(body), caption_len=len(caption), url=safe_url(url),
+    ))
     return caption
 
 
 async def scrape_fallback(
     url: str, unique_folder: str,
 ) -> tuple[list[str], str, str, bool]:
-    logger.info(f"🕸️ Iniciando Scraping Multi-Tier para: {safe_url(url)}")
+    logger.info(lmsg("fallback.iniciando_scraping_multi", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -551,10 +550,11 @@ async def scrape_fallback(
 
     fast_media = _gather_media_from_html(fast_html, url) if fast_html else []
     combined = merge_media_lists(fast_media, pw_media, cap=SCRAPE_MAX_MEDIA_URLS)
-    logger.info(
-        f"🔎 Combinado: {len(fast_media)} HTML ({html_source}) + {len(pw_media)} Playwright "
-        f"→ {len(combined)} (após dedupe), {len(iframes)} iframe(s) embed."
-    )
+    logger.info(lmsg(
+        "fallback.combined_stats",
+        n_html=len(fast_media), source=html_source, n_pw=len(pw_media),
+        n_combined=len(combined), n_iframes=len(iframes),
+    ))
 
     prepared = _prepare_for_download(combined)
     files: list[str] = []
@@ -566,12 +566,12 @@ async def scrape_fallback(
     if files:
         return files, _build_status(files, "downloader_status.scraper"), article_text, is_article
 
-    logger.info("🧩 Tentando yt-dlp em modo genérico...")
+    logger.info(lmsg("fallback.tentando_yt_dlp_2"))
     yt_files = await _ytdlp_generic(url, unique_folder)
     if yt_files:
         return yt_files, _build_status(yt_files, "downloader_status.scraper_generic_ytdlp"), article_text, is_article
 
-    logger.info("🖼️ Tentando gallery-dl...")
+    logger.info(lmsg("fallback.tentando_gallery_dl"))
     galdl_files = await _gallery_dl_run(url, unique_folder)
     if galdl_files:
         return galdl_files, _build_status(galdl_files, "downloader_status.scraper_gallerydl"), article_text, is_article

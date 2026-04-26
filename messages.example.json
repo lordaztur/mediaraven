@@ -1,7 +1,7 @@
 {
   "startup": {
     "token_missing": "❌ Erro: Token não configurado.",
-    "connecting": "🔌 Conectando ao Servidor Local em: {api_url}",
+    "connecting": "🔌 MediaRaven v{version} — Conectando ao Servidor Local em: {api_url}",
     "ready": "🤖 Bot iniciado..."
   },
 

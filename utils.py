@@ -16,7 +16,7 @@ from config import (
     SAFE_URL_MAX_LENGTH,
     STATUS_CYCLE_INTERVAL,
 )
-from messages import msg_list
+from messages import lmsg, msg_list
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +39,10 @@ def normalize_image(filepath: str, min_size: int = 50, quality: int = 95) -> Opt
         with Image.open(filepath) as img:
             width, height = img.size
             if width < min_size or height < min_size:
-                logger.warning(
-                    f"⏭️ Skip (imagem {width}x{height} < min_size {min_size}): {filepath}"
-                )
+                logger.warning(lmsg(
+                    "utils.skip_image_too_small",
+                    width=width, height=height, min_size=min_size, filepath=filepath,
+                ))
                 try:
                     os.remove(filepath)
                 except OSError:
@@ -63,7 +64,7 @@ def normalize_image(filepath: str, min_size: int = 50, quality: int = 95) -> Opt
                 pass
         return new_filepath
     except Exception as e:
-        logger.debug(f"normalize_image falhou para {filepath}: {e}")
+        logger.debug(lmsg("utils.normalize_image_falhou", filepath=filepath, e=e))
         try:
             os.remove(filepath)
         except OSError:
@@ -81,7 +82,7 @@ async def safe_cleanup(folder: str) -> None:
                 break
             except Exception as e:
                 if attempt == 2:
-                    logger.warning(f"⚠️ Falha final ao limpar pasta '{folder}': {e}")
+                    logger.warning(lmsg("utils.falha_final_ao", folder=folder, e=e), exc_info=True)
                 else:
                     time.sleep(1)
 
@@ -107,7 +108,7 @@ async def async_download_file(
             ct = (response.headers.get('Content-Type') or '').lower()
             if response.status == 200:
                 if ct.startswith(('text/html', 'application/json')):
-                    logger.warning(f"⏭️ Skip (Content-Type {ct}): {url}")
+                    logger.warning(lmsg("utils.skip_content_type", ct=ct, url=url))
                     return (False, ct) if return_content_type else False
 
                 async with aiofiles.open(filepath, 'wb') as f:
@@ -116,16 +117,16 @@ async def async_download_file(
 
                 try:
                     if os.path.getsize(filepath) == 0:
-                        logger.debug(f"Download produziu arquivo vazio: {filepath}")
+                        logger.debug(lmsg("utils.download_produziu_arquivo", filepath=filepath))
                         os.remove(filepath)
                         return (False, ct) if return_content_type else False
                 except OSError:
                     return (False, ct) if return_content_type else False
                 return (True, ct) if return_content_type else True
-            logger.warning(f"⏭️ Skip (HTTP {response.status}): {url}")
+            logger.warning(lmsg("utils.skip_http_x", arg0=response.status, url=url))
             return (False, ct) if return_content_type else False
     except Exception as e:
-        logger.warning(f"⚠️ Erro no aiohttp download ({url}): {e}")
+        logger.warning(lmsg("utils.erro_no_aiohttp", url=url, e=e))
     return (False, ct) if return_content_type else False
 
 
@@ -144,21 +145,21 @@ async def async_download_via_playwright(
     try:
         resp = await state.PW_CONTEXT.request.get(url, headers=headers)
     except Exception as e:
-        logger.warning(f"⚠️ Erro PW request: {e}")
+        logger.warning(lmsg("utils.erro_pw_request", e=e))
         return False
     try:
         if resp.status != 200:
-            logger.warning(f"⏭️ Skip PW (HTTP {resp.status}): {url}")
+            logger.warning(lmsg("utils.skip_pw_http", arg0=resp.status, url=url))
             return False
         body = await resp.body()
         if not body:
-            logger.warning(f"⏭️ Skip PW (corpo vazio): {url}")
+            logger.warning(lmsg("utils.skip_pw_corpo", url=url))
             return False
         async with aiofiles.open(filepath, 'wb') as f:
             await f.write(body)
         return os.path.getsize(filepath) > 0
     except Exception as e:
-        logger.warning(f"⚠️ Erro escrevendo PW download: {e}")
+        logger.warning(lmsg("utils.erro_escrevendo_pw", e=e))
         return False
     finally:
         try:
@@ -194,11 +195,11 @@ async def async_ffmpeg_remux(
         _, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
         if process.returncode != 0:
             err = stderr.decode('utf-8', errors='ignore')
-            logger.warning(f"⚠️ ffmpeg remux falhou: {err[-400:]}")
+            logger.warning(lmsg("utils.ffmpeg_remux_falhou", arg0=err[-400:]))
             return False
         return os.path.exists(output_path) and os.path.getsize(output_path) > 0
     except asyncio.TimeoutError:
-        logger.warning(f"⚠️ ffmpeg remux timeout ({timeout}s) pra {input_url}")
+        logger.warning(lmsg("utils.ffmpeg_remux_timeout", timeout=timeout, input_url=input_url))
         try:
             if process:
                 process.kill()
@@ -207,7 +208,7 @@ async def async_ffmpeg_remux(
             pass
         return False
     except Exception as e:
-        logger.warning(f"⚠️ Erro fatal no ffmpeg remux: {e}")
+        logger.warning(lmsg("utils.erro_fatal_no", e=e), exc_info=True)
         return False
 
 
@@ -248,12 +249,12 @@ async def async_merge_audio_image(
 
         if process.returncode != 0:
             err_msg = stderr.decode('utf-8', errors='ignore')
-            logger.error(f"⚠️ Erro FFmpeg: {err_msg}")
+            logger.error(lmsg("utils.erro_ffmpeg_x", err_msg=err_msg))
             return False
 
         return True
     except asyncio.TimeoutError:
-        logger.error("⚠️ FFmpeg travou e foi interrompido (Timeout 60s).")
+        logger.error(lmsg("utils.ffmpeg_travou_e"))
         try:
             if process:
                 process.kill()
@@ -262,7 +263,7 @@ async def async_merge_audio_image(
             pass
         return False
     except Exception as e:
-        logger.error(f"⚠️ Erro fatal no FFmpeg Merge: {e}")
+        logger.error(lmsg("utils.erro_fatal_no_2", e=e), exc_info=True)
         return False
 
 

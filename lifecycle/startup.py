@@ -5,6 +5,7 @@ import shutil
 
 import state
 from config import BASE_DOWNLOAD_DIR
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -26,19 +27,15 @@ def init_deno() -> None:
                 state.DENO_PATH = p
                 break
     if state.DENO_PATH:
-        logger.info(f"🦕 Deno encontrado em: {state.DENO_PATH} (Pronto para bypass do YouTube)")
+        logger.info(lmsg("startup.deno_encontrado_em", arg0=state.DENO_PATH))
 
 
 def init_ffmpeg() -> None:
     state.FFMPEG_PATH = shutil.which("ffmpeg") or shutil.which("ffmpeg.exe")
     if state.FFMPEG_PATH:
-        logger.info(f"🎬 ffmpeg encontrado em: {state.FFMPEG_PATH}")
+        logger.info(lmsg("startup.ffmpeg_encontrado_em", arg0=state.FFMPEG_PATH))
     else:
-        logger.warning(
-            "⚠️ ffmpeg não encontrado no PATH. "
-            "Posts do Instagram com áudio+imagem não vão funcionar. "
-            "Linux: apt install ffmpeg | Windows: choco install ffmpeg"
-        )
+        logger.warning(lmsg("startup.ffmpeg_not_found"))
 
 
 def _sync_startup_cleanup() -> None:
@@ -50,9 +47,9 @@ def _sync_startup_cleanup() -> None:
             item_path = os.path.join(folder, item)
             if os.path.isdir(item_path) and item.startswith("task_"):
                 shutil.rmtree(item_path)
-        logger.info("🧹 Limpeza inicial: Pastas temporárias residuais removidas.")
+        logger.info(lmsg("startup.limpeza_inicial_pastas"))
     except Exception as e:
-        logger.error(f"⚠️ Erro na limpeza inicial: {e}")
+        logger.error(lmsg("startup.erro_na_limpeza", e=e), exc_info=True)
 
 
 async def startup_cleanup_async() -> None:

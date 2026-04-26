@@ -4,7 +4,7 @@ import os
 import state
 from config import REDDIT_JSON_UA
 from cookies import get_aiohttp_cookies_for_url
-from messages import msg
+from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
 from .reddit_common import build_reddit_caption, clean_reddit_media_url, looks_like_image
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str], str, str]:
-    logger.info(f"👽 Iniciando extração via JSON para Reddit: {safe_url(url)}")
+    logger.info(lmsg("reddit_json.iniciando_extra_o_via", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
@@ -35,7 +35,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
 
     cookies_dict = get_aiohttp_cookies_for_url(url)
     if cookies_dict:
-         logger.info(f"🍪 Usando {len(cookies_dict)} cookies do Firefox para o Scraper/API.")
+         logger.info(lmsg("reddit_json.usando_x_cookies", arg0=len(cookies_dict)))
 
     try:
         clean_url = url.split('?')[0].rstrip('/')
@@ -50,7 +50,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
         selftext = post_data.get('selftext', '') or ''
 
         if post_data.get('is_video') or post_data.get('post_hint') in ('hosted:video', 'rich:video'):
-            logger.info("👽 Post é vídeo — delegando pro yt-dlp (que faz merge DASH).")
+            logger.info(lmsg("reddit_json.post_v_deo"))
             return [], msg("downloader_status.reddit_json_fail"), ""
 
         if 'media_metadata' in post_data:
@@ -80,7 +80,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
             if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
 
     except Exception as e:
-        logger.error(f"⚠️ Erro ao ler JSON do Reddit (aiohttp): {e}")
+        logger.error(lmsg("reddit_json.erro_ao_ler", e=e), exc_info=True)
 
     count = 0
     for m_url in media_urls:
@@ -100,7 +100,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
                 downloaded_files.append(filepath)
                 count += 1
         except Exception as e:
-            logger.error(f"⚠️ Erro ao processar imagem do Reddit: {e}")
+            logger.error(lmsg("reddit_json.erro_ao_processar", e=e))
 
     if downloaded_files:
         caption = build_reddit_caption(title, selftext, url)

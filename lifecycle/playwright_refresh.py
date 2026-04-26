@@ -14,6 +14,7 @@ from config import (
     PW_VIEWPORT_HEIGHT,
     PW_VIEWPORT_WIDTH,
 )
+from messages import lmsg
 from cookies import extract_firefox_cookies
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def _get_process_rss_mb() -> Optional[float]:
     try:
         return _proc.memory_info().rss / (1024 * 1024)
     except (psutil.Error, OSError) as e:
-        logger.debug(f"Falha ao ler RSS via psutil: {e}")
+        logger.debug(lmsg("playwright_refresh.falha_ao_ler", e=e))
         return None
 
 
@@ -62,7 +63,7 @@ async def periodic_playwright_refresh() -> None:
         if not should_refresh:
             continue
 
-        logger.info(f"♻️ Iniciando limpeza de memória ({reason}): Recriando contexto do Playwright...")
+        logger.info(lmsg("playwright_refresh.iniciando_limpeza_de", reason=reason))
         last_refresh = now
 
         try:
@@ -76,9 +77,9 @@ async def periodic_playwright_refresh() -> None:
             if state.FIREFOX_COOKIES_CACHE:
                 try:
                     await new_context.add_cookies(state.FIREFOX_COOKIES_CACHE)
-                    logger.info(f"✅ {len(state.FIREFOX_COOKIES_CACHE)} cookies do Firefox carregados no Playwright!")
+                    logger.info(lmsg("playwright_refresh.x_cookies_do", arg0=len(state.FIREFOX_COOKIES_CACHE)))
                 except Exception as e:
-                    logger.warning(f"⚠️ Erro ao injetar cookies no Playwright: {e}")
+                    logger.warning(lmsg("playwright_refresh.erro_ao_injetar", e=e))
 
             tickets = []
             for _ in range(3):
@@ -92,10 +93,10 @@ async def periodic_playwright_refresh() -> None:
                 if old_context:
                     await old_context.close()
 
-                logger.info("✅ Contexto Playwright recriado e memória RAM liberada!")
+                logger.info(lmsg("playwright_refresh.contexto_playwright_recriado"))
             finally:
                 for _ in tickets:
                     state.PW_SEMAPHORE.release()
 
         except Exception as e:
-            logger.error(f"❌ Erro ao recriar contexto do Playwright: {e}")
+            logger.error(lmsg("playwright_refresh.erro_ao_recriar", e=e), exc_info=True)

@@ -12,6 +12,7 @@ from config import (
     TELEGRAM_UPLOAD_TIMEOUT,
     VIDEO_EXTS,
 )
+from messages import lmsg
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +42,13 @@ async def send_downloaded_media(
                         await context.bot.send_document(chat_id=chat_id, document=f, **upload_kwargs)
                 break
             except RetryAfter as e:
-                logger.warning(f"⏳ Flood control! Telegram pediu para esperar {e.retry_after}s. Pausando...")
+                logger.warning(lmsg("telegram_io.flood_control_telegram", arg0=e.retry_after))
                 await asyncio.sleep(e.retry_after + 1)
             except TimedOut:
-                logger.warning("⏳ Timeout no envio. Retentando...")
+                logger.warning(lmsg("telegram_io.timeout_no_envio"))
                 await asyncio.sleep(5)
             except Exception as e:
-                logger.error(f"❌ Erro fatal ao enviar mídia única: {e}")
+                logger.error(lmsg("telegram_io.erro_fatal_ao", e=e), exc_info=True)
                 raise e
     else:
         chunk_size = MEDIA_GROUP_CHUNK_SIZE
@@ -81,13 +82,13 @@ async def send_downloaded_media(
                             )
                             break
                         except RetryAfter as e:
-                            logger.warning(f"⏳ Flood control de grupo! Aguardando {e.retry_after}s antes de reenviar os 10 arquivos...")
+                            logger.warning(lmsg("telegram_io.flood_control_de", arg0=e.retry_after))
                             await asyncio.sleep(e.retry_after + 1)
                         except TimedOut:
-                            logger.warning("⏳ Timeout no envio do media_group. Retentando em 5s...")
+                            logger.warning(lmsg("telegram_io.timeout_no_envio_2"))
                             await asyncio.sleep(5)
                         except Exception as e:
-                            logger.error(f"⚠️ Erro desconhecido ao enviar media_group: {e}")
+                            logger.error(lmsg("telegram_io.erro_desconhecido_ao", e=e), exc_info=True)
                             raise e
 
                     if i + chunk_size < len(files):

@@ -11,7 +11,7 @@ from curl_cffi import requests as curl_requests
 
 import state
 from config import PW_GOTO_TIMEOUT_MS
-from messages import msg
+from messages import lmsg, msg
 from utils import async_download_file, normalize_image, safe_url
 
 from ._caption import _build_caption as _build_std_caption
@@ -136,7 +136,7 @@ def _extract_tweet_text(tweet: Optional[dict]) -> str:
         try:
             text = text[drange[0]:drange[1]]
         except Exception as e:
-            logger.debug(f"display_text_range slice falhou: {e}")
+            logger.debug(lmsg("x.display_text_range", e=e))
     text = _TCO_TRAIL_RE.sub("", text).strip()
     text = html.unescape(text)
     return text
@@ -175,10 +175,10 @@ async def _fetch_guest_html(url: str) -> Optional[str]:
             lambda: curl_requests.get(url, impersonate="chrome", timeout=15, allow_redirects=True),
         )
     except Exception as e:
-        logger.warning(f"⚠️ curl_cffi falhou pro X (guest): {e}")
+        logger.warning(lmsg("x.curl_cffi_falhou", e=e))
         return None
     if r.status_code != 200:
-        logger.debug(f"X guest HTTP {r.status_code} pra {safe_url(url)}")
+        logger.debug(lmsg("x.x_guest_http", arg0=r.status_code, arg1=safe_url(url)))
         return None
     return r.text
 
@@ -240,7 +240,7 @@ async def _try_authenticated(url: str, tweet_id: str) -> tuple[list[tuple[str, s
                 data = await resp.json()
                 captured.append(data)
             except Exception as e:
-                logger.debug(f"X graphql parse falhou: {e}")
+                logger.debug(lmsg("x.x_graphql_parse", e=e))
 
         page.on("response", on_response)
         try:
@@ -248,7 +248,7 @@ async def _try_authenticated(url: str, tweet_id: str) -> tuple[list[tuple[str, s
             await page.wait_for_timeout(3500)
             content = await page.content()
         except Exception as e:
-            logger.warning(f"⚠️ Playwright erro carregando {safe_url(url)}: {e}")
+            logger.warning(lmsg("x.playwright_erro_carregando", arg0=safe_url(url), e=e))
             content = ""
         finally:
             await page.close()
@@ -274,7 +274,7 @@ async def _try_authenticated(url: str, tweet_id: str) -> tuple[list[tuple[str, s
 
 
 async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]:
-    logger.info(f"🐦 Iniciando extração para X: {safe_url(url)}")
+    logger.info(lmsg("x.iniciando_extra_o_para", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -282,12 +282,12 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
     url = _normalize_x_url(url)
     tweet_id = _extract_tweet_id(url)
     if not tweet_id:
-        logger.warning(f"⚠️ Não consegui extrair tweet ID: {safe_url(url)}")
+        logger.warning(lmsg("x.n_o_consegui_extrair", arg0=safe_url(url)))
         return [], msg("downloader_status.x_fail"), ""
 
     media_items, tweet_obj = await _try_guest(url, tweet_id)
     if not media_items:
-        logger.info(f"🔒 Tweet {tweet_id}: guest vazio, tentando Playwright autenticado")
+        logger.info(lmsg("x.tweet_x_guest", tweet_id=tweet_id))
         auth_items, auth_tweet = await _try_authenticated(url, tweet_id)
         media_items = auth_items
         if auth_tweet:
@@ -296,9 +296,9 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
     if not media_items:
         text_caption = _build_caption(tweet_obj, url) if tweet_obj else ""
         if text_caption and _extract_tweet_text(tweet_obj):
-            logger.info(f"📝 Tweet {tweet_id} sem mídia — entregando texto.")
+            logger.info(lmsg("x.tweet_x_sem", tweet_id=tweet_id))
             return [], msg("downloader_status.x_text_only"), text_caption
-        logger.warning(f"⚠️ Nenhuma mídia encontrada no tweet {tweet_id}")
+        logger.warning(lmsg("x.nenhuma_m_dia_encontrada", tweet_id=tweet_id))
         return [], msg("downloader_status.x_fail"), ""
 
     downloaded: list[str] = []
@@ -308,7 +308,7 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
         try:
             ok = await async_download_file(m_url, filepath)
         except Exception as e:
-            logger.error(f"⚠️ Erro ao baixar mídia do X: {e}")
+            logger.error(lmsg("x.erro_ao_baixar", e=e))
             continue
         if not ok:
             continue
@@ -321,9 +321,10 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
             downloaded.append(filepath)
 
     if not downloaded:
-        logger.warning(
-            f"⚠️ Tweet {tweet_id}: {len(media_items)} URLs encontradas mas downloads falharam"
-        )
+        logger.warning(lmsg(
+            "x.downloads_all_failed",
+            tweet_id=tweet_id, n=len(media_items),
+        ))
         return [], msg("downloader_status.x_fail"), ""
 
     has_video = any(f.endswith(".mp4") for f in downloaded)

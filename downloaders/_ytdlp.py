@@ -13,6 +13,7 @@ from config import (
     YTDLP_SOCKET_TIMEOUT,
     YTDLP_YT_CLIENTS,
 )
+from messages import lmsg
 
 from ._platform import Platform
 
@@ -94,7 +95,7 @@ def _wipe_folder(folder: str) -> None:
             try:
                 os.remove(full_path)
             except OSError as e:
-                logger.debug(f"Falha ao remover {full_path}: {e}")
+                logger.debug(lmsg("_ytdlp.falha_ao_remover", full_path=full_path, e=e))
 
 
 def _attempt_order(has_firefox_cookie: bool, target_lang: Optional[str]) -> list[str]:
@@ -127,7 +128,7 @@ async def _run_ytdlp_with_cookie_fallback(
 
         current_opts = base_opts.copy()
         if mode == "with_cookie":
-            logger.info("🍪 Usando cookies globais do Firefox profile...")
+            logger.info(lmsg("_ytdlp.usando_cookies_globais"))
             current_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
 
         try:
@@ -147,14 +148,14 @@ async def _run_ytdlp_with_cookie_fallback(
             current_files = _list_downloaded_files(unique_folder)
             if current_files:
                 downloaded_files = sorted(current_files)
-                logger.info(f"✅ Download bem-sucedido na tentativa: {mode}")
+                logger.info(lmsg("_ytdlp.download_bem_sucedido", mode=mode))
                 break
-            logger.warning(f"⚠️ yt-dlp falhou em baixar arquivos na tentativa '{mode}'")
+            logger.warning(lmsg("_ytdlp.yt_dlp_falhou", mode=mode))
         except Exception as e:
             last_exc = e
-            logger.warning(f"⚠️ yt-dlp exceção na tentativa '{mode}': {e}")
+            logger.warning(lmsg("_ytdlp.yt_dlp_exce_o", mode=mode, e=e))
 
     if not downloaded_files and last_exc is not None:
-        logger.debug("Stack trace da última exceção yt-dlp:", exc_info=last_exc)
+        logger.debug(lmsg("_ytdlp.stack_trace_last_exc"), exc_info=last_exc)
 
     return downloaded_files, info_dict
