@@ -183,7 +183,7 @@ telegram_io.py           media upload
 utils.py                 download/ffmpeg/images
 messages.json            user-facing strings
 log_messages.json        log strings (~180 keys)
-customization.json       per-chat/user overrides (~36 envs)
+customization.json       per-chat/user overrides (~42 envs)
 downloaders/
   dispatcher.py          orchestrator
   _platform.py _ytdlp.py _languages.py _caption.py
