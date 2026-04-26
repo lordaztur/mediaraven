@@ -10,6 +10,9 @@ messages.json
 log_messages.json
 customization.json
 
+# MkDocs build output
+site/
+
 # Sessão persistida do Instagrapi (equivale a credenciais)
 ig_session.json
 

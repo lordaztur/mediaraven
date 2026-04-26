@@ -14,8 +14,9 @@
 [![curl-cffi](https://img.shields.io/badge/curl--cffi-0.14-073551?style=flat&logo=curl&logoColor=white)](https://github.com/lexiforest/curl_cffi)
 [![ffmpeg](https://img.shields.io/badge/ffmpeg-required-007808?style=flat&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
+[![docs](https://img.shields.io/badge/docs-site-blue?style=flat&logo=readthedocs&logoColor=white)](https://lordaztur.github.io/mediaraven/en/)
 
-🇧🇷 [Português](README.md)
+🇧🇷 [Português](README.md) | 📖 [Full documentation](https://lordaztur.github.io/mediaraven/en/)
 
 </div>
 
