@@ -462,6 +462,17 @@ async def process_media_request(
             outcome = "✅" if files else "❌"
             logger.info(f"📊 {outcome} {status_or_error} | {safe_url(url)}")
 
+        if not files and desc_text:
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=desc_text,
+                parse_mode='HTML',
+                reply_to_message_id=message_id,
+                disable_web_page_preview=False,
+            )
+            await _safe_delete(status_msg)
+            return
+
         if not files:
             shot_files = await _try_screenshot_offer(
                 context, status_msg, message_id, suffix, user_id, idx,

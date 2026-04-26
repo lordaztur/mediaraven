@@ -257,3 +257,35 @@ def test_caption_is_weak_detects_empty_and_link_only():
     assert _caption_is_weak("🔗 <a href='https://x.com/'>Link Original</a>") is True
     assert _caption_is_weak("📄 <b>T</b>\n\nDesc\n\n🔗 <a>L</a>") is False
     assert _caption_is_weak("Just text content") is False
+
+
+@pytest.mark.asyncio
+async def test_x_text_only_returns_caption_without_files(tmp_folder):
+    text_caption = "📄 <b>@user</b>\n\nTexto puro do tweet\n\n🔗 link"
+
+    with patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_x",
+                      new=AsyncMock(return_value=([], "X_TEXT_ONLY", text_caption))):
+        files, status, caption, is_article = await dispatcher.download_media(
+            "https://x.com/u/status/1", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert caption == text_caption
+    assert status == "X_TEXT_ONLY"
+
+
+@pytest.mark.asyncio
+async def test_threads_text_only_returns_caption_without_files(tmp_folder):
+    text_caption = "📄 <b>@user</b>\n\nThread só com texto\n\n🔗 link"
+
+    with patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_threads",
+                      new=AsyncMock(return_value=([], "THREADS_TEXT_ONLY", text_caption))):
+        files, status, caption, is_article = await dispatcher.download_media(
+            "https://threads.net/@u/post/X", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert caption == text_caption
+    assert status == "THREADS_TEXT_ONLY"

@@ -14,6 +14,8 @@ from config import PW_GOTO_TIMEOUT_MS
 from messages import msg
 from utils import async_download_file, normalize_image, safe_url
 
+from ._caption import _build_caption as _build_std_caption
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +23,7 @@ _TWEET_ID_RE = re.compile(r"/(?:i/status|status)/(\d+)")
 _INITIAL_STATE_RE = re.compile(r"window\.__INITIAL_STATE__=(\{.*?\});window\.", re.DOTALL)
 _X_HOST_REPLACE = ("fxtwitter.com", "vxtwitter.com", "twitter.com", "fixupx.com", "mobile.twitter.com")
 _TCO_TRAIL_RE = re.compile(r"\s*https?://t\.co/\S+\s*$")
-_X_CAPTION_MAX = 1000
+_SCREEN_NAME_URL_RE = re.compile(r"^https?://[^/]+/(?!i/)([A-Za-z0-9_]+)/status/")
 
 
 def _normalize_x_url(url: str) -> str:
@@ -110,6 +112,17 @@ def _find_in_initial_state(data: dict, tweet_id: str) -> Optional[dict]:
     return tweets.get(tweet_id)
 
 
+def _resolve_user_dict(data: dict, tweet: dict) -> Optional[dict]:
+    user_field = tweet.get("user")
+    if isinstance(user_field, dict):
+        return user_field
+    if not isinstance(user_field, str):
+        return None
+    users = ((data.get("entities") or {}).get("users") or {}).get("entities") or {}
+    found = users.get(user_field)
+    return found if isinstance(found, dict) else None
+
+
 def _extract_tweet_text(tweet: Optional[dict]) -> str:
     if not isinstance(tweet, dict):
         return ""
@@ -129,16 +142,34 @@ def _extract_tweet_text(tweet: Optional[dict]) -> str:
     return text
 
 
+def _extract_screen_name(tweet: Optional[dict]) -> str:
+    if not isinstance(tweet, dict):
+        return ""
+    user = tweet.get("user")
+    if isinstance(user, dict):
+        sn = user.get("screen_name") or ""
+        if sn:
+            return sn
+    core = tweet.get("core")
+    if isinstance(core, dict):
+        ur = (((core.get("user_results") or {}).get("result") or {}).get("legacy") or {})
+        sn = ur.get("screen_name") or ""
+        if sn:
+            return sn
+    return ""
+
+
+def _screen_name_from_url(url: str) -> str:
+    m = _SCREEN_NAME_URL_RE.match(url)
+    return m.group(1) if m else ""
+
+
 def _build_caption(tweet: Optional[dict], url: str) -> str:
     text = _extract_tweet_text(tweet)
-    link_label = msg("caption.link_original_label")
-    link_prefix = msg("caption.link_prefix")
-    link_html = f"{link_prefix}<a href='{html.escape(url, quote=True)}'>{link_label}</a>"
-    if not text:
-        return link_html
-    if len(text) > _X_CAPTION_MAX:
-        text = text[:_X_CAPTION_MAX].rstrip() + "..."
-    return f"{html.escape(text)}\n\n{link_html}"
+    sn = _extract_screen_name(tweet) or _screen_name_from_url(url)
+    title = f"@{sn}" if sn else ""
+    caption, _ = _build_std_caption({'title': title, 'description': text}, url)
+    return caption
 
 
 async def _fetch_guest_html(url: str) -> Optional[str]:
@@ -173,6 +204,10 @@ def _extract_from_data(data: dict, tweet_id: str) -> tuple[list[tuple[str, str]]
         for t in _walk_for_tweet_obj(data, tweet_id):
             tweet = t
             break
+    if tweet:
+        user_dict = _resolve_user_dict(data, tweet)
+        if user_dict and not isinstance(tweet.get("user"), dict):
+            tweet = {**tweet, "user": user_dict}
     media_items: list[tuple[str, str]] = []
     if tweet:
         media_list = (tweet.get("extended_entities") or {}).get("media") or []
@@ -264,6 +299,10 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
             tweet_obj = auth_tweet
 
     if not media_items:
+        text_caption = _build_caption(tweet_obj, url) if tweet_obj else ""
+        if text_caption and _extract_tweet_text(tweet_obj):
+            logger.info(f"📝 Tweet {tweet_id} sem mídia — entregando texto.")
+            return [], msg("downloader_status.x_text_only"), text_caption
         logger.warning(f"⚠️ Nenhuma mídia encontrada no tweet {tweet_id}")
         return [], msg("downloader_status.x_fail"), ""
 

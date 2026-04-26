@@ -6,6 +6,7 @@ import pytest
 
 from downloaders.x import (
     _build_caption,
+    _extract_from_data,
     _extract_tweet_id,
     _extract_tweet_text,
     _find_in_initial_state,
@@ -217,19 +218,69 @@ def test_build_caption_with_text():
     assert "<a href=" in caption
 
 
-def test_build_caption_without_text_just_returns_link():
-    caption = _build_caption(None, "https://x.com/u/status/1")
-    assert "<a href=" in caption
-    assert "https://x.com/u/status/1" in caption
-    assert "\n\n" not in caption
+def test_build_caption_without_text_or_user_returns_empty():
+    assert _build_caption(None, "https://x.com/i/web/status/1") == ""
 
 
 def test_build_caption_truncates_very_long_text():
     long_text = "a" * 1500
     tweet = {"full_text": long_text, "display_text_range": [0, 1500]}
     caption = _build_caption(tweet, "https://x.com/u/status/1")
-    assert "..." in caption
+    assert "..." in caption or "…" in caption
     assert len(caption) < 1500
+
+
+def test_build_caption_includes_screen_name_as_title():
+    tweet = {
+        "full_text": "Hello world",
+        "display_text_range": [0, 11],
+        "user": {"screen_name": "elonmusk"},
+    }
+    caption = _build_caption(tweet, "https://x.com/elonmusk/status/1")
+    assert "@elonmusk" in caption
+    assert "Hello world" in caption
+
+
+def test_build_caption_falls_back_to_screen_name_from_url():
+    tweet = {"full_text": "Texto do tweet", "display_text_range": [0, 14]}
+    caption = _build_caption(tweet, "https://x.com/jack/status/12345")
+    assert "@jack" in caption
+    assert "Texto do tweet" in caption
+
+
+def test_build_caption_skips_i_path_in_url():
+    tweet = {"full_text": "Texto", "display_text_range": [0, 5]}
+    caption = _build_caption(tweet, "https://x.com/i/web/status/12345")
+    assert "@i" not in caption
+    assert "Texto" in caption
+
+
+def test_extract_from_data_resolves_user_dict_when_user_is_id():
+    data = {
+        "entities": {
+            "tweets": {"entities": {
+                "999": {
+                    "id_str": "999",
+                    "full_text": "tweet body",
+                    "display_text_range": [0, 10],
+                    "user": "42",
+                    "extended_entities": {"media": [{
+                        "type": "photo", "media_url_https": "https://pbs.twimg.com/x.jpg",
+                    }]},
+                },
+            }},
+            "users": {"entities": {
+                "42": {"screen_name": "alice", "id_str": "42"},
+            }},
+        }
+    }
+    media_items, tweet = _extract_from_data(data, "999")
+    assert tweet is not None
+    assert isinstance(tweet["user"], dict)
+    assert tweet["user"]["screen_name"] == "alice"
+    cap = _build_caption(tweet, "https://x.com/i/status/999")
+    assert "@alice" in cap
+    assert "tweet body" in cap
 
 
 def test_walk_for_tweet_obj_finds_in_graphql_legacy_shape():

@@ -144,6 +144,9 @@ async def download_media(
                 threads_cap, threads_art = await _enrich_caption_if_weak(url, threads_cap)
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return files, status_info, threads_cap, threads_art
+            if threads_cap:
+                metrics.record_success(platform_label, time.monotonic() - started)
+                return [], status_info, threads_cap, False
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg("downloader_status.threads_fail"), "", False
 
@@ -154,6 +157,9 @@ async def download_media(
                 x_caption, x_is_article = await _enrich_caption_if_weak(url, x_caption)
                 metrics.record_success(platform_label, time.monotonic() - started)
                 return files, status_info, x_caption, x_is_article
+            if x_caption:
+                metrics.record_success(platform_label, time.monotonic() - started)
+                return [], status_info, x_caption, False
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg("downloader_status.x_fail"), "", False
 

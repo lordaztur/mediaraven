@@ -153,8 +153,12 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
         logger.warning(f"⚠️ Post {code} não encontrado em scripts JSON do HTML")
         return [], msg("downloader_status.threads_playwright_fail"), ""
 
+    caption = _build_threads_caption(post, url)
     media_items = _extract_media(post)
     if not media_items:
+        if caption:
+            logger.info(f"📝 Post {code} sem mídia — entregando texto.")
+            return [], msg("downloader_status.threads_text_only"), caption
         logger.warning(
             f"⚠️ Nenhuma mídia encontrada no post {code} (media_type={post.get('media_type')})"
         )
@@ -178,8 +182,6 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
             downloaded_files.append(normalized)
         else:
             downloaded_files.append(filepath)
-
-    caption = _build_threads_caption(post, url)
 
     if downloaded_files:
         has_video = any(f.endswith(".mp4") for f in downloaded_files)
