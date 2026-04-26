@@ -8,6 +8,11 @@
 [![python-telegram-bot](https://img.shields.io/badge/python--telegram--bot-22.7-26A5E4?style=flat&logo=telegram&logoColor=white)](https://python-telegram-bot.org/)
 [![yt-dlp](https://img.shields.io/badge/powered%20by-yt--dlp-red?style=flat)](https://github.com/yt-dlp/yt-dlp)
 [![Playwright](https://img.shields.io/badge/playwright-1.58-2EAD33?style=flat&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![gallery-dl](https://img.shields.io/badge/gallery--dl-1.32-9333EA?style=flat)](https://github.com/mikf/gallery-dl)
+[![trafilatura](https://img.shields.io/badge/trafilatura-2.0-1B6B93?style=flat)](https://github.com/adbar/trafilatura)
+[![instagrapi](https://img.shields.io/badge/instagrapi-2.3-E4405F?style=flat&logo=instagram&logoColor=white)](https://github.com/subzeroid/instagrapi)
+[![curl-cffi](https://img.shields.io/badge/curl--cffi-0.14-073551?style=flat&logo=curl&logoColor=white)](https://github.com/lexiforest/curl_cffi)
+[![ffmpeg](https://img.shields.io/badge/ffmpeg-required-007808?style=flat&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
 
 🇺🇸 [English](README.en.md)
