@@ -9,6 +9,8 @@ from config import PW_GOTO_TIMEOUT_MS, THREADS_MIN_IMAGE_SIZE
 from messages import msg
 from utils import async_download_file, normalize_image, safe_url
 
+from ._caption import _build_caption
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,6 +52,19 @@ def _best_video_url(video_versions: list) -> Optional[str]:
         return None
     best = max(video_versions, key=lambda v: v.get("width") or 0)
     return best.get("url")
+
+
+def _build_threads_caption(post: dict, url: str) -> str:
+    if not isinstance(post, dict):
+        return ""
+    text = ((post.get("caption") or {}).get("text") or "").strip()
+    if not text:
+        return ""
+    user = post.get("user") or {}
+    username = (user.get("username") or "").strip()
+    title = f"@{username}" if username else ""
+    caption, _ = _build_caption({'title': title, 'description': text}, url)
+    return caption
 
 
 def _extract_media(post: dict) -> list[tuple[str, str]]:
@@ -115,35 +130,35 @@ async def _fetch_html(url: str) -> Optional[str]:
             await page.close()
 
 
-async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str]:
+async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str, str]:
     logger.info(f"🧵 Iniciando extração via JSON SSR para Threads: {safe_url(url)}")
 
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
 
     if not state.PW_BROWSER or not state.PW_CONTEXT:
-        return [], msg("downloader_status.playwright_not_running")
+        return [], msg("downloader_status.playwright_not_running"), ""
 
     code = _extract_post_code(url)
     if not code:
         logger.warning(f"⚠️ Não consegui extrair código do post da URL: {safe_url(url)}")
-        return [], msg("downloader_status.threads_playwright_fail")
+        return [], msg("downloader_status.threads_playwright_fail"), ""
 
     html = await _fetch_html(url)
     if not html:
-        return [], msg("downloader_status.threads_playwright_fail")
+        return [], msg("downloader_status.threads_playwright_fail"), ""
 
     post = _parse_post_from_html(html, code)
     if post is None:
         logger.warning(f"⚠️ Post {code} não encontrado em scripts JSON do HTML")
-        return [], msg("downloader_status.threads_playwright_fail")
+        return [], msg("downloader_status.threads_playwright_fail"), ""
 
     media_items = _extract_media(post)
     if not media_items:
         logger.warning(
             f"⚠️ Nenhuma mídia encontrada no post {code} (media_type={post.get('media_type')})"
         )
-        return [], msg("downloader_status.threads_playwright_fail")
+        return [], msg("downloader_status.threads_playwright_fail"), ""
 
     downloaded_files: list[str] = []
     for idx, (kind, m_url) in enumerate(media_items):
@@ -164,9 +179,11 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
         else:
             downloaded_files.append(filepath)
 
+    caption = _build_threads_caption(post, url)
+
     if downloaded_files:
         has_video = any(f.endswith(".mp4") for f in downloaded_files)
         media_type = msg("media_type_labels.threads_video") if has_video else msg("media_type_labels.threads_album")
-        return downloaded_files, msg("downloader_status.threads_playwright", media_type=media_type)
+        return downloaded_files, msg("downloader_status.threads_playwright", media_type=media_type), caption
 
-    return [], msg("downloader_status.threads_playwright_fail")
+    return [], msg("downloader_status.threads_playwright_fail"), caption

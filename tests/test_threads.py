@@ -4,6 +4,7 @@ import os
 import pytest
 
 from downloaders.threads import (
+    _build_threads_caption,
     _extract_media,
     _extract_post_code,
     _find_post_by_code,
@@ -107,3 +108,21 @@ def test_find_post_by_code_skips_match_without_media_type():
 def test_find_post_by_code_returns_none_when_absent():
     assert _find_post_by_code({"a": 1}, "MISSING") is None
     assert _find_post_by_code([], "MISSING") is None
+
+
+def test_build_threads_caption_includes_text_user_and_link():
+    post = _load_fixture("photo_single")
+    cap = _build_threads_caption(post, "https://threads.net/@lindamaah_/post/X")
+    assert "@lindamaah_" in cap
+    assert "Mulheres" in cap
+    assert "threads.net" in cap
+
+
+def test_build_threads_caption_empty_when_no_text():
+    post = _load_fixture("video")
+    assert _build_threads_caption(post, "https://threads.net/@u/post/X") == ""
+
+
+def test_build_threads_caption_handles_missing_post():
+    assert _build_threads_caption({}, "https://x.com/") == ""
+    assert _build_threads_caption(None, "https://x.com/") == ""

@@ -170,7 +170,7 @@ async def test_download_media_threads_goes_straight_to_playwright(tmp_folder):
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=ytdlp_mock), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_threads",
-                      new=AsyncMock(return_value=([pw_file], "OK_THREADS"))):
+                      new=AsyncMock(return_value=([pw_file], "OK_THREADS", ""))):
         files, status, caption, is_article = await dispatcher.download_media(
             "https://threads.net/@user/post/1", tmp_folder, target_lang=None
         )
@@ -219,7 +219,7 @@ async def test_threads_enriches_caption_from_article(tmp_folder):
 
     with patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_threads",
-                      new=AsyncMock(return_value=([pw_file], "OK_THREADS"))), \
+                      new=AsyncMock(return_value=([pw_file], "OK_THREADS", ""))), \
          patch.object(dispatcher, "fetch_article_caption",
                       new=AsyncMock(return_value=(article_caption, True))):
         files, status, caption, is_article = await dispatcher.download_media(

@@ -139,11 +139,11 @@ async def download_media(
 
         if platform.threads:
             logger.info("🧵 Link do Threads detectado, redirecionando direto para Playwright.")
-            files, status_info = await download_threads(url, unique_folder)
+            files, status_info, threads_cap = await download_threads(url, unique_folder)
             if files:
-                caption, is_article = await _enrich_caption_if_weak(url, "")
+                threads_cap, threads_art = await _enrich_caption_if_weak(url, threads_cap)
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return files, status_info, caption, is_article
+                return files, status_info, threads_cap, threads_art
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg("downloader_status.threads_fail"), "", False
 
