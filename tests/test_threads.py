@@ -112,17 +112,18 @@ def test_find_post_by_code_returns_none_when_absent():
 
 def test_build_threads_caption_includes_text_user_and_link():
     post = _load_fixture("photo_single")
-    cap = _build_threads_caption(post, "https://threads.net/@lindamaah_/post/X")
-    assert "@lindamaah_" in cap
-    assert "Mulheres" in cap
-    assert "threads.net" in cap
+    short, full = _build_threads_caption(post, "https://threads.net/@lindamaah_/post/X")
+    assert "@lindamaah_" in short
+    assert "Mulheres" in short
+    assert "threads.net" in short
+    assert "@lindamaah_" in full
 
 
 def test_build_threads_caption_empty_when_no_text():
     post = _load_fixture("video")
-    assert _build_threads_caption(post, "https://threads.net/@u/post/X") == ""
+    assert _build_threads_caption(post, "https://threads.net/@u/post/X") == ("", "")
 
 
 def test_build_threads_caption_handles_missing_post():
-    assert _build_threads_caption({}, "https://x.com/") == ""
-    assert _build_threads_caption(None, "https://x.com/") == ""
+    assert _build_threads_caption({}, "https://x.com/") == ("", "")
+    assert _build_threads_caption(None, "https://x.com/") == ("", "")

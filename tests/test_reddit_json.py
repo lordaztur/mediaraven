@@ -58,7 +58,7 @@ async def test_reddit_json_gallery_items(tmp_path):
     ]
     state.AIOHTTP_SESSION = _make_session_mock(payload)
     with patch.object(reddit_json, 'async_download_file', new=AsyncMock(return_value=False)):
-        files, status, _caption = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
+        files, status, _short, _full = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
 
     # Como o download mockou False, files fica vazio; o que queremos validar é o fluxo sem explodir.
     assert files == []
@@ -86,7 +86,7 @@ async def test_reddit_json_single_image_url(tmp_path):
 
     with patch.object(reddit_json, 'async_download_file', new=AsyncMock(side_effect=fake_download)), \
          patch.object(reddit_json, 'normalize_image', side_effect=lambda p, **kw: p):
-        files, status, _caption = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
+        files, status, _short, _full = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
 
     assert len(files) == 1
     assert captured_urls == ["https://i.redd.it/single.png"]
@@ -110,7 +110,7 @@ async def test_reddit_json_preview_images_fallback(tmp_path):
         return False
 
     with patch.object(reddit_json, 'async_download_file', new=AsyncMock(side_effect=fake_download)):
-        files, status, _caption = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
+        files, status, _short, _full = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
 
     assert captured == ["https://i.redd.it/prev.jpg"]
     assert files == []
@@ -122,6 +122,6 @@ async def test_reddit_json_handles_malformed(tmp_path):
     folder = str(tmp_path / "task")
     os.makedirs(folder)
     state.AIOHTTP_SESSION = _make_session_mock([])
-    files, status, _caption = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
+    files, status, _short, _full = await reddit_json.download_reddit_json("https://reddit.com/r/x/comments/z/", folder)
     assert files == []
     assert status

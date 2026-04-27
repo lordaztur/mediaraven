@@ -212,22 +212,25 @@ def test_extract_tweet_text_handles_none():
 
 def test_build_caption_with_text():
     tweet = {"full_text": "Hello <world>", "display_text_range": [0, 13]}
-    caption = _build_caption(tweet, "https://x.com/u/status/1")
-    assert "Hello &lt;world&gt;" in caption
-    assert "https://x.com/u/status/1" in caption
-    assert "<a href=" in caption
+    short, full = _build_caption(tweet, "https://x.com/u/status/1")
+    assert "Hello &lt;world&gt;" in short
+    assert "https://x.com/u/status/1" in short
+    assert "<a href=" in short
+    assert "Hello &lt;world&gt;" in full
 
 
 def test_build_caption_without_text_or_user_returns_empty():
-    assert _build_caption(None, "https://x.com/i/web/status/1") == ""
+    short, _full = _build_caption(None, "https://x.com/i/web/status/1")
+    assert short == ""
 
 
 def test_build_caption_truncates_very_long_text():
     long_text = "a" * 1500
     tweet = {"full_text": long_text, "display_text_range": [0, 1500]}
-    caption = _build_caption(tweet, "https://x.com/u/status/1")
-    assert "..." in caption or "…" in caption
-    assert len(caption) < 1500
+    short, full = _build_caption(tweet, "https://x.com/u/status/1")
+    assert "..." in short or "…" in short
+    assert len(short) < 1500
+    assert "a" * 1500 in full
 
 
 def test_build_caption_includes_screen_name_as_title():
@@ -236,23 +239,23 @@ def test_build_caption_includes_screen_name_as_title():
         "display_text_range": [0, 11],
         "user": {"screen_name": "elonmusk"},
     }
-    caption = _build_caption(tweet, "https://x.com/elonmusk/status/1")
-    assert "@elonmusk" in caption
-    assert "Hello world" in caption
+    short, _full = _build_caption(tweet, "https://x.com/elonmusk/status/1")
+    assert "@elonmusk" in short
+    assert "Hello world" in short
 
 
 def test_build_caption_falls_back_to_screen_name_from_url():
     tweet = {"full_text": "Texto do tweet", "display_text_range": [0, 14]}
-    caption = _build_caption(tweet, "https://x.com/jack/status/12345")
-    assert "@jack" in caption
-    assert "Texto do tweet" in caption
+    short, _full = _build_caption(tweet, "https://x.com/jack/status/12345")
+    assert "@jack" in short
+    assert "Texto do tweet" in short
 
 
 def test_build_caption_skips_i_path_in_url():
     tweet = {"full_text": "Texto", "display_text_range": [0, 5]}
-    caption = _build_caption(tweet, "https://x.com/i/web/status/12345")
-    assert "@i" not in caption
-    assert "Texto" in caption
+    short, _full = _build_caption(tweet, "https://x.com/i/web/status/12345")
+    assert "@i" not in short
+    assert "Texto" in short
 
 
 def test_extract_from_data_resolves_user_dict_when_user_is_id():
@@ -278,9 +281,9 @@ def test_extract_from_data_resolves_user_dict_when_user_is_id():
     assert tweet is not None
     assert isinstance(tweet["user"], dict)
     assert tweet["user"]["screen_name"] == "alice"
-    cap = _build_caption(tweet, "https://x.com/i/status/999")
-    assert "@alice" in cap
-    assert "tweet body" in cap
+    cap_short, _ = _build_caption(tweet, "https://x.com/i/status/999")
+    assert "@alice" in cap_short
+    assert "tweet body" in cap_short
 
 
 def test_walk_for_tweet_obj_finds_in_graphql_legacy_shape():

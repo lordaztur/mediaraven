@@ -12,7 +12,7 @@ from utils import async_merge_audio_image, safe_url
 logger = logging.getLogger(__name__)
 
 
-async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("instagram.iniciando_instagrapi_para", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -94,7 +94,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
         state.ig_pending_dec()
 
     if not result:
-        return [], msg("downloader_status.instagrapi_fail"), ""
+        return [], msg("downloader_status.instagrapi_fail"), "", ""
 
     paths, audio_url, duration_sec, start_time_sec, media_type, caption_text, is_single_photo = result
 
@@ -145,7 +145,10 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
     else:
         m_type = msg("media_type_labels.ig_album")
 
+    caption_full = caption_text
     if caption_text and len(caption_text) > cfg("IG_CAPTION_MAX"):
-        caption_text = caption_text[:cfg("IG_CAPTION_MAX")] + "..."
+        caption_short = caption_text[:cfg("IG_CAPTION_MAX")] + "..."
+    else:
+        caption_short = caption_text
 
-    return paths, msg("downloader_status.instagrapi", media_type=m_type), caption_text
+    return paths, msg("downloader_status.instagrapi", media_type=m_type), caption_short, caption_full

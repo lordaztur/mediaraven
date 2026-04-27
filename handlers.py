@@ -21,8 +21,9 @@ from downloaders.dispatcher import download_media
 from downloaders.fallback import take_page_screenshot
 from lifecycle import get_chat_lock
 from messages import lmsg, msg, msg_list
+from downloaders._caption import CAPTION_MAX, TEXT_MAX
 from telegram_io import send_downloaded_media
-from utils import cycle_status_message, safe_cleanup, safe_url
+from utils import chunk_html_text, cycle_status_message, safe_cleanup, safe_url
 
 logger = logging.getLogger(__name__)
 
@@ -357,30 +358,56 @@ async def _register_retry_and_prompt(
     await _safe_edit(status_msg, text, parse_mode='HTML', reply_markup=markup)
 
 
+async def _send_text_in_chunks(
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    message_id: int,
+    full_text: str,
+    *,
+    show_preview: bool,
+    reply_to_first: bool = True,
+) -> None:
+    chunks = chunk_html_text(full_text, TEXT_MAX)
+    if not chunks:
+        return
+    delay = cfg("MEDIA_GROUP_DELAY")
+    last_idx = len(chunks) - 1
+    for i, chunk in enumerate(chunks):
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=chunk,
+            parse_mode='HTML',
+            reply_to_message_id=message_id if (reply_to_first and i == 0) else None,
+            disable_web_page_preview=not (show_preview and i == last_idx),
+        )
+        if i < last_idx:
+            await asyncio.sleep(delay)
+
+
 async def _send_files_and_cleanup_status(
     context: ContextTypes.DEFAULT_TYPE,
     chat_id: int,
     message_id: int,
     status_msg: Any,
     files: list,
-    desc_text: str,
+    desc_short: str,
+    desc_full: str,
     suffix: str,
     user_id: Optional[int],
     idx: int,
     is_article: bool = False,
 ) -> None:
-    caption_to_send = None
-    if desc_text:
+    include_text = False
+    if desc_short:
         timeout = cfg("ASK_ARTICLE_TIMEOUT") if is_article else cfg("ASK_CAPTION_TIMEOUT")
         default = cfg("ASK_ARTICLE_DEFAULT") if is_article else cfg("ASK_CAPTION_DEFAULT")
         if should_show_prompt("caption", chat_id, user_id or 0):
-            if await _ask_caption_inclusion(
+            include_text = await _ask_caption_inclusion(
                 context, status_msg, message_id, suffix, user_id, idx,
                 timeout=timeout, default=default,
-            ):
-                caption_to_send = desc_text
+            )
         elif default == 'yes':
-            caption_to_send = desc_text
+            include_text = True
 
     await _safe_edit(status_msg, msg("status.sending", count=len(files), suffix=suffix))
 
@@ -390,9 +417,20 @@ async def _send_files_and_cleanup_status(
         'parse_mode': 'HTML',
         'reply_to_message_id': message_id,
     }
+
+    text_in_chunks = include_text and desc_full and len(desc_full) > CAPTION_MAX
+    caption_on_media = desc_short if (include_text and not text_in_chunks) else None
+
     await send_downloaded_media(
-        context, chat_id, files, message_id, upload_kwargs, caption=caption_to_send
+        context, chat_id, files, message_id, upload_kwargs, caption=caption_on_media
     )
+
+    if text_in_chunks:
+        await _send_text_in_chunks(
+            context, chat_id, message_id, desc_full,
+            show_preview=False, reply_to_first=False,
+        )
+
     await _safe_delete(status_msg)
 
 
@@ -431,7 +469,7 @@ async def process_media_request(
         link_folder = os.path.join(unique_folder, "content")
 
         detect_lang = should_show_prompt("lang", chat_id, user_id or 0)
-        files, status_or_error, desc_text, is_article = await download_media(
+        files, status_or_error, desc_short, desc_full, is_article = await download_media(
             url, link_folder, target_lang, detect_languages=detect_lang,
         )
 
@@ -459,13 +497,10 @@ async def process_media_request(
             outcome = "✅" if files else "❌"
             logger.info(lmsg("handlers.x_x_x", outcome=outcome, status_or_error=status_or_error, arg0=safe_url(url)))
 
-        if not files and desc_text:
-            await context.bot.send_message(
-                chat_id=chat_id,
-                text=desc_text,
-                parse_mode='HTML',
-                reply_to_message_id=message_id,
-                disable_web_page_preview=False,
+        if not files and (desc_full or desc_short):
+            await _send_text_in_chunks(
+                context, chat_id, message_id, desc_full or desc_short,
+                show_preview=True, reply_to_first=True,
             )
             await _safe_delete(status_msg)
             return
@@ -492,8 +527,8 @@ async def process_media_request(
                 return
 
         await _send_files_and_cleanup_status(
-            context, chat_id, message_id, status_msg, files, desc_text, suffix, user_id, idx,
-            is_article=is_article,
+            context, chat_id, message_id, status_msg, files, desc_short, desc_full,
+            suffix, user_id, idx, is_article=is_article,
         )
 
     except Exception:

@@ -123,7 +123,7 @@ async def _fetch_embed_html(shortcode: str) -> Optional[str]:
     return r.text
 
 
-async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("instagram_embed.tentando_ig_embed", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
@@ -132,29 +132,29 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
     shortcode = _extract_shortcode(url)
     if not shortcode:
         logger.debug(lmsg("instagram_embed.n_o_consegui_extrair", arg0=safe_url(url)))
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     html_text = await _fetch_embed_html(shortcode)
     if not html_text:
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     data = _parse_context_json(html_text)
     if not data:
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     media = _find_shortcode_media(data)
     if not media:
         logger.debug(lmsg("instagram_embed.ig_embed_sem", shortcode=shortcode))
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     if _has_unembedded_music(media):
         logger.info(lmsg("instagram_embed.ig_embed_post", shortcode=shortcode))
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     items = _media_from_node(media)
     if not items:
         logger.debug(lmsg("instagram_embed.ig_embed_sem_2", shortcode=shortcode))
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     downloaded: list[str] = []
     for idx, (kind, m_url) in enumerate(items):
@@ -180,7 +180,7 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
             "instagram_embed.downloads_all_failed",
             n=len(items), shortcode=shortcode,
         ))
-        return [], msg("downloader_status.instagram_embed_fail"), ""
+        return [], msg("downloader_status.instagram_embed_fail"), "", ""
 
     raw_caption = _extract_caption(media)
     if raw_caption and len(raw_caption) > cfg("IG_CAPTION_MAX"):
@@ -190,8 +190,8 @@ async def download_instagram_embed(url: str, unique_folder: str) -> tuple[list[s
         "uploader": f"@{username}" if username else "",
         "description": raw_caption,
     }
-    caption, _ = _build_caption(info_for_caption, url)
+    caption_short, caption_full = _build_caption(info_for_caption, url)
 
     has_video = any(f.endswith(".mp4") for f in downloaded)
     label = msg("media_type_labels.ig_video") if has_video else msg("media_type_labels.ig_album")
-    return downloaded, msg("downloader_status.instagram_embed", media_type=label), caption
+    return downloaded, msg("downloader_status.instagram_embed", media_type=label), caption_short, caption_full

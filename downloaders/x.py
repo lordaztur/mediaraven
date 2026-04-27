@@ -159,12 +159,11 @@ def _get_screen_name(tweet: Optional[dict], url: str) -> str:
     return m.group(1) if m else ""
 
 
-def _build_caption(tweet: Optional[dict], url: str) -> str:
+def _build_caption(tweet: Optional[dict], url: str) -> tuple[str, str]:
     text = _extract_tweet_text(tweet)
     sn = _get_screen_name(tweet, url)
     uploader = f"@{sn}" if sn else ""
-    caption, _ = _build_std_caption({'uploader': uploader, 'description': text}, url)
-    return caption
+    return _build_std_caption({'uploader': uploader, 'description': text}, url)
 
 
 async def _fetch_guest_html(url: str) -> Optional[str]:
@@ -273,7 +272,7 @@ async def _try_authenticated(url: str, tweet_id: str) -> tuple[list[tuple[str, s
     return [], tweet_obj
 
 
-async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("x.iniciando_extra_o_para", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
@@ -283,7 +282,7 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
     tweet_id = _extract_tweet_id(url)
     if not tweet_id:
         logger.warning(lmsg("x.n_o_consegui_extrair", arg0=safe_url(url)))
-        return [], msg("downloader_status.x_fail"), ""
+        return [], msg("downloader_status.x_fail"), "", ""
 
     media_items, tweet_obj = await _try_guest(url, tweet_id)
     if not media_items:
@@ -294,12 +293,15 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
             tweet_obj = auth_tweet
 
     if not media_items:
-        text_caption = _build_caption(tweet_obj, url) if tweet_obj else ""
-        if text_caption and _extract_tweet_text(tweet_obj):
+        if tweet_obj:
+            text_short, text_full = _build_caption(tweet_obj, url)
+        else:
+            text_short, text_full = "", ""
+        if text_short and _extract_tweet_text(tweet_obj):
             logger.info(lmsg("x.tweet_x_sem", tweet_id=tweet_id))
-            return [], msg("downloader_status.x_text_only"), text_caption
+            return [], msg("downloader_status.x_text_only"), text_short, text_full
         logger.warning(lmsg("x.nenhuma_m_dia_encontrada", tweet_id=tweet_id))
-        return [], msg("downloader_status.x_fail"), ""
+        return [], msg("downloader_status.x_fail"), "", ""
 
     downloaded: list[str] = []
     for idx, (kind, m_url) in enumerate(media_items):
@@ -325,9 +327,9 @@ async def download_x(url: str, unique_folder: str) -> tuple[list[str], str, str]
             "x.downloads_all_failed",
             tweet_id=tweet_id, n=len(media_items),
         ))
-        return [], msg("downloader_status.x_fail"), ""
+        return [], msg("downloader_status.x_fail"), "", ""
 
     has_video = any(f.endswith(".mp4") for f in downloaded)
     label = msg("media_type_labels.x_video") if has_video else msg("media_type_labels.x_album")
-    caption = _build_caption(tweet_obj, url)
-    return downloaded, msg("downloader_status.x", media_type=label, count=len(downloaded)), caption
+    caption_short, caption_full = _build_caption(tweet_obj, url)
+    return downloaded, msg("downloader_status.x", media_type=label, count=len(downloaded)), caption_short, caption_full

@@ -54,30 +54,44 @@ def test_looks_like_image_detects_extensions():
 
 
 def test_build_reddit_caption_with_title_and_selftext():
-    caption = build_reddit_caption(
+    short, full = build_reddit_caption(
         "Cute puppy playing",
         "Found this little guy in my yard today.",
         "https://reddit.com/r/aww/comments/x/",
     )
-    assert "Cute puppy playing" in caption
-    assert "Found this little guy" in caption
-    assert "<b>" in caption
-    assert "<a href=" in caption
+    assert "Cute puppy playing" in short
+    assert "Found this little guy" in short
+    assert "<b>" in short
+    assert "<a href=" in short
+    assert "Found this little guy" in full
 
 
 def test_build_reddit_caption_only_title():
-    caption = build_reddit_caption("Just a photo", "", "https://reddit.com/r/pics/comments/x/")
-    assert "Just a photo" in caption
-    assert "<a href=" in caption
+    short, full = build_reddit_caption("Just a photo", "", "https://reddit.com/r/pics/comments/x/")
+    assert "Just a photo" in short
+    assert "<a href=" in short
+    assert "Just a photo" in full
 
 
 def test_build_reddit_caption_empty_returns_empty_string():
-    caption = build_reddit_caption("", "", "https://reddit.com/r/x/comments/y/")
-    assert caption == ""
+    short, _full = build_reddit_caption("", "", "https://reddit.com/r/x/comments/y/")
+    assert short == ""
 
 
 def test_build_reddit_caption_html_escapes_specials():
-    caption = build_reddit_caption("Title <with> & stuff", "body & <stuff>", "https://reddit.com/r/x/comments/y/")
-    assert "&lt;" in caption
-    assert "&amp;" in caption
-    assert "<with>" not in caption
+    short, full = build_reddit_caption("Title <with> & stuff", "body & <stuff>", "https://reddit.com/r/x/comments/y/")
+    assert "&lt;" in short
+    assert "&amp;" in short
+    assert "<with>" not in short
+    assert "&lt;" in full
+    assert "<with>" not in full
+
+
+def test_build_reddit_caption_full_not_truncated():
+    """A versão full não trunca; permite chunking lá no handlers."""
+    body = "x" * 5000
+    short, full = build_reddit_caption("Long body", body, "https://reddit.com/r/x/comments/y/")
+    assert len(short) <= 1024
+    assert "..." in short
+    assert len(full) > 5000
+    assert "..." not in full[:5000]

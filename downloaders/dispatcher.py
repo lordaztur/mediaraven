@@ -73,20 +73,20 @@ async def _run_platform_fallbacks(
     url: str,
     unique_folder: str,
     platform: Platform,
-) -> Optional[tuple[list[str], str, str, bool]]:
+) -> Optional[tuple[list[str], str, str, str, bool]]:
     if platform.instagram:
-        ig_files, ig_status, ig_cap = await download_instagram_instagrapi(url, unique_folder)
+        ig_files, ig_status, ig_short, ig_full = await download_instagram_instagrapi(url, unique_folder)
         if ig_files:
-            return await _finalize_success(ig_files, ig_status, ig_cap, url)
+            return await _finalize_success(ig_files, ig_status, ig_short, ig_full, url)
 
     if platform.reddit:
-        reddit_pw_files, reddit_pw_status, reddit_pw_cap = await download_reddit_playwright(url, unique_folder)
+        reddit_pw_files, reddit_pw_status, reddit_pw_short, reddit_pw_full = await download_reddit_playwright(url, unique_folder)
         if reddit_pw_files:
-            return await _finalize_success(reddit_pw_files, reddit_pw_status, reddit_pw_cap, url)
+            return await _finalize_success(reddit_pw_files, reddit_pw_status, reddit_pw_short, reddit_pw_full, url)
 
-    scrape_files, scrape_status, scrape_caption, scrape_is_article = await scrape_fallback(url, unique_folder)
+    scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article = await scrape_fallback(url, unique_folder)
     if scrape_files:
-        return scrape_files, scrape_status, scrape_caption, scrape_is_article
+        return scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article
 
     return None
 
@@ -106,27 +106,32 @@ def _caption_is_weak(caption: str) -> bool:
     return stripped.startswith(link_prefix) and stripped.count('<a ') <= 1
 
 
-async def _enrich_caption_with_article(url: str, caption: str) -> tuple[str, bool]:
-    if not _caption_is_weak(caption):
-        return caption, False
-    article_caption = await fetch_article_caption(url)
-    if article_caption:
-        return article_caption, True
-    return caption, False
+async def _enrich_caption_with_article(
+    url: str, caption_short: str, caption_full: str,
+) -> tuple[str, str, bool]:
+    if not _caption_is_weak(caption_short):
+        return caption_short, caption_full, False
+    article_short, article_full = await fetch_article_caption(url)
+    if article_short:
+        return article_short, article_full, True
+    return caption_short, caption_full, False
 
 
 async def _finalize_success(
     files: list,
     status: str,
-    caption: str,
+    caption_short: str,
+    caption_full: str,
     url: str,
     platform_label: Optional[str] = None,
     started: Optional[float] = None,
-) -> tuple[list, str, str, bool]:
-    caption, is_article = await _enrich_caption_with_article(url, caption)
+) -> tuple[list, str, str, str, bool]:
+    caption_short, caption_full, is_article = await _enrich_caption_with_article(
+        url, caption_short, caption_full,
+    )
     if platform_label is not None and started is not None:
         metrics.record_success(platform_label, time.monotonic() - started)
-    return files, status, caption, is_article
+    return files, status, caption_short, caption_full, is_article
 
 
 async def download_media(
@@ -134,7 +139,7 @@ async def download_media(
     unique_folder: str,
     target_lang: Optional[str] = None,
     detect_languages: bool = True,
-) -> tuple[list, str, str, bool]:
+) -> tuple[list, str, str, str, bool]:
     started = time.monotonic()
     platform_label = 'other'
     try:
@@ -151,35 +156,35 @@ async def download_media(
 
         if platform.threads:
             logger.info(lmsg("dispatcher.link_do_threads"))
-            files, status_info, threads_cap = await download_threads(url, unique_folder)
+            files, status_info, t_short, t_full = await download_threads(url, unique_folder)
             if files:
-                return await _finalize_success(files, status_info, threads_cap, url, platform_label, started)
-            if threads_cap:
+                return await _finalize_success(files, status_info, t_short, t_full, url, platform_label, started)
+            if t_short:
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return [], status_info, threads_cap, False
+                return [], status_info, t_short, t_full, False
             metrics.record_failure(platform_label, time.monotonic() - started)
-            return [], msg("downloader_status.threads_fail"), "", False
+            return [], msg("downloader_status.threads_fail"), "", "", False
 
         if platform.x:
             logger.info(lmsg("dispatcher.link_do_x"))
-            files, status_info, x_caption = await download_x(url, unique_folder)
+            files, status_info, x_short, x_full = await download_x(url, unique_folder)
             if files:
-                return await _finalize_success(files, status_info, x_caption, url, platform_label, started)
-            if x_caption:
+                return await _finalize_success(files, status_info, x_short, x_full, url, platform_label, started)
+            if x_short:
                 metrics.record_success(platform_label, time.monotonic() - started)
-                return [], status_info, x_caption, False
+                return [], status_info, x_short, x_full, False
             metrics.record_failure(platform_label, time.monotonic() - started)
-            return [], msg("downloader_status.x_fail"), "", False
+            return [], msg("downloader_status.x_fail"), "", "", False
 
         if platform.instagram:
-            embed_files, embed_status, embed_cap = await download_instagram_embed(url, unique_folder)
+            embed_files, embed_status, embed_short, embed_full = await download_instagram_embed(url, unique_folder)
             if embed_files:
-                return await _finalize_success(embed_files, embed_status, embed_cap, url, platform_label, started)
+                return await _finalize_success(embed_files, embed_status, embed_short, embed_full, url, platform_label, started)
 
         if platform.reddit:
-            rj_files, rj_status, rj_cap = await download_reddit_json(url, unique_folder)
+            rj_files, rj_status, rj_short, rj_full = await download_reddit_json(url, unique_folder)
             if rj_files:
-                return await _finalize_success(rj_files, rj_status, rj_cap, url, platform_label, started)
+                return await _finalize_success(rj_files, rj_status, rj_short, rj_full, url, platform_label, started)
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
@@ -194,18 +199,18 @@ async def download_media(
             lang_buttons = await _detect_youtube_languages(base_opts, url, has_firefox_cookie)
             if lang_buttons:
                 metrics.record_multilang(platform_label)
-                return lang_buttons, "MULTILANG", "", False
+                return lang_buttons, "MULTILANG", "", "", False
 
         downloaded_files, info_dict = await _run_ytdlp_with_cookie_fallback(
             base_opts, url, unique_folder, has_firefox_cookie, target_lang
         )
 
-        caption, _ = _build_caption(info_dict, url)
+        caption_short, caption_full = _build_caption(info_dict, url)
 
         if downloaded_files:
             return await _finalize_success(
                 downloaded_files, msg("downloader_status.ytdlp_success"),
-                caption, url, platform_label, started,
+                caption_short, caption_full, url, platform_label, started,
             )
 
         logger.warning(lmsg("dispatcher.falha_no_yt", arg0=safe_url(url)))
@@ -217,7 +222,7 @@ async def download_media(
             return fallback_result
 
         metrics.record_failure(platform_label, time.monotonic() - started)
-        return [], msg("downloader_status.generic_fail"), "", False
+        return [], msg("downloader_status.generic_fail"), "", "", False
     except Exception:
         metrics.record_failure(platform_label, time.monotonic() - started)
         raise

@@ -482,30 +482,30 @@ def _drop_facebook_image_only(files: list[str], page_url: str) -> list[str]:
     return []
 
 
-async def fetch_article_caption(url: str, html: Optional[str] = None) -> str:
+async def fetch_article_caption(url: str, html: Optional[str] = None) -> tuple[str, str]:
     if cfg("SCRAPE_ARTICLE_EXTRACT") != "yes":
-        return ""
+        return "", ""
     if html is None:
         html, _ = await _fetch_html_with_paywall_bypass(
             url, timeout=cfg("SCRAPE_FAST_PATH_TIMEOUT_S"),
         )
     if not html:
-        return ""
+        return "", ""
     result = extract_article(html, url=url, min_chars=cfg("SCRAPE_ARTICLE_MIN_CHARS"))
     if not result:
-        return ""
+        return "", ""
     title, body = result
-    caption, _ = _build_caption({'title': title, 'description': body}, url)
+    short, full = _build_caption({'title': title, 'description': body}, url)
     logger.info(lmsg(
         "fallback.article_detected",
-        body_len=len(body), caption_len=len(caption), url=safe_url(url),
+        body_len=len(body), caption_len=len(short), url=safe_url(url),
     ))
-    return caption
+    return short, full
 
 
 async def scrape_fallback(
     url: str, unique_folder: str,
-) -> tuple[list[str], str, str, bool]:
+) -> tuple[list[str], str, str, str, bool]:
     logger.info(lmsg("fallback.iniciando_scraping_multi", arg0=safe_url(url)))
 
     if not os.path.exists(unique_folder):
@@ -528,16 +528,26 @@ async def scrape_fallback(
 
     paywall_in_pw = _looks_like_paywall(page_html)
 
-    article_text = await fetch_article_caption(url, html=fast_html or page_html)
-    is_article = bool(article_text)
+    article_short, article_full = await fetch_article_caption(url, html=fast_html or page_html)
+    is_article = bool(article_short)
 
-    fast_media = _gather_media_from_html(fast_html, url) if fast_html else []
-    combined = merge_media_lists(fast_media, pw_media, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
-    logger.info(lmsg(
-        "fallback.combined_stats",
-        n_html=len(fast_media), source=html_source, n_pw=len(pw_media),
-        n_combined=len(combined), n_iframes=len(iframes),
-    ))
+    if is_article:
+        article_html = fast_html or page_html or ""
+        article_meta = extract_meta_media(article_html, url)
+        article_jsonld = extract_jsonld_media(article_html, url)
+        combined = merge_media_lists(article_meta, article_jsonld, cap=1)
+        logger.info(lmsg(
+            "fallback.article_media_filtered",
+            n_combined=len(combined),
+        ))
+    else:
+        fast_media = _gather_media_from_html(fast_html, url) if fast_html else []
+        combined = merge_media_lists(fast_media, pw_media, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
+        logger.info(lmsg(
+            "fallback.combined_stats",
+            n_html=len(fast_media), source=html_source, n_pw=len(pw_media),
+            n_combined=len(combined), n_iframes=len(iframes),
+        ))
 
     prepared = _prepare_for_download(combined)
     files: list[str] = []
@@ -547,27 +557,27 @@ async def scrape_fallback(
         files = _drop_facebook_image_only(files, url)
 
     if files:
-        return files, _build_status(files, "downloader_status.scraper"), article_text, is_article
+        return files, _build_status(files, "downloader_status.scraper"), article_short, article_full, is_article
 
     logger.info(lmsg("fallback.tentando_yt_dlp_2"))
     yt_files = await _ytdlp_generic(url, unique_folder)
     if yt_files:
-        return yt_files, _build_status(yt_files, "downloader_status.scraper_generic_ytdlp"), article_text, is_article
+        return yt_files, _build_status(yt_files, "downloader_status.scraper_generic_ytdlp"), article_short, article_full, is_article
 
     logger.info(lmsg("fallback.tentando_gallery_dl"))
     galdl_files = await _gallery_dl_run(url, unique_folder)
     if galdl_files:
-        return galdl_files, _build_status(galdl_files, "downloader_status.scraper_gallerydl"), article_text, is_article
+        return galdl_files, _build_status(galdl_files, "downloader_status.scraper_gallerydl"), article_short, article_full, is_article
 
     if iframes:
         iframe_files = await _ytdlp_generic_iframes(iframes, unique_folder)
         if iframe_files:
-            return iframe_files, _build_status(iframe_files, "downloader_status.scraper_generic_ytdlp"), article_text, is_article
+            return iframe_files, _build_status(iframe_files, "downloader_status.scraper_generic_ytdlp"), article_short, article_full, is_article
 
     if not pw_available:
-        return [], msg("downloader_status.playwright_not_running"), "", False
+        return [], msg("downloader_status.playwright_not_running"), "", "", False
 
     if paywall_in_pw or (failed > 0 and failed == len(prepared) and prepared):
-        return [], msg("downloader_status.scraper_paywall"), "", False
+        return [], msg("downloader_status.scraper_paywall"), "", "", False
 
-    return [], msg("downloader_status.scraper_fail"), "", False
+    return [], msg("downloader_status.scraper_fail"), "", "", False

@@ -27,7 +27,7 @@ def _force_old_reddit(url: str) -> str:
     return url
 
 
-async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("reddit_playwright.iniciando_extra_o_via", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -37,10 +37,10 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
     og_title = ""
 
     if not state.PW_BROWSER:
-        return [], msg("downloader_status.playwright_not_running"), ""
+        return [], msg("downloader_status.playwright_not_running"), "", ""
 
     if not state.PW_CONTEXT:
-        return [], msg("downloader_status.playwright_not_running"), ""
+        return [], msg("downloader_status.playwright_not_running"), "", ""
 
     target_url = _force_old_reddit(url)
     if target_url != url:
@@ -134,6 +134,6 @@ async def download_reddit_playwright(url: str, unique_folder: str) -> tuple[list
             logger.error(lmsg("reddit_playwright.erro_ao_baixar", e=e))
 
     if downloaded_files:
-        caption = build_reddit_caption(og_title, "", url)
-        return downloaded_files, msg("downloader_status.reddit_playwright"), caption
-    return [], msg("downloader_status.reddit_playwright_fail"), ""
+        caption_short, caption_full = build_reddit_caption(og_title, "", url)
+        return downloaded_files, msg("downloader_status.reddit_playwright"), caption_short, caption_full
+    return [], msg("downloader_status.reddit_playwright_fail"), "", ""

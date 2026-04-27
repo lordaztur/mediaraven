@@ -17,6 +17,40 @@ from messages import lmsg, msg_list
 logger = logging.getLogger(__name__)
 
 
+def chunk_html_text(text: str, limit: int) -> list[str]:
+    """Quebra texto em pedaços ≤ limit, preferindo \\n\\n > \\n > '. ' > espaço.
+
+    Assume que tags HTML do input ficam em linhas próprias (caso do
+    _build_caption: <b>...</b> no header, <a>...</a> no rodapé). Quebrar em
+    \\n\\n ou \\n preserva tags balanceadas.
+    """
+    if not text:
+        return []
+    if len(text) <= limit:
+        return [text]
+
+    chunks: list[str] = []
+    remaining = text
+    min_split = max(1, limit // 3)
+    while len(remaining) > limit:
+        split_at = -1
+        for sep in ("\n\n", "\n", ". ", " "):
+            pos = remaining.rfind(sep, 0, limit)
+            if pos >= min_split:
+                split_at = pos + (1 if sep == ". " else 0)
+                break
+        if split_at <= 0:
+            split_at = limit
+        chunk = remaining[:split_at].rstrip()
+        if chunk:
+            chunks.append(chunk)
+        remaining = remaining[split_at:].lstrip()
+
+    if remaining:
+        chunks.append(remaining)
+    return chunks
+
+
 def safe_url(url: str, max_length: Optional[int] = None) -> str:
     if max_length is None:
         max_length = cfg("SAFE_URL_MAX_LENGTH")

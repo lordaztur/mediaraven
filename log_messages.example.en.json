@@ -68,7 +68,8 @@
     "gallery_dl_timeout": "⚠️ gallery-dl timeout ({timeout}s) for {url}",
     "facebook_image_only_dropped": "⚠️ Scraper found {n} media items for Facebook, but none are video — likely UI junk. Discarding.",
     "article_detected": "📰 Article detected ({body_len} chars body, {caption_len} chars caption) at {url}",
-    "combined_stats": "🔎 Combined: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (after dedupe), {n_iframes} embed iframe(s)."
+    "combined_stats": "🔎 Combined: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (after dedupe), {n_iframes} embed iframe(s).",
+    "article_media_filtered": "📰 Filtering article media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest."
   },
   "instagram": {
     "iniciando_instagrapi_para": "📸 Starting Instagrapi for: {arg0}",

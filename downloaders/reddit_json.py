@@ -12,7 +12,7 @@ from .reddit_common import build_reddit_caption, clean_reddit_media_url, looks_l
 logger = logging.getLogger(__name__)
 
 
-async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str], str, str]:
+async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("reddit_json.iniciando_extra_o_via", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
@@ -51,7 +51,7 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
 
         if post_data.get('is_video') or post_data.get('post_hint') in ('hosted:video', 'rich:video'):
             logger.info(lmsg("reddit_json.post_v_deo"))
-            return [], msg("downloader_status.reddit_json_fail"), ""
+            return [], msg("downloader_status.reddit_json_fail"), "", ""
 
         if 'media_metadata' in post_data:
             gallery_items = post_data.get('gallery_data', {}).get('items', [])
@@ -103,6 +103,6 @@ async def download_reddit_json(url: str, unique_folder: str) -> tuple[list[str],
             logger.error(lmsg("reddit_json.erro_ao_processar", e=e))
 
     if downloaded_files:
-        caption = build_reddit_caption(title, selftext, url)
-        return downloaded_files, msg("downloader_status.reddit_json"), caption
-    return [], msg("downloader_status.reddit_json_fail"), ""
+        caption_short, caption_full = build_reddit_caption(title, selftext, url)
+        return downloaded_files, msg("downloader_status.reddit_json"), caption_short, caption_full
+    return [], msg("downloader_status.reddit_json_fail"), "", ""

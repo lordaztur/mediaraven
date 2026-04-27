@@ -1,10 +1,49 @@
-"""Testes dos helpers puros de utils: safe_url e normalize_image."""
+"""Testes dos helpers puros de utils: safe_url, normalize_image e chunk_html_text."""
 import os
 
 from PIL import Image
 
 from config import cfg
-from utils import normalize_image, safe_url
+from utils import chunk_html_text, normalize_image, safe_url
+
+
+def test_chunk_html_text_returns_single_when_below_limit():
+    assert chunk_html_text("oi", 100) == ["oi"]
+
+
+def test_chunk_html_text_empty():
+    assert chunk_html_text("", 100) == []
+
+
+def test_chunk_html_text_prefers_paragraph_break():
+    text = "primeiro\n\nsegundo\n\nterceiro"
+    out = chunk_html_text(text, 12)
+    assert out[0] == "primeiro"
+    assert "segundo" in out[1] or out[1].startswith("segundo")
+
+
+def test_chunk_html_text_chunks_under_limit():
+    text = "abc\n\n" + "x" * 50 + "\n\n" + "y" * 50
+    out = chunk_html_text(text, 60)
+    for chunk in out:
+        assert len(chunk) <= 60
+
+
+def test_chunk_html_text_preserves_full_content():
+    text = ("palavra " * 200).strip()
+    out = chunk_html_text(text, 80)
+    rejoined = " ".join(out)
+    assert "palavra" * 1 in rejoined
+    assert rejoined.count("palavra") == 200
+
+
+def test_chunk_html_text_preserves_html_tags_when_in_separate_lines():
+    """tag <b> no header e <a> no rodapé separados por \\n\\n: chunks ficam balanceados."""
+    text = "<b>Header</b>\n\n" + "x" * 1000 + "\n\n<a href='u'>link</a>"
+    out = chunk_html_text(text, 400)
+    for chunk in out:
+        assert chunk.count("<b>") == chunk.count("</b>")
+        assert chunk.count("<a ") == chunk.count("</a>")
 
 
 def test_safe_url_strips_query():
