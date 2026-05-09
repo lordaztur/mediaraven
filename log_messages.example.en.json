@@ -17,6 +17,9 @@
     "resolvendo_share_url": "🔄 Resolving Facebook share URL: {arg0}",
     "link_resolvido_x_2": "✅ Link resolved: {arg0}",
     "falha_ao_resolver_2": "⚠️ Failed to resolve Facebook redirect: {e}",
+    "resolvendo_kwai": "🔄 Resolving Kwai URL: {arg0}",
+    "kwai_resolvido": "✅ Kwai resolved: {arg0}",
+    "falha_ao_resolver_kwai": "⚠️ Failed to resolve Kwai redirect: {e}",
     "convertendo_short_para": "🔄 Converting Short to standard URL: {arg0}",
     "falha_ao_converter": "Failed to convert Shorts: {e}"
   },

@@ -25,6 +25,7 @@ from ._platform import (
     _detect_platform,
     _normalize_youtube_url,
     _resolve_facebook_share_url,
+    _resolve_kwai_url,
     _resolve_short_reddit_url,
 )
 from ._ytdlp import (
@@ -54,6 +55,7 @@ __all__ = [
     "_detect_platform",
     "_normalize_youtube_url",
     "_resolve_facebook_share_url",
+    "_resolve_kwai_url",
     "_resolve_short_reddit_url",
     "_apply_format_selection",
     "_attempt_order",
@@ -148,6 +150,7 @@ async def download_media(
 
         url = await _resolve_short_reddit_url(url)
         url = await _resolve_facebook_share_url(url)
+        url = await _resolve_kwai_url(url)
         platform = _detect_platform(url)
         platform_label = _platform_label(platform)
 

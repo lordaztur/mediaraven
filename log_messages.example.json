@@ -17,6 +17,9 @@
     "resolvendo_share_url": "🔄 Resolvendo share URL do Facebook: {arg0}",
     "link_resolvido_x_2": "✅ Link resolvido: {arg0}",
     "falha_ao_resolver_2": "⚠️ Falha ao resolver redirect Facebook: {e}",
+    "resolvendo_kwai": "🔄 Resolvendo URL do Kwai: {arg0}",
+    "kwai_resolvido": "✅ Kwai resolvido: {arg0}",
+    "falha_ao_resolver_kwai": "⚠️ Falha ao resolver redirect Kwai: {e}",
     "convertendo_short_para": "🔄 Convertendo Short para URL normal: {arg0}",
     "falha_ao_converter": "Falha ao converter Shorts: {e}"
   },

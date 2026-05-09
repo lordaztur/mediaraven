@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import state
 from config import AIOHTTP_UA_DEFAULT
@@ -68,6 +68,39 @@ async def _resolve_short_reddit_url(url: str) -> str:
     except Exception as e:
         logger.warning(lmsg("_platform.falha_ao_resolver", e=e))
         return url
+
+
+_KWAI_HOSTS = (
+    'kwai-video.com', 'kwai.com', 'm.kwai.com',
+    'kw.ai', 's.kw.ai',
+    'snackvideo.com', 'snackvideo.in',
+)
+
+
+def _is_kwai_host(host: str) -> bool:
+    if host.startswith('www.'):
+        host = host[4:]
+    return any(host == h or host.endswith('.' + h) for h in _KWAI_HOSTS)
+
+
+async def _resolve_kwai_url(url: str) -> str:
+    parsed = urlparse(url)
+    host = (parsed.netloc or '').lower()
+    if not _is_kwai_host(host):
+        return url
+    new_url = url
+    try:
+        logger.info(lmsg("_platform.resolvendo_kwai", arg0=safe_url(url)))
+        headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
+        async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
+            new_url = str(resp.url)
+    except Exception as e:
+        logger.warning(lmsg("_platform.falha_ao_resolver_kwai", e=e))
+    final_parsed = urlparse(new_url)
+    cleaned = urlunparse(final_parsed._replace(query="", fragment=""))
+    if cleaned != url:
+        logger.info(lmsg("_platform.kwai_resolvido", arg0=safe_url(cleaned)))
+    return cleaned
 
 
 async def _resolve_facebook_share_url(url: str) -> str:
