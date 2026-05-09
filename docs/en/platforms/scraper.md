@@ -86,6 +86,18 @@ Known CDNs have URL rewritten:
 - `*.pinimg.com` → changes path to `/originals/`
 - `redd.it` / `redditmedia.com` → strips preview params (`width`, `height`, `crop`, etc.)
 
+## Hosts with special handling
+
+Before tier 1 runs normally, two hosts short-circuit part of the cascade to avoid junk:
+
+### Pinterest (`pinterest.com`, `pin.it`, regional)
+
+Pinterest pin pages show dozens of recommended images. If the scraper ran normally, it would download all of them. Instead: it picks only `og:image`/`og:video`/JSON-LD with cap=1 — exactly the pin media, nothing else. Works for shortlinks (`pin.it/XXX`) and canonical URLs (`pinterest.com/pin/<id>/`).
+
+### Kwai / SnackVideo (`kwai-video.com`, `kwai.com`, `kw.ai`, `snackvideo.com`, `snackvideo.in`)
+
+Kwai shortlinks redirect to URLs with huge query strings (>300 chars of tracking). yt-dlp generic downloads the video but uses the whole query string as the `id`, generating `File name too long`. Solution: resolve the redirect and strip query string + fragment before calling yt-dlp.
+
 ## Paywall bypass
 
 Detects paywall via heuristic (text "Sign in to continue", "Subscribe to read", etc.). If detected and `SCRAPE_PAYWALL_BYPASS=yes`:

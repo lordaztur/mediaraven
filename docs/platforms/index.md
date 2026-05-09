@@ -13,6 +13,8 @@ flowchart TD
     B -->|threads.net| TH[Threads JSON SSR via Playwright]
     B -->|x.com / twitter.com| X[__INITIAL_STATE__ → Playwright auth]
     B -->|facebook.com| FB[yt-dlp generic]
+    B -->|pinterest / pin.it| PIN[Scraper com filtro og:image]
+    B -->|kwai / snackvideo| KW[Resolve shortlink → yt-dlp generic]
     B -->|outro| SC[Scraper genérico em cascata]
     YT --> S[Sucesso?]
     IG --> S
@@ -20,6 +22,8 @@ flowchart TD
     TH --> S
     X --> S
     FB --> S
+    PIN --> S
+    KW --> S
     SC --> S
     S -->|não| SC
     S -->|sim| OK[Envia mídia]
@@ -45,4 +49,4 @@ Detalhes em [Cascata do scraper](../architecture/scraper-cascade.md).
 - [Threads](threads.md) — posts, carrosséis, texto-only
 - [X / Twitter](x.md) — tweets com mídia, texto-only
 - [Facebook](facebook.md) — vídeos públicos
-- [Scraper genérico](scraper.md) — qualquer outro site
+- [Scraper genérico](scraper.md) — qualquer outro site (inclui Pinterest, Kwai)

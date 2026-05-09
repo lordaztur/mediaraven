@@ -24,12 +24,15 @@
 
 ## ✨ O que ele faz
 
-Cole um link, recebe a mídia. Suporta **YouTube** (com seleção de idioma quando há dublagem), **Instagram**, **Reddit** (incluindo NSFW), **Threads**, **X/Twitter**, **Facebook** e **qualquer outro site** via scraper genérico (HTTP + Playwright em paralelo, com yt-dlp generic e gallery-dl como fallbacks).
+Cole um link, recebe a mídia. Suporta **YouTube** (com seleção de idioma quando há dublagem), **Instagram**, **Reddit** (incluindo NSFW), **Threads**, **X/Twitter**, **Facebook**, **Pinterest**, **Kwai** e **qualquer outro site** via scraper genérico (HTTP + Playwright em paralelo, com yt-dlp generic e gallery-dl como fallbacks).
 
 - Envia arquivos até **2 GB** via Bot API local (**4 GB** se a conta dona do bot for Telegram Premium)
 - Reaproveita cookies do **Firefox** pra burlar bloqueios
 - **Bypass de paywall soft** (Googlebot UA + archive.ph) e extração do corpo do artigo como caption
 - **Posts só de texto** (Threads, X) viram mensagem de texto formatada com `📄 @user` + corpo + link
+- **Captions longas** quebradas em chunks de até 4096 chars (em vez de truncar)
+- **Pinterest**: extrai só a mídia do pin via `og:image`/`og:video`, ignorando recomendações da página
+- **Kwai**: shortlinks (`kwai-video.com/p/…`) resolvidos e query string limpa antes do download
 - Mensagens user-facing 100% customizáveis via `messages.json`
 - Whitelist por chat e por usuário
 - 80+ envs de tuning (timeouts, concorrência, qualidade, etc.)

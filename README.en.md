@@ -24,12 +24,15 @@
 
 ## ✨ What it does
 
-Paste a link, get the media. Supports **YouTube** (with language selection when there's dubbing), **Instagram**, **Reddit** (including NSFW), **Threads**, **X/Twitter**, **Facebook**, and **any other site** via generic scraper (HTTP + Playwright in parallel, with yt-dlp generic and gallery-dl as fallbacks).
+Paste a link, get the media. Supports **YouTube** (with language selection when there's dubbing), **Instagram**, **Reddit** (including NSFW), **Threads**, **X/Twitter**, **Facebook**, **Pinterest**, **Kwai**, and **any other site** via generic scraper (HTTP + Playwright in parallel, with yt-dlp generic and gallery-dl as fallbacks).
 
 - Sends files up to **2 GB** via local Bot API (**4 GB** if the bot owner account is Telegram Premium)
 - Reuses **Firefox** cookies to bypass blocks
 - **Soft paywall bypass** (Googlebot UA + archive.ph) and article body extraction as caption
 - **Text-only posts** (Threads, X) become formatted text messages with `📄 @user` + body + link
+- **Long captions** split into chunks of up to 4096 chars (instead of truncating)
+- **Pinterest**: extracts only the pin media via `og:image`/`og:video`, ignoring page recommendations
+- **Kwai**: shortlinks (`kwai-video.com/p/…`) resolved and query string stripped before download
 - 100% customizable user-facing messages via `messages.json`
 - Per-chat and per-user whitelist
 - 80+ tuning envs (timeouts, concurrency, quality, etc.)

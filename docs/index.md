@@ -18,18 +18,23 @@ Bots públicos de download têm limites apertados (50 MB), filas, propaganda, e 
 | Threads | JSON SSR via Playwright | ✅ |
 | X (Twitter) | `__INITIAL_STATE__` + GraphQL | ✅ |
 | Facebook | yt-dlp generic | — |
+| Pinterest | Scraper com filtro `og:image`/`og:video` (1 mídia por pin) | — |
+| Kwai / SnackVideo | Resolve shortlink + yt-dlp generic | — |
 | Qualquer outro | Scraper genérico (HTTP + Playwright + yt-dlp + gallery-dl) | — |
 
-## Highlights da v1.1.0
+## Highlights da v1.2.0
 
+- 📌 **Pinterest**: só a mídia do pin via `og:image`/`og:video` (sem 60 recomendações)
+- 🎬 **Kwai / SnackVideo**: shortlinks resolvidos automaticamente
+- ✂️ **Captions longas em chunks** de até 4096 chars (sem truncar)
+- 📰 Filtro de mídia em artigos (só og:image/og:video, sem banners)
 - 🌍 Bot API local — uploads até 2 GB (4 GB com Premium)
 - 🦊 Cookies do Firefox automáticos pra burlar bloqueios
 - 🔒 Bypass de paywall soft (Googlebot UA + archive.ph)
-- 📰 Extração de corpo de artigo via trafilatura como caption
 - 📝 Posts só de texto (Threads, X) viram mensagem formatada
 - 🎚️ **42 configs customizáveis por chat e por usuário** ([entenda](customization/index.md))
 - 🌐 Mensagens 100% customizáveis (UI + logs)
-- 📊 ~250 testes, observabilidade detalhada nos logs
+- 📊 ~275 testes, observabilidade detalhada nos logs
 
 ## Por onde começar
 
