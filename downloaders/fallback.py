@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 _FACEBOOK_HOSTS = ('facebook.com', 'fb.com', 'fb.watch')
+_PINTEREST_HOSTS = ('pinterest.com', 'pin.it', 'pinterest.co.uk')
 _PAYWALL_PATTERNS = (
     'sign in to continue', 'log in to continue', 'subscribe to read',
     'create a free account to read', 'this content is for subscribers',
@@ -51,6 +52,16 @@ def _is_facebook(url: str) -> bool:
     if host.startswith('www.'):
         host = host[4:]
     return any(host == h or host.endswith('.' + h) for h in _FACEBOOK_HOSTS)
+
+
+def _is_pinterest(url: str) -> bool:
+    try:
+        host = (urlparse(url).netloc or '').lower()
+    except Exception:
+        return False
+    if host.startswith('www.'):
+        host = host[4:]
+    return any(host == h or host.endswith('.' + h) for h in _PINTEREST_HOSTS)
 
 
 _GOOGLEBOT_UA = (
@@ -530,16 +541,15 @@ async def scrape_fallback(
 
     article_short, article_full = await fetch_article_caption(url, html=fast_html or page_html)
     is_article = bool(article_short)
+    is_pinterest = _is_pinterest(url)
 
-    if is_article:
-        article_html = fast_html or page_html or ""
-        article_meta = extract_meta_media(article_html, url)
-        article_jsonld = extract_jsonld_media(article_html, url)
-        combined = merge_media_lists(article_meta, article_jsonld, cap=1)
-        logger.info(lmsg(
-            "fallback.article_media_filtered",
-            n_combined=len(combined),
-        ))
+    if is_article or is_pinterest:
+        source_html = fast_html or page_html or ""
+        meta_media = extract_meta_media(source_html, url)
+        jsonld_media = extract_jsonld_media(source_html, url)
+        combined = merge_media_lists(meta_media, jsonld_media, cap=1)
+        log_key = "fallback.pinterest_media_filtered" if (is_pinterest and not is_article) else "fallback.article_media_filtered"
+        logger.info(lmsg(log_key, n_combined=len(combined)))
     else:
         fast_media = _gather_media_from_html(fast_html, url) if fast_html else []
         combined = merge_media_lists(fast_media, pw_media, cap=cfg("SCRAPE_MAX_MEDIA_URLS"))
