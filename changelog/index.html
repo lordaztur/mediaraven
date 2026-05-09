@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v120-pinterest-kwai-e-captions-em-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.0 — Pinterest, Kwai e captions em chunks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v110-customizacao-granular-extracao-de-artigo-bypass-de-paywall" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1575,6 +1586,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v120-pinterest-kwai-e-captions-em-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.0 — Pinterest, Kwai e captions em chunks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v110-customizacao-granular-extracao-de-artigo-bypass-de-paywall" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1617,6 +1639,28 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v120-pinterest-kwai-e-captions-em-chunks">v1.2.0 — Pinterest, Kwai e captions em chunks<a class="headerlink" href="#v120-pinterest-kwai-e-captions-em-chunks" title="Permanent link">&para;</a></h2>
+<p><strong>Maiores mudanças:</strong></p>
+<ul>
+<li>📌 <strong>Pinterest</strong>: links de pin (<code>pin.it/XXX</code>, <code>pinterest.com/pin/&lt;id&gt;</code>, regionais como <code>br.pinterest.com</code>) agora baixam só a mídia do pin via filtro <code>og:image</code>/<code>og:video</code>/JSON-LD com cap=1. Antes vinham 60+ imagens recomendadas da página.</li>
+<li>🎬 <strong>Kwai / SnackVideo</strong>: shortlinks (<code>kwai-video.com/p/XXX</code>, <code>s.kw.ai</code>, <code>snackvideo.com/in</code>) resolvidos antes do yt-dlp; query string de tracking removida pra evitar erro <code>File name too long</code> no ID gerado pelo generic extractor. Hosts cobertos: <code>kwai-video.com</code>, <code>kwai.com</code>, <code>m.kwai.com</code>, <code>kw.ai</code>, <code>s.kw.ai</code>, <code>snackvideo.com</code>, <code>snackvideo.in</code>.</li>
+<li>✂️ <strong>Captions longas em chunks</strong>: caption acima de 1024 chars não é mais truncada. A mídia vai sem caption e o texto completo é enviado em chunks de até 4096 chars (separadores preferidos: <code>\n\n</code> &gt; <code>\n</code> &gt; <code>". "</code> &gt; <code>" "</code>). Caption que cabe em 1024 segue sendo colada na mídia normalmente. Sem duplicação de texto.</li>
+<li>📰 <strong>Filtro de mídia em artigos</strong>: quando um artigo é detectado por trafilatura, só <code>og:image</code>/<code>og:video</code>/JSON-LD são considerados (cap=1), em vez de todas as imagens scrapadas. Antes vinham banners, ads, related articles.</li>
+</ul>
+<p><strong>Refatorações:</strong></p>
+<ul>
+<li><code>_build_caption</code> agora retorna tupla <code>(short, full)</code> propagada por todos os downloaders (Threads, X, Reddit, Instagram, Instagram Embed, fallback). <code>short</code> ≤ 1024, <code>full</code> sem truncamento.</li>
+<li>Novo helper <code>chunk_html_text(text, limit)</code> em <code>utils.py</code> quebra texto preservando limites semânticos (parágrafo &gt; linha &gt; frase &gt; palavra).</li>
+<li><code>_send_text_in_chunks</code> em <code>handlers.py</code> envia chunks em sequência com delay configurável.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li><code>_is_pinterest()</code> em <code>downloaders/fallback.py</code></li>
+<li><code>_is_kwai_host()</code> + <code>_resolve_kwai_url()</code> em <code>downloaders/_platform.py</code></li>
+<li>4 chaves de log novas: <code>fallback.pinterest_media_filtered</code>, <code>_platform.resolvendo_kwai</code>, <code>_platform.kwai_resolvido</code>, <code>_platform.falha_ao_resolver_kwai</code></li>
+<li>16 testes novos: <code>tests/test_fallback_pinterest.py</code> (7), <code>tests/test_kwai_resolver.py</code> (9)</li>
+<li>6 testes novos pra <code>chunk_html_text</code> em <code>tests/test_utils_helpers.py</code></li>
+</ul>
 <h2 id="v110-customizacao-granular-extracao-de-artigo-bypass-de-paywall">v1.1.0 — Customização granular + extração de artigo + bypass de paywall<a class="headerlink" href="#v110-customizacao-granular-extracao-de-artigo-bypass-de-paywall" title="Permanent link">&para;</a></h2>
 <p><strong>Maiores mudanças:</strong></p>
 <ul>
@@ -1684,7 +1728,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="26 de abril de 2026 17:37:00 UTC"><span class="timeago" datetime="2026-04-26T17:37:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="26 de abril de 2026 17:37:00 UTC">2026-04-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="9 de maio de 2026 13:36:00 UTC"><span class="timeago" datetime="2026-05-09T13:36:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="9 de maio de 2026 13:36:00 UTC">2026-05-09</span>
   </span>
 
     
