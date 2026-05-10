@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.1 — Cap de upload pra evitar File_parts_invalid
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v120-pinterest-kwai-e-captions-em-chunks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1586,6 +1597,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.1 — Cap de upload pra evitar File_parts_invalid
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v120-pinterest-kwai-e-captions-em-chunks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1639,6 +1661,23 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v121-cap-de-upload-pra-evitar-file_parts_invalid">v1.2.1 — Cap de upload pra evitar File_parts_invalid<a class="headerlink" href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📤 <strong>Cap de tamanho no yt-dlp</strong>: novo config <code>TELEGRAM_MAX_UPLOAD_MB</code> (default 2000) aplicado como <code>[filesize_approx&lt;...M]</code> no seletor de formato. Antes, vídeos longos do YouTube em 1440p60 podiam dar &gt; 2 GB e falhar com <code>BadRequest: File_parts_invalid</code> no upload (limite hard do Telegram pra bots; <strong>Premium não afeta bots</strong> — <a href="https://github.com/tdlib/telegram-bot-api/issues/583">tdlib/telegram-bot-api#583</a>). Agora o seletor reserva ~100 MB pro stream de áudio + container e cai pra 1080p quando 1440p ultrapassaria o cap.</li>
+<li>📤 <strong>PTB local_mode</strong>: <code>telegram_io.send_downloaded_media</code> agora passa o <strong>path como string</strong> em vez de file handle. Com servidor <code>telegram-bot-api --local</code>, PTB envia <code>file:///path</code> URI e o servidor lê do filesystem direto, sem multipart upload — evita timeouts em arquivos grandes mas dentro do limite. Documentação do <code>parse_file_input</code> confirma esse caminho (telegram/_utils/files.py:145-149).</li>
+<li>📚 <strong>Doc corrigida</strong>: README/site/<code>.env_example</code> mencionavam "4 GB com Premium" — falso. Bots não podem ser Premium; o limite é 2 GB sempre.</li>
+</ul>
+<p><strong>Refatorações:</strong></p>
+<ul>
+<li><code>telegram_io.py</code> aplica <code>TELEGRAM_UPLOAD_TIMEOUT</code> em <code>read_timeout</code>/<code>write_timeout</code>/<code>connect_timeout</code> no path single-file (antes só o media_group aplicava).</li>
+<li><code>_apply_format_selection</code> em <code>downloaders/_ytdlp.py</code> e <code>download_with_ytdlp_generic</code> em <code>downloaders/fallback.py</code> montam seletor com cap de filesize.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Config <code>TELEGRAM_MAX_UPLOAD_MB</code> em <code>customization.example.json</code> + <code>.example.en.json</code> (default 2000, min 50, max 2000)</li>
+<li>5 testes em <code>tests/test_telegram_io_timeouts.py</code></li>
+</ul>
 <h2 id="v120-pinterest-kwai-e-captions-em-chunks">v1.2.0 — Pinterest, Kwai e captions em chunks<a class="headerlink" href="#v120-pinterest-kwai-e-captions-em-chunks" title="Permanent link">&para;</a></h2>
 <p><strong>Maiores mudanças:</strong></p>
 <ul>
@@ -1728,7 +1767,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="9 de maio de 2026 13:36:00 UTC"><span class="timeago" datetime="2026-05-09T13:36:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="9 de maio de 2026 13:36:00 UTC">2026-05-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="10 de maio de 2026 21:29:00 UTC"><span class="timeago" datetime="2026-05-10T21:29:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="10 de maio de 2026 21:29:00 UTC">2026-05-10</span>
   </span>
 
     
