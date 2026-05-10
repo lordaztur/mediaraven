@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.2 — Cap dinâmico pra HLS / lives finalizados do YouTube
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1597,6 +1608,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.2 — Cap dinâmico pra HLS / lives finalizados do YouTube
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1661,6 +1683,28 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube">v1.2.2 — Cap dinâmico pra HLS / lives finalizados do YouTube<a class="headerlink" href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📺 <strong>Live finalizado do YouTube agora cabe</strong>: lives que terminaram (<code>live_status: post_live</code>) só expõem formats HLS sem <code>filesize_approx</code> declarado. Antes o seletor caía no <code>best</code> e pegava 1094p (~3.8 GB pra 1h53min) → <code>File_parts_invalid</code> no upload. Agora, <strong>pre-extract</strong> descobre <code>duration</code> + formats e:<ul>
+<li>Aplica <strong>cap dinâmico de bitrate</strong> <code>[tbr&lt;=N]</code> calculado por <code>(TELEGRAM_MAX_UPLOAD_MB × 8 × 1024) ÷ duration_s × 0.95</code>. Pra um live de 1h53min com cap 2 GB → <code>tbr&lt;=2289 kbps</code>.</li>
+<li>Detecta <strong>HLS-only</strong> (todos formats com vídeo são <code>m3u8_native</code>/<code>http_dash_segments</code>) e aplica cap conservador de altura via novo config <code>YTDLP_HLS_MAX_HEIGHT</code> (default 720).</li>
+</ul>
+</li>
+<li>🎯 <strong>Format selector ordenado em tiers</strong>: 1) DASH com filesize cap → 2) progressive com filesize cap → 3) progressive com tbr cap → 4) fallback puro. Garante que VOD normal continua escolhendo melhor qualidade dentro do limite.</li>
+</ul>
+<p><strong>Refatorações:</strong></p>
+<ul>
+<li>Helpers extraídos em <code>downloaders/_ytdlp.py</code>: <code>_calc_max_tbr_kbps</code>, <code>_is_hls_only</code>, <code>_build_format_selector</code>, <code>_pre_extract</code>.</li>
+<li><code>_apply_format_selection</code> aceita <code>info: Optional[dict]</code> e ajusta seletor dinamicamente.</li>
+<li><code>_run_ytdlp_with_cookie_fallback</code> aceita <code>platform</code> opcional; quando passado, faz pre-extract por attempt (cookie/no-cookie) e re-aplica format selection com info real.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Config <code>YTDLP_HLS_MAX_HEIGHT</code> (default 720) em <code>customization.example.{json,en.json}</code></li>
+<li>3 chaves de log novas: <code>_ytdlp.hls_only_height_cap</code>, <code>_ytdlp.tbr_cap</code>, <code>_ytdlp.pre_extract_falhou</code></li>
+<li>15 testes em <code>tests/test_ytdlp_format_selection.py</code></li>
+</ul>
 <h2 id="v121-cap-de-upload-pra-evitar-file_parts_invalid">v1.2.1 — Cap de upload pra evitar File_parts_invalid<a class="headerlink" href="#v121-cap-de-upload-pra-evitar-file_parts_invalid" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1767,7 +1811,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="10 de maio de 2026 21:29:00 UTC"><span class="timeago" datetime="2026-05-10T21:29:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="10 de maio de 2026 21:29:00 UTC">2026-05-10</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="10 de maio de 2026 22:36:01 UTC"><span class="timeago" datetime="2026-05-10T22:36:01+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="10 de maio de 2026 22:36:01 UTC">2026-05-10</span>
   </span>
 
     
