@@ -38,6 +38,10 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
 
 def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lang: Optional[str]) -> None:
     h = cfg("YTDLP_MAX_HEIGHT")
+    vid_max_mb = max(50, cfg("TELEGRAM_MAX_UPLOAD_MB") - 100)
+    fs = f'[filesize_approx<{vid_max_mb}M]'
+    total_max_mb = cfg("TELEGRAM_MAX_UPLOAD_MB")
+    fs_total = f'[filesize_approx<{total_max_mb}M]'
     if platform.instagram:
         opts['noplaylist'] = False
         opts['format'] = 'best'
@@ -48,16 +52,23 @@ def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lan
         opts['noplaylist'] = True
         if target_lang and target_lang != 'original':
             opts['format'] = (
-                f'best[height<={h}][language^={target_lang}]/'
-                f'bestvideo[height<={h}]+bestaudio[language^={target_lang}]/'
-                f'bestvideo[height<={h}]+bestaudio/best[height<={h}]/best'
+                f'best[height<={h}][language^={target_lang}]{fs_total}/'
+                f'bestvideo[height<={h}]{fs}+bestaudio[language^={target_lang}]/'
+                f'bestvideo[height<={h}]{fs}+bestaudio/'
+                f'best[height<={h}]{fs_total}/best{fs_total}/best'
             )
         else:
-            opts['format'] = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]/best'
+            opts['format'] = (
+                f'bestvideo[height<={h}]{fs}+bestaudio/'
+                f'best[height<={h}]{fs_total}/best{fs_total}/best'
+            )
         opts['merge_output_format'] = 'mp4'
     else:
         opts['noplaylist'] = True
-        opts['format'] = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]/best'
+        opts['format'] = (
+            f'bestvideo[height<={h}]{fs}+bestaudio/'
+            f'best[height<={h}]{fs_total}/best{fs_total}/best'
+        )
         opts['merge_output_format'] = 'mp4'
 
     if platform.facebook or platform.instagram or platform.reddit:

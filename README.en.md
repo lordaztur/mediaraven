@@ -26,7 +26,7 @@
 
 Paste a link, get the media. Supports **YouTube** (with language selection when there's dubbing), **Instagram**, **Reddit** (including NSFW), **Threads**, **X/Twitter**, **Facebook**, **Pinterest**, **Kwai**, and **any other site** via generic scraper (HTTP + Playwright in parallel, with yt-dlp generic and gallery-dl as fallbacks).
 
-- Sends files up to **2 GB** via local Bot API (**4 GB** if the bot owner account is Telegram Premium)
+- Sends files up to **2 GB** via local Bot API (Telegram's hard limit for bots — Premium doesn't affect bots)
 - Reuses **Firefox** cookies to bypass blocks
 - **Soft paywall bypass** (Googlebot UA + archive.ph) and article body extraction as caption
 - **Text-only posts** (Threads, X) become formatted text messages with `📄 @user` + body + link

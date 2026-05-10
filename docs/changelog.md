@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.2.1 — Cap de upload pra evitar File_parts_invalid
+
+**Major changes:**
+
+- 📤 **Cap de tamanho no yt-dlp**: novo config `TELEGRAM_MAX_UPLOAD_MB` (default 2000) aplicado como `[filesize_approx<...M]` no seletor de formato. Antes, vídeos longos do YouTube em 1440p60 podiam dar > 2 GB e falhar com `BadRequest: File_parts_invalid` no upload (limite hard do Telegram pra bots; **Premium não afeta bots** — [tdlib/telegram-bot-api#583](https://github.com/tdlib/telegram-bot-api/issues/583)). Agora o seletor reserva ~100 MB pro stream de áudio + container e cai pra 1080p quando 1440p ultrapassaria o cap.
+- 📤 **PTB local_mode**: `telegram_io.send_downloaded_media` agora passa o **path como string** em vez de file handle. Com servidor `telegram-bot-api --local`, PTB envia `file:///path` URI e o servidor lê do filesystem direto, sem multipart upload — evita timeouts em arquivos grandes mas dentro do limite. Documentação do `parse_file_input` confirma esse caminho (telegram/_utils/files.py:145-149).
+- 📚 **Doc corrigida**: README/site/`.env_example` mencionavam "4 GB com Premium" — falso. Bots não podem ser Premium; o limite é 2 GB sempre.
+
+**Refatorações:**
+
+- `telegram_io.py` aplica `TELEGRAM_UPLOAD_TIMEOUT` em `read_timeout`/`write_timeout`/`connect_timeout` no path single-file (antes só o media_group aplicava).
+- `_apply_format_selection` em `downloaders/_ytdlp.py` e `download_with_ytdlp_generic` em `downloaders/fallback.py` montam seletor com cap de filesize.
+
+**Adicionado:**
+
+- Config `TELEGRAM_MAX_UPLOAD_MB` em `customization.example.json` + `.example.en.json` (default 2000, min 50, max 2000)
+- 5 testes em `tests/test_telegram_io_timeouts.py`
+
 ## v1.2.0 — Pinterest, Kwai e captions em chunks
 
 **Maiores mudanças:**

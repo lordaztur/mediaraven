@@ -26,7 +26,7 @@
 
 Cole um link, recebe a mídia. Suporta **YouTube** (com seleção de idioma quando há dublagem), **Instagram**, **Reddit** (incluindo NSFW), **Threads**, **X/Twitter**, **Facebook**, **Pinterest**, **Kwai** e **qualquer outro site** via scraper genérico (HTTP + Playwright em paralelo, com yt-dlp generic e gallery-dl como fallbacks).
 
-- Envia arquivos até **2 GB** via Bot API local (**4 GB** se a conta dona do bot for Telegram Premium)
+- Envia arquivos até **2 GB** via Bot API local (limite hard do Telegram pra bots — Premium não afeta bots)
 - Reaproveita cookies do **Firefox** pra burlar bloqueios
 - **Bypass de paywall soft** (Googlebot UA + archive.ph) e extração do corpo do artigo como caption
 - **Posts só de texto** (Threads, X) viram mensagem de texto formatada com `📄 @user` + corpo + link

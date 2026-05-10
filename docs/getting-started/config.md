@@ -2,7 +2,7 @@
 
 ## 1. Bot API local (obrigatório)
 
-Sem ele, Telegram limita uploads a **50 MB**. Com ele, **2 GB** (4 GB se a conta dona do bot for Premium).
+Sem ele, a API pública limita uploads a **50 MB**. Com servidor self-hosted, vai até **2 GB** (limite hard do Telegram pra bots — Premium não afeta bots, [issue #583](https://github.com/tdlib/telegram-bot-api/issues/583)).
 
 ```bash
 docker run -d --name telegram-bot-api -p 8081:8081 \

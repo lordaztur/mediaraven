@@ -126,6 +126,9 @@
     "_doc_TELEGRAM_UPLOAD_TIMEOUT": "Read/write timeout (seconds) when uploading large files to Telegram. Min 30, max 3600.",
     "TELEGRAM_UPLOAD_TIMEOUT": 600,
 
+    "_doc_TELEGRAM_MAX_UPLOAD_MB": "Max file size (MB) accepted by the Bot API server. Telegram's hard limit for bots is 2000 MB (Premium doesn't affect bots). Applied as a cap in the yt-dlp format selector to avoid downloading videos that would fail to upload. Min 50, max 2000.",
+    "TELEGRAM_MAX_UPLOAD_MB": 2000,
+
     "_doc_IG_QUEUE_WARN_THRESHOLD": "Instagrapi queue size that triggers a warning log. Min 1, max 100.",
     "IG_QUEUE_WARN_THRESHOLD": 5,
 

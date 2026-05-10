@@ -327,7 +327,11 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
         'noplaylist': True,
         'force_generic_extractor': True,
         'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
-        'format': f'bestvideo[height<={cfg("YTDLP_MAX_HEIGHT")}]+bestaudio/best[height<={cfg("YTDLP_MAX_HEIGHT")}]/best',
+        'format': (
+            f'bestvideo[height<={cfg("YTDLP_MAX_HEIGHT")}][filesize_approx<{max(50, cfg("TELEGRAM_MAX_UPLOAD_MB") - 100)}M]+bestaudio/'
+            f'best[height<={cfg("YTDLP_MAX_HEIGHT")}][filesize_approx<{cfg("TELEGRAM_MAX_UPLOAD_MB")}M]/'
+            f'best[filesize_approx<{cfg("TELEGRAM_MAX_UPLOAD_MB")}M]/best'
+        ),
         'merge_output_format': 'mp4',
     }
 

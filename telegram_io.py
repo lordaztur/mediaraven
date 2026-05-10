@@ -28,16 +28,20 @@ async def send_downloaded_media(
         if caption:
             upload_kwargs['caption'] = caption
 
+        timeout = cfg("TELEGRAM_UPLOAD_TIMEOUT")
+        upload_kwargs.setdefault('read_timeout', timeout)
+        upload_kwargs.setdefault('write_timeout', timeout)
+        upload_kwargs.setdefault('connect_timeout', timeout)
+
+        filename_lower = f_path.lower()
         for attempt in range(4):
             try:
-                with open(f_path, 'rb') as f:
-                    filename_lower = f_path.lower()
-                    if filename_lower.endswith(IMAGE_EXTS):
-                        await context.bot.send_photo(chat_id=chat_id, photo=f, **upload_kwargs)
-                    elif filename_lower.endswith(VIDEO_EXTS):
-                        await context.bot.send_video(chat_id=chat_id, video=f, supports_streaming=True, **upload_kwargs)
-                    else:
-                        await context.bot.send_document(chat_id=chat_id, document=f, **upload_kwargs)
+                if filename_lower.endswith(IMAGE_EXTS):
+                    await context.bot.send_photo(chat_id=chat_id, photo=f_path, **upload_kwargs)
+                elif filename_lower.endswith(VIDEO_EXTS):
+                    await context.bot.send_video(chat_id=chat_id, video=f_path, supports_streaming=True, **upload_kwargs)
+                else:
+                    await context.bot.send_document(chat_id=chat_id, document=f_path, **upload_kwargs)
                 break
             except RetryAfter as e:
                 logger.warning(lmsg("telegram_io.flood_control_telegram", arg0=e.retry_after))
@@ -53,45 +57,38 @@ async def send_downloaded_media(
         for i in range(0, len(files), chunk_size):
             chunk_files = files[i:i + chunk_size]
             media_group = []
-            open_files = []
 
-            try:
-                for f_path in chunk_files:
-                    f = open(f_path, 'rb')
-                    open_files.append(f)
-                    filename_lower = f_path.lower()
+            for f_path in chunk_files:
+                filename_lower = f_path.lower()
+                item_caption = caption if (i == 0 and len(media_group) == 0) else None
 
-                    item_caption = caption if (i == 0 and len(media_group) == 0) else None
+                if filename_lower.endswith(IMAGE_EXTS):
+                    media_group.append(InputMediaPhoto(media=f_path, parse_mode='HTML', caption=item_caption))
+                elif filename_lower.endswith(VIDEO_EXTS):
+                    media_group.append(InputMediaVideo(media=f_path, parse_mode='HTML', caption=item_caption))
 
-                    if filename_lower.endswith(IMAGE_EXTS):
-                        media_group.append(InputMediaPhoto(media=f, parse_mode='HTML', caption=item_caption))
-                    elif filename_lower.endswith(VIDEO_EXTS):
-                        media_group.append(InputMediaVideo(media=f, parse_mode='HTML', caption=item_caption))
+            if media_group:
+                for attempt in range(5):
+                    try:
+                        timeout = cfg("TELEGRAM_UPLOAD_TIMEOUT")
+                        await context.bot.send_media_group(
+                            chat_id=chat_id,
+                            media=media_group,
+                            reply_to_message_id=original_msg_id,
+                            read_timeout=timeout,
+                            write_timeout=timeout,
+                            connect_timeout=timeout,
+                        )
+                        break
+                    except RetryAfter as e:
+                        logger.warning(lmsg("telegram_io.flood_control_de", arg0=e.retry_after))
+                        await asyncio.sleep(e.retry_after + 1)
+                    except TimedOut:
+                        logger.warning(lmsg("telegram_io.timeout_no_envio_2"))
+                        await asyncio.sleep(5)
+                    except Exception as e:
+                        logger.error(lmsg("telegram_io.erro_desconhecido_ao", e=e), exc_info=True)
+                        raise e
 
-                if media_group:
-                    for attempt in range(5):
-                        try:
-                            await context.bot.send_media_group(
-                                chat_id=chat_id,
-                                media=media_group,
-                                reply_to_message_id=original_msg_id,
-                                read_timeout=cfg("TELEGRAM_UPLOAD_TIMEOUT"),
-                                write_timeout=cfg("TELEGRAM_UPLOAD_TIMEOUT"),
-                            )
-                            break
-                        except RetryAfter as e:
-                            logger.warning(lmsg("telegram_io.flood_control_de", arg0=e.retry_after))
-                            await asyncio.sleep(e.retry_after + 1)
-                        except TimedOut:
-                            logger.warning(lmsg("telegram_io.timeout_no_envio_2"))
-                            await asyncio.sleep(5)
-                        except Exception as e:
-                            logger.error(lmsg("telegram_io.erro_desconhecido_ao", e=e), exc_info=True)
-                            raise e
-
-                    if i + chunk_size < len(files):
-                        await asyncio.sleep(cfg("MEDIA_GROUP_DELAY"))
-
-            finally:
-                for f in open_files:
-                    f.close()
+                if i + chunk_size < len(files):
+                    await asyncio.sleep(cfg("MEDIA_GROUP_DELAY"))

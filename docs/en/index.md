@@ -2,7 +2,7 @@
 
 **Telegram bot that downloads any media from the internet and sends it straight to your chat.**
 
-Paste a link, get the media. MediaRaven runs locally, uses its own Bot API (up to 4 GB per file if the owner account is Telegram Premium), reuses Firefox cookies, bypasses soft paywalls, and has a generic cascading scraper for obscure sites.
+Paste a link, get the media. MediaRaven runs locally, uses its own Bot API (up to 2 GB per file — Telegram's hard limit for bots), reuses Firefox cookies, bypasses soft paywalls, and has a generic cascading scraper for obscure sites.
 
 ## Why it exists
 
@@ -28,7 +28,7 @@ Public download bots have tight limits (50 MB), queues, ads, and when they work 
 - 🎬 **Kwai / SnackVideo**: shortlinks auto-resolved
 - ✂️ **Long captions in chunks** of up to 4096 chars (no truncation)
 - 📰 Article media filter (only og:image/og:video, no banners)
-- 🌍 Local Bot API — uploads up to 2 GB (4 GB with Premium)
+- 🌍 Local Bot API — uploads up to 2 GB (Telegram's hard limit for bots)
 - 🦊 Automatic Firefox cookies to bypass blocks
 - 🔒 Soft paywall bypass (Googlebot UA + archive.ph)
 - 📝 Text-only posts (Threads, X) become formatted messages
