@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.2.2 — Dynamic cap for HLS / finished YouTube lives
+
+**Major changes:**
+
+- 📺 **Finished YouTube live now fits**: ended lives (`live_status: post_live`) only expose HLS formats without `filesize_approx` declared. Previously the selector fell back to `best` and picked 1094p (~3.8 GB for 1h53min) → `File_parts_invalid` on upload. Now, **pre-extract** discovers `duration` + formats and:
+    - Applies a **dynamic bitrate cap** `[tbr<=N]` computed as `(TELEGRAM_MAX_UPLOAD_MB × 8 × 1024) ÷ duration_s × 0.95`. For a 1h53min live with 2 GB cap → `tbr<=2289 kbps`.
+    - Detects **HLS-only** (all video-bearing formats are `m3u8_native`/`http_dash_segments`) and applies a conservative height cap via the new config `YTDLP_HLS_MAX_HEIGHT` (default 720).
+- 🎯 **Tiered format selector**: 1) DASH with filesize cap → 2) progressive with filesize cap → 3) progressive with tbr cap → 4) plain fallback. Ensures normal VODs still pick the best quality within the limit.
+
+**Refactors:**
+
+- Helpers extracted in `downloaders/_ytdlp.py`: `_calc_max_tbr_kbps`, `_is_hls_only`, `_build_format_selector`, `_pre_extract`.
+- `_apply_format_selection` accepts `info: Optional[dict]` and adjusts the selector dynamically.
+- `_run_ytdlp_with_cookie_fallback` accepts an optional `platform`; when passed, runs a pre-extract per attempt (cookie/no-cookie) and re-applies format selection with the real info.
+
+**Added:**
+
+- Config `YTDLP_HLS_MAX_HEIGHT` (default 720) in `customization.example.{json,en.json}`
+- 3 new log keys: `_ytdlp.hls_only_height_cap`, `_ytdlp.tbr_cap`, `_ytdlp.pre_extract_falhou`
+- 15 tests in `tests/test_ytdlp_format_selection.py`
+
 ## v1.2.1 — Upload size cap to prevent File_parts_invalid
 
 **Major changes:**

@@ -33,7 +33,10 @@
     "download_bem_sucedido": "✅ Download bem-sucedido na tentativa: {mode}",
     "yt_dlp_falhou": "⚠️ yt-dlp falhou em baixar arquivos na tentativa '{mode}'",
     "yt_dlp_exce_o": "⚠️ yt-dlp exceção na tentativa '{mode}': {e}",
-    "stack_trace_last_exc": "Stack trace da última exceção yt-dlp:"
+    "stack_trace_last_exc": "Stack trace da última exceção yt-dlp:",
+    "hls_only_height_cap": "📺 HLS-only detectado, usando cap de altura conservador: {height}p",
+    "tbr_cap": "📐 Cap de bitrate aplicado: tbr<={max_tbr}kbps (duração {duration}s, cap {cap_mb}MB)",
+    "pre_extract_falhou": "⚠️ Pre-extract falhou na tentativa '{mode}': {e}"
   },
   "dispatcher": {
     "link_do_threads": "🧵 Link do Threads detectado, redirecionando direto para Playwright.",

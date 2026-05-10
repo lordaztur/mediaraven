@@ -33,7 +33,10 @@
     "download_bem_sucedido": "✅ Download succeeded on attempt: {mode}",
     "yt_dlp_falhou": "⚠️ yt-dlp failed to download files on attempt '{mode}'",
     "yt_dlp_exce_o": "⚠️ yt-dlp exception on attempt '{mode}': {e}",
-    "stack_trace_last_exc": "Stack trace of the last yt-dlp exception:"
+    "stack_trace_last_exc": "Stack trace of the last yt-dlp exception:",
+    "hls_only_height_cap": "📺 HLS-only detected, using conservative height cap: {height}p",
+    "tbr_cap": "📐 Bitrate cap applied: tbr<={max_tbr}kbps (duration {duration}s, cap {cap_mb}MB)",
+    "pre_extract_falhou": "⚠️ Pre-extract failed on attempt '{mode}': {e}"
   },
   "dispatcher": {
     "link_do_threads": "🧵 Threads link detected, routing directly to Playwright.",

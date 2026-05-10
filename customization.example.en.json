@@ -54,6 +54,9 @@
     "_doc_YTDLP_MAX_HEIGHT": "Max video height (pixels) to download. 480/720 (SD/HD), 1080 (Full HD), 1920 (1440p), 2160 (4K), 4320 (8K). Min 144.",
     "YTDLP_MAX_HEIGHT": 1920,
 
+    "_doc_YTDLP_HLS_MAX_HEIGHT": "Max height (pixels) when the video is HLS-only (finished YouTube lives, Twitch VODs, etc.). HLS doesn't declare filesize, so a conservative height cap prevents exceeding the upload limit. Min 144, max YTDLP_MAX_HEIGHT.",
+    "YTDLP_HLS_MAX_HEIGHT": 720,
+
     "_doc_YTDLP_SOCKET_TIMEOUT": "yt-dlp socket timeout (seconds) when downloading from any platform. Min 30, max 600.",
     "YTDLP_SOCKET_TIMEOUT": 90,
 

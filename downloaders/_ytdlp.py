@@ -36,38 +36,87 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
     return opts
 
 
-def _apply_format_selection(opts: dict[str, Any], platform: Platform, target_lang: Optional[str]) -> None:
+def _calc_max_tbr_kbps(duration_s: Optional[int], cap_mb: int, margin: float = 0.95) -> Optional[int]:
+    if not duration_s or duration_s <= 0:
+        return None
+    max_bytes = cap_mb * 1024 * 1024 * margin
+    return max(50, int(max_bytes * 8 / duration_s / 1024))
+
+
+def _is_hls_only(formats: list[dict]) -> bool:
+    if not formats:
+        return False
+    has_video = False
+    for f in formats:
+        if (f.get('vcodec') or 'none') == 'none':
+            continue
+        has_video = True
+        proto = (f.get('protocol') or '').lower()
+        if 'm3u8' not in proto and 'http_dash' not in proto:
+            return False
+    return has_video
+
+
+def _build_format_selector(
+    height: int,
+    cap_mb: int,
+    tbr_filter: str,
+    target_lang: Optional[str],
+    youtube: bool,
+) -> str:
+    vid_max_mb = max(50, cap_mb - 100)
+    fs_video = f'[filesize_approx<{vid_max_mb}M]'
+    fs_total = f'[filesize_approx<{cap_mb}M]'
+    tiers: list[str] = []
+    if youtube and target_lang and target_lang != 'original':
+        tiers.append(f'best[height<={height}][language^={target_lang}]{fs_total}')
+        if tbr_filter:
+            tiers.append(f'best[height<={height}][language^={target_lang}]{tbr_filter}')
+        tiers.append(f'bestvideo[height<={height}]{fs_video}+bestaudio[language^={target_lang}]')
+    tiers.append(f'bestvideo[height<={height}]{fs_video}+bestaudio')
+    tiers.append(f'best[height<={height}]{fs_total}')
+    if tbr_filter:
+        tiers.append(f'best[height<={height}]{tbr_filter}')
+    tiers.append(f'best{fs_total}')
+    if tbr_filter:
+        tiers.append(f'best{tbr_filter}')
+    tiers.append('best')
+    return '/'.join(tiers)
+
+
+def _apply_format_selection(
+    opts: dict[str, Any],
+    platform: Platform,
+    target_lang: Optional[str],
+    info: Optional[dict] = None,
+) -> None:
     h = cfg("YTDLP_MAX_HEIGHT")
-    vid_max_mb = max(50, cfg("TELEGRAM_MAX_UPLOAD_MB") - 100)
-    fs = f'[filesize_approx<{vid_max_mb}M]'
-    total_max_mb = cfg("TELEGRAM_MAX_UPLOAD_MB")
-    fs_total = f'[filesize_approx<{total_max_mb}M]'
+    cap_mb = cfg("TELEGRAM_MAX_UPLOAD_MB")
+
+    height_eff = h
+    tbr_filter = ""
+    if info:
+        formats = info.get('formats') or []
+        if _is_hls_only(formats):
+            hls_h = cfg("YTDLP_HLS_MAX_HEIGHT")
+            height_eff = min(h, hls_h)
+            logger.info(lmsg("_ytdlp.hls_only_height_cap", height=height_eff))
+        max_tbr = _calc_max_tbr_kbps(info.get('duration'), cap_mb)
+        if max_tbr:
+            tbr_filter = f"[tbr<={max_tbr}]"
+            logger.info(lmsg("_ytdlp.tbr_cap", max_tbr=max_tbr, duration=info.get('duration'), cap_mb=cap_mb))
+
     if platform.instagram:
         opts['noplaylist'] = False
         opts['format'] = 'best'
     elif platform.reddit:
         opts['noplaylist'] = False
         opts['format'] = 'bestvideo+bestaudio/best'
-    elif platform.youtube:
-        opts['noplaylist'] = True
-        if target_lang and target_lang != 'original':
-            opts['format'] = (
-                f'best[height<={h}][language^={target_lang}]{fs_total}/'
-                f'bestvideo[height<={h}]{fs}+bestaudio[language^={target_lang}]/'
-                f'bestvideo[height<={h}]{fs}+bestaudio/'
-                f'best[height<={h}]{fs_total}/best{fs_total}/best'
-            )
-        else:
-            opts['format'] = (
-                f'bestvideo[height<={h}]{fs}+bestaudio/'
-                f'best[height<={h}]{fs_total}/best{fs_total}/best'
-            )
-        opts['merge_output_format'] = 'mp4'
     else:
         opts['noplaylist'] = True
-        opts['format'] = (
-            f'bestvideo[height<={h}]{fs}+bestaudio/'
-            f'best[height<={h}]{fs_total}/best{fs_total}/best'
+        opts['format'] = _build_format_selector(
+            height_eff, cap_mb, tbr_filter,
+            target_lang=target_lang, youtube=platform.youtube,
         )
         opts['merge_output_format'] = 'mp4'
 
@@ -120,12 +169,27 @@ def _attempt_order(has_firefox_cookie: bool, target_lang: Optional[str]) -> list
     return attempts
 
 
+async def _pre_extract(base_opts: dict[str, Any], url: str, mode: str) -> Optional[dict]:
+    extract_opts = base_opts.copy()
+    extract_opts.pop('format', None)
+    if mode == "with_cookie":
+        extract_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
+    loop = asyncio.get_running_loop()
+    try:
+        return await loop.run_in_executor(state.YTDLP_POOL, _yt_dlp_extract, extract_opts, url, False)
+    except Exception as e:
+        logger.debug(lmsg("_ytdlp.pre_extract_falhou", mode=mode, e=e))
+        return None
+
+
 async def _run_ytdlp_with_cookie_fallback(
     base_opts: dict[str, Any],
     url: str,
     unique_folder: str,
     has_firefox_cookie: bool,
     target_lang: Optional[str],
+    platform: Optional[Platform] = None,
+    pre_info: Optional[dict] = None,
 ) -> tuple[list[str], dict[str, Any]]:
     loop = asyncio.get_running_loop()
     info_dict: dict[str, Any] = {}
@@ -139,6 +203,11 @@ async def _run_ytdlp_with_cookie_fallback(
         if mode == "with_cookie":
             logger.info(lmsg("_ytdlp.usando_cookies_globais"))
             current_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
+
+        if platform is not None:
+            info_for_select = pre_info or await _pre_extract(base_opts, url, mode)
+            if info_for_select:
+                _apply_format_selection(current_opts, platform, target_lang, info=info_for_select)
 
         try:
             info = await loop.run_in_executor(

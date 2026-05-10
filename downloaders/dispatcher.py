@@ -205,7 +205,8 @@ async def download_media(
                 return lang_buttons, "MULTILANG", "", "", False
 
         downloaded_files, info_dict = await _run_ytdlp_with_cookie_fallback(
-            base_opts, url, unique_folder, has_firefox_cookie, target_lang
+            base_opts, url, unique_folder, has_firefox_cookie, target_lang,
+            platform=platform,
         )
 
         caption_short, caption_full = _build_caption(info_dict, url)

@@ -117,6 +117,7 @@ def should_show_prompt(kind: str, chat_id: Optional[int] = None, user_id: Option
     return True if v is None else bool(v)
 
 YTDLP_MAX_HEIGHT = _env_int("YTDLP_MAX_HEIGHT", 1920)
+YTDLP_HLS_MAX_HEIGHT = _env_int("YTDLP_HLS_MAX_HEIGHT", 720)
 YTDLP_SOCKET_TIMEOUT = _env_int("YTDLP_SOCKET_TIMEOUT", 90)
 YTDLP_YT_CLIENTS = _env_str("YTDLP_YT_CLIENTS", "ios,mweb,web")
 YTDLP_WORKERS = _env_int("YTDLP_WORKERS", 5)
