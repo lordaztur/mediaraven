@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.3 — GIFs sent as animation (not buggy video)
+
+**Major changes:**
+
+- 🎞️ **GIFs now go through `send_animation`** instead of `send_video`. Telegram was treating GIFs as videos (no autoplay, no loop, ugly player). With `send_animation`, they become native animations.
+- 🎞️ **GIFs are converted to MP4 (H.264) via ffmpeg before sending**. Telegram converts raw GIFs with quality loss and renders them small; silent MP4 is Telegram's native "animated GIF" format (the same one the official client uses) — much better quality and full size.
+- 📐 Dimensions (`width`/`height`) extracted from the original GIF via PIL and passed to `send_animation` — ensures correct rendering even when ffmpeg is unavailable.
+
+**Added:**
+
+- `_ANIMATION_EXTS_DEFAULT = ('.gif',)` in `config.py` (extensible via env `ANIMATION_EXTS_EXTRA`); `.gif` removed from `VIDEO_EXTS_DEFAULT`
+- `async_gif_to_mp4(input_path, output_path, timeout=60)` in `utils.py` (ffmpeg `-c:v libx264 -pix_fmt yuv420p -an -movflags +faststart`)
+- Helper `_get_image_dims` + `send_animation` branch in `telegram_io.py` (with fallback to original `.gif` if ffmpeg fails)
+- 6 log keys `utils.gif_to_mp4_*` in PT/EN
+- 3 tests in `tests/test_telegram_io_timeouts.py` (gif→animation route, successful conversion, fallback on ffmpeg failure)
+
 ## v1.2.2 — Dynamic cap for HLS / finished YouTube lives
 
 **Major changes:**

@@ -84,11 +84,14 @@ IG_SESSION_FILE = os.getenv("IG_SESSION_FILE", "ig_session.json")
 FIREFOX_PROFILE_PATH = os.getenv("FIREFOX_PROFILE_PATH", "")
 
 _IMAGE_EXTS_DEFAULT = ('.jpg', '.jpeg', '.png', '.webp', '.heic', '.bmp', '.tiff', '.jfif', '.avif', '.ico', '.svg')
-_VIDEO_EXTS_DEFAULT = ('.mp4', '.mkv', '.webm', '.avi', '.mov', '.flv', '.m4v', '.gif')
+_VIDEO_EXTS_DEFAULT = ('.mp4', '.mkv', '.webm', '.avi', '.mov', '.flv', '.m4v')
+_ANIMATION_EXTS_DEFAULT = ('.gif',)
 _image_extra = tuple(e if e.startswith('.') else f'.{e}' for e in _csv_strings(os.getenv("IMAGE_EXTS_EXTRA", "")))
 _video_extra = tuple(e if e.startswith('.') else f'.{e}' for e in _csv_strings(os.getenv("VIDEO_EXTS_EXTRA", "")))
+_animation_extra = tuple(e if e.startswith('.') else f'.{e}' for e in _csv_strings(os.getenv("ANIMATION_EXTS_EXTRA", "")))
 IMAGE_EXTS = _IMAGE_EXTS_DEFAULT + _image_extra
 VIDEO_EXTS = _VIDEO_EXTS_DEFAULT + _video_extra
+ANIMATION_EXTS = _ANIMATION_EXTS_DEFAULT + _animation_extra
 
 IG_QUEUE_WARN_THRESHOLD = _env_int("IG_QUEUE_WARN_THRESHOLD", 5)
 

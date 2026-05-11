@@ -1,18 +1,37 @@
 import asyncio
 import logging
+import os
 from typing import Any, Optional
 
+from PIL import Image
 from telegram import InputMediaPhoto, InputMediaVideo
 from telegram.error import RetryAfter, TimedOut
 
 from config import (
     cfg,
+    ANIMATION_EXTS,
     IMAGE_EXTS,
     VIDEO_EXTS,
 )
 from messages import lmsg
+from utils import async_gif_to_mp4
 
 logger = logging.getLogger(__name__)
+
+
+def _get_image_dims(filepath: str) -> tuple[Optional[int], Optional[int]]:
+    try:
+        with Image.open(filepath) as img:
+            return img.size
+    except Exception:
+        return None, None
+
+
+async def _gif_to_mp4(gif_path: str) -> Optional[str]:
+    mp4_path = os.path.splitext(gif_path)[0] + '.gif.mp4'
+    if await async_gif_to_mp4(gif_path, mp4_path):
+        return mp4_path
+    return None
 
 
 async def send_downloaded_media(
@@ -38,6 +57,14 @@ async def send_downloaded_media(
             try:
                 if filename_lower.endswith(IMAGE_EXTS):
                     await context.bot.send_photo(chat_id=chat_id, photo=f_path, **upload_kwargs)
+                elif filename_lower.endswith(ANIMATION_EXTS):
+                    anim_kwargs = dict(upload_kwargs)
+                    width, height = _get_image_dims(f_path)
+                    if width and height:
+                        anim_kwargs.setdefault('width', width)
+                        anim_kwargs.setdefault('height', height)
+                    anim_path = await _gif_to_mp4(f_path) or f_path
+                    await context.bot.send_animation(chat_id=chat_id, animation=anim_path, **anim_kwargs)
                 elif filename_lower.endswith(VIDEO_EXTS):
                     await context.bot.send_video(chat_id=chat_id, video=f_path, supports_streaming=True, **upload_kwargs)
                 else:
@@ -64,7 +91,7 @@ async def send_downloaded_media(
 
                 if filename_lower.endswith(IMAGE_EXTS):
                     media_group.append(InputMediaPhoto(media=f_path, parse_mode='HTML', caption=item_caption))
-                elif filename_lower.endswith(VIDEO_EXTS):
+                elif filename_lower.endswith(VIDEO_EXTS) or filename_lower.endswith(ANIMATION_EXTS):
                     media_group.append(InputMediaVideo(media=f_path, parse_mode='HTML', caption=item_caption))
 
             if media_group:

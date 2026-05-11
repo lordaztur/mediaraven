@@ -9,6 +9,7 @@ class _FakeBot:
     def __init__(self):
         self.send_photo = AsyncMock()
         self.send_video = AsyncMock()
+        self.send_animation = AsyncMock()
         self.send_document = AsyncMock()
         self.send_media_group = AsyncMock()
 
@@ -83,6 +84,63 @@ async def test_send_document_passes_path_and_timeouts(tmp_path):
     assert kwargs["read_timeout"] == 600
     assert kwargs["write_timeout"] == 600
     assert kwargs["connect_timeout"] == 600
+
+
+@pytest.mark.asyncio
+async def test_gif_converts_to_mp4_and_routes_to_send_animation(tmp_path):
+    from PIL import Image
+    f = tmp_path / "loop.gif"
+    Image.new("RGB", (480, 360), color="red").save(f, format="GIF")
+    mp4 = tmp_path / "loop.gif.mp4"
+
+    async def fake_gif_to_mp4(input_path, output_path, timeout=60):
+        with open(output_path, "wb") as fp:
+            fp.write(b"fake-mp4")
+        return True
+
+    ctx = _make_context()
+    with patch.object(telegram_io, "cfg", lambda key: 600 if key == "TELEGRAM_UPLOAD_TIMEOUT" else 10), \
+         patch.object(telegram_io, "async_gif_to_mp4", fake_gif_to_mp4):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(f)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    assert ctx.bot.send_animation.await_count == 1
+    assert ctx.bot.send_video.await_count == 0
+    kwargs = ctx.bot.send_animation.await_args.kwargs
+    assert kwargs["animation"] == str(mp4)
+    assert kwargs["width"] == 480
+    assert kwargs["height"] == 360
+
+
+@pytest.mark.asyncio
+async def test_gif_falls_back_to_original_when_conversion_fails(tmp_path):
+    from PIL import Image
+    f = tmp_path / "loop.gif"
+    Image.new("RGB", (320, 200), color="blue").save(f, format="GIF")
+
+    async def failing_gif_to_mp4(input_path, output_path, timeout=60):
+        return False
+
+    ctx = _make_context()
+    with patch.object(telegram_io, "cfg", lambda key: 600 if key == "TELEGRAM_UPLOAD_TIMEOUT" else 10), \
+         patch.object(telegram_io, "async_gif_to_mp4", failing_gif_to_mp4):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(f)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    kwargs = ctx.bot.send_animation.await_args.kwargs
+    assert kwargs["animation"] == str(f)
+    assert kwargs["width"] == 320
+    assert kwargs["height"] == 200
 
 
 @pytest.mark.asyncio

@@ -200,6 +200,41 @@ async def async_download_via_playwright(
             pass
 
 
+async def async_gif_to_mp4(input_path: str, output_path: str, timeout: int = 60) -> bool:
+    process = None
+    ffmpeg_bin = state.FFMPEG_PATH or 'ffmpeg'
+    try:
+        cmd = [
+            ffmpeg_bin, '-y', '-i', input_path,
+            '-movflags', '+faststart',
+            '-pix_fmt', 'yuv420p',
+            '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+            '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23',
+            output_path,
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+        if process.returncode != 0:
+            err = stderr.decode('utf-8', errors='ignore')
+            logger.warning(lmsg("utils.gif_to_mp4_falhou", arg0=err[-400:]))
+            return False
+        return os.path.exists(output_path) and os.path.getsize(output_path) > 0
+    except asyncio.TimeoutError:
+        logger.warning(lmsg("utils.gif_to_mp4_timeout", timeout=timeout, input_path=input_path))
+        if process:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
+        return False
+    except Exception as e:
+        logger.warning(lmsg("utils.gif_to_mp4_erro", e=e), exc_info=True)
+        return False
+
+
 async def async_ffmpeg_remux(
     input_url: str,
     output_path: str,
