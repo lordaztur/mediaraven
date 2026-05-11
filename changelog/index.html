@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v123-gifs-vao-como-animacao-nao-video-bugado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.3 — GIFs vão como animação (não vídeo bugado)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1608,6 +1619,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v123-gifs-vao-como-animacao-nao-video-bugado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.3 — GIFs vão como animação (não vídeo bugado)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1683,6 +1705,21 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v123-gifs-vao-como-animacao-nao-video-bugado">v1.2.3 — GIFs vão como animação (não vídeo bugado)<a class="headerlink" href="#v123-gifs-vao-como-animacao-nao-video-bugado" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🎞️ <strong>GIFs agora vão via <code>send_animation</code></strong> em vez de <code>send_video</code>. Telegram tratava GIF como vídeo (sem autoplay, sem loop, com player feio). Com <code>send_animation</code>, vira animação nativa.</li>
+<li>🎞️ <strong>GIF é convertido pra MP4 (H.264) com ffmpeg antes de enviar</strong>. Telegram converte GIF cru com perda de qualidade e renderiza pequeno; MP4 silencioso é o formato nativo de "GIF animado" do Telegram (mesmo que o cliente oficial usa) — qualidade muito melhor e tamanho cheio.</li>
+<li>📐 Dimensões (<code>width</code>/<code>height</code>) extraídas do GIF original via PIL e passadas pro <code>send_animation</code> — garante renderização no tamanho correto mesmo quando ffmpeg não está disponível.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li><code>_ANIMATION_EXTS_DEFAULT = ('.gif',)</code> em <code>config.py</code> (extensível via env <code>ANIMATION_EXTS_EXTRA</code>); <code>.gif</code> removido de <code>VIDEO_EXTS_DEFAULT</code></li>
+<li><code>async_gif_to_mp4(input_path, output_path, timeout=60)</code> em <code>utils.py</code> (ffmpeg <code>-c:v libx264 -pix_fmt yuv420p -an -movflags +faststart</code>)</li>
+<li>Helper <code>_get_image_dims</code> + branch <code>send_animation</code> em <code>telegram_io.py</code> (com fallback pro <code>.gif</code> original se ffmpeg falhar)</li>
+<li>6 chaves de log <code>utils.gif_to_mp4_*</code> em PT/EN</li>
+<li>3 testes em <code>tests/test_telegram_io_timeouts.py</code> (rota gif→animation, conversão bem-sucedida, fallback quando ffmpeg falha)</li>
+</ul>
 <h2 id="v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube">v1.2.2 — Cap dinâmico pra HLS / lives finalizados do YouTube<a class="headerlink" href="#v122-cap-dinamico-pra-hls-lives-finalizados-do-youtube" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1811,7 +1848,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="10 de maio de 2026 22:36:01 UTC"><span class="timeago" datetime="2026-05-10T22:36:01+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="10 de maio de 2026 22:36:01 UTC">2026-05-10</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="11 de maio de 2026 22:50:29 UTC"><span class="timeago" datetime="2026-05-11T22:50:29+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="11 de maio de 2026 22:50:29 UTC">2026-05-11</span>
   </span>
 
     
