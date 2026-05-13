@@ -197,9 +197,11 @@
   "startup": {
     "deno_encontrado_em": "🦕 Deno found at: {arg0} (Ready for YouTube bypass)",
     "ffmpeg_encontrado_em": "🎬 ffmpeg found at: {arg0}",
+    "ffprobe_encontrado_em": "🔎 ffprobe found at: {arg0}",
     "limpeza_inicial_pastas": "🧹 Initial cleanup: Residual temporary folders removed.",
     "erro_na_limpeza": "⚠️ Error during initial cleanup: {e}",
-    "ffmpeg_not_found": "⚠️ ffmpeg not found in PATH. Instagram posts with audio+image won't work. Linux: apt install ffmpeg | Windows: choco install ffmpeg"
+    "ffmpeg_not_found": "⚠️ ffmpeg not found in PATH. Instagram posts with audio+image won't work. Linux: apt install ffmpeg | Windows: choco install ffmpeg",
+    "ffprobe_not_found": "⚠️ ffprobe not found in PATH. Conversion of Telegram-incompatible video will fall straight to a full re-encode fallback. Linux: apt install ffmpeg | Windows: choco install ffmpeg"
   },
   "telegram_io": {
     "flood_control_telegram": "⏳ Flood control! Telegram asked us to wait {arg0}s. Pausing...",
@@ -226,6 +228,16 @@
     "gif_to_mp4_falhou": "⚠️ ffmpeg gif→mp4 failed: {arg0}",
     "gif_to_mp4_timeout": "⚠️ ffmpeg gif→mp4 timeout ({timeout}s) for {input_path}",
     "gif_to_mp4_erro": "⚠️ Fatal error in ffmpeg gif→mp4: {e}",
+    "ffprobe_falhou": "⚠️ ffprobe failed: {arg0}",
+    "ffprobe_timeout": "⚠️ ffprobe timeout ({timeout}s) for {filepath}",
+    "ffprobe_erro": "⚠️ ffprobe error: {e}",
+    "video_convert_iniciando": "🎞️ Converting video to Telegram format (mp4): {filepath} | vcodec={vcodec} acodec={acodec} | v_args={v_args} a_args={a_args}",
+    "video_convert_ok": "✅ Conversion done: {out_path}",
+    "video_convert_falhou": "⚠️ Video conversion failed: {arg0}",
+    "video_convert_timeout": "⚠️ Video conversion timeout ({timeout}s) for {filepath}",
+    "video_convert_erro": "⚠️ Fatal error in video conversion: {e}",
+    "video_convert_no_ffmpeg": "⚠️ Cannot convert video (ffmpeg missing): {filepath}",
+    "video_convert_retry_reencode": "🔁 Remux failed, falling back to full re-encode: {filepath}",
     "erro_ffmpeg_x": "⚠️ FFmpeg error: {err_msg}",
     "ffmpeg_travou_e": "⚠️ FFmpeg froze and was interrupted (60s timeout).",
     "erro_fatal_no_2": "⚠️ Fatal error in FFmpeg Merge: {e}",

@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.5 — Conversão automática de vídeo pra MP4 quando necessário
+
+**Major changes:**
+
+- 🎞️ **Vídeos em formato incompatível com player nativo do Telegram são convertidos pra MP4 antes de enviar.** Telegram só garante player de streaming pra MP4 H.264+AAC ([Bot API docs](https://core.telegram.org/bots/api#sendvideo): "other formats may be sent as Document"). Antes, `.webm`/`.mkv`/`.avi`/`.flv` caíam como documento sem player; agora viram MP4 antes do `send_video`.
+- 🧠 **Estratégia smart (probe + remux/re-encode mínimo)**: `ffprobe` detecta vcodec/acodec do arquivo. Se já for H.264 → `-c:v copy` (instantâneo, sem perda). Se for AAC → `-c:a copy`. Caso contrário, re-encode só do stream incompatível. Se o remux falhar (codec não cabe em MP4 container), faz fallback automático pra re-encode completo.
+- ✅ Extensões compatíveis (`.mp4`/`.m4v`/`.mov`) passam direto sem ffprobe nem ffmpeg.
+
+**Adicionado:**
+
+- `state.FFPROBE_PATH` + `init_ffmpeg` agora descobre tanto `ffmpeg` quanto `ffprobe` no PATH em `lifecycle/startup.py`
+- `is_telegram_compatible_video_ext`, `async_ffprobe_codecs`, `async_ensure_telegram_video` em `utils.py`
+- Helper `_ensure_video` em `telegram_io.py` (single-file e media_group)
+- Config `VIDEO_CONVERT_TIMEOUT` (default 900s) em `config.py` + `customization.example.{json,en.json}`
+- 13 chaves de log novas (PT/EN): `startup.ffprobe_*`, `utils.ffprobe_*`, `utils.video_convert_*`
+- 11 testes em `tests/test_video_convert.py` + 4 testes em `tests/test_telegram_io_timeouts.py`
+
 ## v1.2.4 — Rate limiter pra evitar Flood control exceeded
 
 **Major changes:**

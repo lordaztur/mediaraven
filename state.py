@@ -46,6 +46,7 @@ background_tasks = set()
 
 DENO_PATH = None
 FFMPEG_PATH = None
+FFPROBE_PATH = None
 IG_CLIENT = None
 
 PW_MANAGER = None

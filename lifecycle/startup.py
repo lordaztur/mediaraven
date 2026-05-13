@@ -37,6 +37,12 @@ def init_ffmpeg() -> None:
     else:
         logger.warning(lmsg("startup.ffmpeg_not_found"))
 
+    state.FFPROBE_PATH = shutil.which("ffprobe") or shutil.which("ffprobe.exe")
+    if state.FFPROBE_PATH:
+        logger.info(lmsg("startup.ffprobe_encontrado_em", arg0=state.FFPROBE_PATH))
+    else:
+        logger.warning(lmsg("startup.ffprobe_not_found"))
+
 
 def _sync_startup_cleanup() -> None:
     folder = BASE_DOWNLOAD_DIR

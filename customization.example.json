@@ -132,6 +132,9 @@
     "_doc_TELEGRAM_MAX_UPLOAD_MB": "Tamanho máx (MB) de arquivo aceito pelo Bot API server. Hard limit do Telegram pra bots é 2000 MB (Premium não afeta bots). Aplicado como cap no seletor de formato do yt-dlp pra evitar baixar vídeos que vão falhar no upload. Min 50, max 2000.",
     "TELEGRAM_MAX_UPLOAD_MB": 2000,
 
+    "_doc_VIDEO_CONVERT_TIMEOUT": "Timeout (segundos) da conversão ffmpeg para vídeos em formatos não suportados pelo player nativo do Telegram (.webm/.mkv/.avi/.flv → .mp4 H.264+AAC). Re-encode de vídeos longos pode demorar; ajuste pra cima se necessário. Min 60, max 3600.",
+    "VIDEO_CONVERT_TIMEOUT": 900,
+
     "_doc_IG_QUEUE_WARN_THRESHOLD": "Tamanho da fila do Instagrapi que dispara log de warning. Min 1, max 100.",
     "IG_QUEUE_WARN_THRESHOLD": 5,
 

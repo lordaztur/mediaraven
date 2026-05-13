@@ -235,6 +235,159 @@ async def async_gif_to_mp4(input_path: str, output_path: str, timeout: int = 60)
         return False
 
 
+_TG_COMPATIBLE_VIDEO_EXTS = ('.mp4', '.m4v', '.mov')
+_TG_COMPATIBLE_VCODECS = ('h264', 'avc1', 'avc')
+_TG_COMPATIBLE_ACODECS = ('aac',)
+
+
+def is_telegram_compatible_video_ext(filepath: str) -> bool:
+    return filepath.lower().endswith(_TG_COMPATIBLE_VIDEO_EXTS)
+
+
+async def async_ffprobe_codecs(filepath: str, timeout: int = 30) -> tuple[Optional[str], Optional[str]]:
+    """Retorna (vcodec, acodec). None se ffprobe ausente/falhou. acodec='' se não houver áudio."""
+    ffprobe_bin = state.FFPROBE_PATH
+    if not ffprobe_bin:
+        return None, None
+    process = None
+    try:
+        cmd = [
+            ffprobe_bin, '-v', 'error',
+            '-show_entries', 'stream=codec_type,codec_name',
+            '-of', 'default=nw=1',
+            filepath,
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+        if process.returncode != 0:
+            err = stderr.decode('utf-8', errors='ignore')
+            logger.warning(lmsg("utils.ffprobe_falhou", arg0=err[-200:]))
+            return None, None
+        vcodec: Optional[str] = None
+        acodec: str = ''
+        cur_type: Optional[str] = None
+        cur_name: Optional[str] = None
+        for line in stdout.decode('utf-8', errors='ignore').splitlines():
+            if '=' not in line:
+                continue
+            k, v = line.split('=', 1)
+            k, v = k.strip(), v.strip().lower()
+            if k == 'codec_type':
+                cur_type = v
+            elif k == 'codec_name':
+                cur_name = v
+            if cur_type and cur_name:
+                if cur_type == 'video' and vcodec is None:
+                    vcodec = cur_name
+                elif cur_type == 'audio' and not acodec:
+                    acodec = cur_name
+                cur_type = cur_name = None
+        return vcodec, acodec
+    except asyncio.TimeoutError:
+        logger.warning(lmsg("utils.ffprobe_timeout", timeout=timeout, filepath=filepath))
+        if process:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
+        return None, None
+    except Exception as e:
+        logger.warning(lmsg("utils.ffprobe_erro", e=e))
+        return None, None
+
+
+async def async_ensure_telegram_video(filepath: str, timeout: int = 600) -> Optional[str]:
+    """Garante que o vídeo é compatível com player nativo do Telegram (MP4 H.264 + AAC).
+
+    Retorna path final (pode ser o mesmo `filepath`) ou None se falhar.
+    Se a extensão já for compatível (.mp4/.m4v/.mov), passa direto.
+    Caso contrário, faz probe + remux (se já h264+aac) ou re-encode mínimo.
+    """
+    if is_telegram_compatible_video_ext(filepath):
+        return filepath
+
+    if not state.FFMPEG_PATH:
+        logger.warning(lmsg("utils.video_convert_no_ffmpeg", filepath=filepath))
+        return None
+
+    out_path = os.path.splitext(filepath)[0] + '.tg.mp4'
+    vcodec, acodec = await async_ffprobe_codecs(filepath)
+
+    if vcodec in _TG_COMPATIBLE_VCODECS:
+        v_args = ['-c:v', 'copy']
+    else:
+        v_args = ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p']
+
+    if acodec == '':
+        a_args = ['-an']
+    elif acodec in _TG_COMPATIBLE_ACODECS:
+        a_args = ['-c:a', 'copy']
+    else:
+        a_args = ['-c:a', 'aac', '-b:a', '192k']
+
+    cmd = [state.FFMPEG_PATH, '-y', '-i', filepath, *v_args, *a_args, '-movflags', '+faststart', out_path]
+    logger.info(lmsg(
+        "utils.video_convert_iniciando",
+        filepath=filepath, vcodec=vcodec or 'unknown', acodec=acodec or 'none',
+        v_args=' '.join(v_args), a_args=' '.join(a_args),
+    ))
+
+    process = None
+    try:
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+        if process.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+            logger.info(lmsg("utils.video_convert_ok", out_path=out_path))
+            return out_path
+        err = stderr.decode('utf-8', errors='ignore')
+        logger.warning(lmsg("utils.video_convert_falhou", arg0=err[-400:]))
+    except asyncio.TimeoutError:
+        logger.warning(lmsg("utils.video_convert_timeout", timeout=timeout, filepath=filepath))
+        if process:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
+    except Exception as e:
+        logger.warning(lmsg("utils.video_convert_erro", e=e))
+
+    if 'copy' in v_args:
+        logger.info(lmsg("utils.video_convert_retry_reencode", filepath=filepath))
+        cmd_retry = [
+            state.FFMPEG_PATH, '-y', '-i', filepath,
+            '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
+            *a_args, '-movflags', '+faststart', out_path,
+        ]
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd_retry, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE,
+            )
+            _, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+            if process.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                logger.info(lmsg("utils.video_convert_ok", out_path=out_path))
+                return out_path
+            err = stderr.decode('utf-8', errors='ignore')
+            logger.warning(lmsg("utils.video_convert_falhou", arg0=err[-400:]))
+        except asyncio.TimeoutError:
+            logger.warning(lmsg("utils.video_convert_timeout", timeout=timeout, filepath=filepath))
+            if process:
+                try:
+                    process.kill()
+                    await process.wait()
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.warning(lmsg("utils.video_convert_erro", e=e))
+
+    return None
+
+
 async def async_ffmpeg_remux(
     input_url: str,
     output_path: str,

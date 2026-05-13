@@ -14,7 +14,7 @@ from config import (
     VIDEO_EXTS,
 )
 from messages import lmsg
-from utils import async_gif_to_mp4
+from utils import async_ensure_telegram_video, async_gif_to_mp4, is_telegram_compatible_video_ext
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,13 @@ async def _gif_to_mp4(gif_path: str) -> Optional[str]:
     if await async_gif_to_mp4(gif_path, mp4_path):
         return mp4_path
     return None
+
+
+async def _ensure_video(f_path: str) -> str:
+    if is_telegram_compatible_video_ext(f_path):
+        return f_path
+    converted = await async_ensure_telegram_video(f_path, timeout=cfg("VIDEO_CONVERT_TIMEOUT"))
+    return converted or f_path
 
 
 async def send_downloaded_media(
@@ -66,7 +73,8 @@ async def send_downloaded_media(
                     anim_path = await _gif_to_mp4(f_path) or f_path
                     await context.bot.send_animation(chat_id=chat_id, animation=anim_path, **anim_kwargs)
                 elif filename_lower.endswith(VIDEO_EXTS):
-                    await context.bot.send_video(chat_id=chat_id, video=f_path, supports_streaming=True, **upload_kwargs)
+                    video_path = await _ensure_video(f_path)
+                    await context.bot.send_video(chat_id=chat_id, video=video_path, supports_streaming=True, **upload_kwargs)
                 else:
                     await context.bot.send_document(chat_id=chat_id, document=f_path, **upload_kwargs)
                 break
@@ -92,7 +100,8 @@ async def send_downloaded_media(
                 if filename_lower.endswith(IMAGE_EXTS):
                     media_group.append(InputMediaPhoto(media=f_path, parse_mode='HTML', caption=item_caption))
                 elif filename_lower.endswith(VIDEO_EXTS) or filename_lower.endswith(ANIMATION_EXTS):
-                    media_group.append(InputMediaVideo(media=f_path, parse_mode='HTML', caption=item_caption))
+                    video_path = await _ensure_video(f_path) if filename_lower.endswith(VIDEO_EXTS) else f_path
+                    media_group.append(InputMediaVideo(media=video_path, parse_mode='HTML', caption=item_caption))
 
             if media_group:
                 for attempt in range(5):

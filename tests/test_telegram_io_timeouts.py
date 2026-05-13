@@ -164,6 +164,120 @@ async def test_caller_overrides_take_precedence(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_video_webm_converts_before_send(tmp_path):
+    f = tmp_path / "clip.webm"
+    f.write_bytes(b"x")
+    converted = tmp_path / "clip.tg.mp4"
+
+    async def fake_ensure(filepath, timeout=600):
+        with open(converted, "wb") as fp:
+            fp.write(b"converted")
+        return str(converted)
+
+    ctx = _make_context()
+    with patch.object(telegram_io, "cfg", lambda key: 600 if key in ("TELEGRAM_UPLOAD_TIMEOUT", "VIDEO_CONVERT_TIMEOUT") else 10), \
+         patch.object(telegram_io, "async_ensure_telegram_video", fake_ensure):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(f)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    kwargs = ctx.bot.send_video.await_args.kwargs
+    assert kwargs["video"] == str(converted)
+
+
+@pytest.mark.asyncio
+async def test_video_webm_falls_back_to_original_when_convert_fails(tmp_path):
+    f = tmp_path / "clip.webm"
+    f.write_bytes(b"x")
+
+    async def fake_ensure(filepath, timeout=600):
+        return None
+
+    ctx = _make_context()
+    with patch.object(telegram_io, "cfg", lambda key: 600 if key in ("TELEGRAM_UPLOAD_TIMEOUT", "VIDEO_CONVERT_TIMEOUT") else 10), \
+         patch.object(telegram_io, "async_ensure_telegram_video", fake_ensure):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(f)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    kwargs = ctx.bot.send_video.await_args.kwargs
+    assert kwargs["video"] == str(f)
+
+
+@pytest.mark.asyncio
+async def test_video_mp4_skips_conversion(tmp_path):
+    f = tmp_path / "clip.mp4"
+    f.write_bytes(b"x")
+    called = {"count": 0}
+
+    async def fake_ensure(filepath, timeout=600):
+        called["count"] += 1
+        return filepath
+
+    ctx = _make_context()
+    with patch.object(telegram_io, "cfg", lambda key: 600 if key in ("TELEGRAM_UPLOAD_TIMEOUT", "VIDEO_CONVERT_TIMEOUT") else 10), \
+         patch.object(telegram_io, "async_ensure_telegram_video", fake_ensure):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(f)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    assert called["count"] == 0
+    kwargs = ctx.bot.send_video.await_args.kwargs
+    assert kwargs["video"] == str(f)
+
+
+@pytest.mark.asyncio
+async def test_media_group_converts_webm_video(tmp_path):
+    img = tmp_path / "a.jpg"
+    vid = tmp_path / "b.webm"
+    img.write_bytes(b"x")
+    vid.write_bytes(b"y")
+    converted = tmp_path / "b.tg.mp4"
+
+    async def fake_ensure(filepath, timeout=600):
+        with open(converted, "wb") as fp:
+            fp.write(b"converted")
+        return str(converted)
+
+    ctx = _make_context()
+
+    def fake_cfg(key):
+        return {
+            "TELEGRAM_UPLOAD_TIMEOUT": 600,
+            "VIDEO_CONVERT_TIMEOUT": 600,
+            "MEDIA_GROUP_CHUNK_SIZE": 10,
+            "MEDIA_GROUP_DELAY": 0,
+        }[key]
+
+    with patch.object(telegram_io, "cfg", fake_cfg), \
+         patch.object(telegram_io, "async_ensure_telegram_video", fake_ensure):
+        await telegram_io.send_downloaded_media(
+            context=ctx,
+            chat_id=1,
+            files=[str(img), str(vid)],
+            original_msg_id=10,
+            upload_kwargs={},
+        )
+
+    kwargs = ctx.bot.send_media_group.await_args.kwargs
+    media = kwargs["media"]
+    assert len(media) == 2
+    assert media[1].media == converted.absolute().as_uri()
+
+
+@pytest.mark.asyncio
 async def test_media_group_passes_paths_and_timeouts(tmp_path):
     a = tmp_path / "a.jpg"
     b = tmp_path / "b.jpg"
