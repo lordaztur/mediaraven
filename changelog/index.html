@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v124-rate-limiter-pra-evitar-flood-control-exceeded" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.4 — Rate limiter pra evitar Flood control exceeded
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v123-gifs-vao-como-animacao-nao-video-bugado" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1619,6 +1630,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v124-rate-limiter-pra-evitar-flood-control-exceeded" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.4 — Rate limiter pra evitar Flood control exceeded
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v123-gifs-vao-como-animacao-nao-video-bugado" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1705,6 +1727,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v124-rate-limiter-pra-evitar-flood-control-exceeded">v1.2.4 — Rate limiter pra evitar Flood control exceeded<a class="headerlink" href="#v124-rate-limiter-pra-evitar-flood-control-exceeded" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🚦 <strong><code>AIORateLimiter</code> ativado</strong> no <code>ApplicationBuilder</code>. Antes, quando Telegram retornava <code>RetryAfter: Flood control exceeded. Retry in N seconds</code> (em <code>edit_text</code>/<code>send_*</code>), a exception subia sem retry, e a request do user falhava. Agora o PTB respeita <code>Retry-After</code> em todos os requests automaticamente — espera N+ε e tenta de novo, sem propagar erro pro handler.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li><code>builder.rate_limiter(AIORateLimiter())</code> em <code>mediaraven.py</code></li>
+<li><code>python-telegram-bot[rate-limiter]==22.7</code> em <code>requirements.txt</code> (puxa <code>aiolimiter</code> como dependência transitiva)</li>
+</ul>
 <h2 id="v123-gifs-vao-como-animacao-nao-video-bugado">v1.2.3 — GIFs vão como animação (não vídeo bugado)<a class="headerlink" href="#v123-gifs-vao-como-animacao-nao-video-bugado" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1848,7 +1880,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="11 de maio de 2026 22:50:29 UTC"><span class="timeago" datetime="2026-05-11T22:50:29+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="11 de maio de 2026 22:50:29 UTC">2026-05-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="13 de maio de 2026 16:02:58 UTC"><span class="timeago" datetime="2026-05-13T16:02:58+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="13 de maio de 2026 16:02:58 UTC">2026-05-13</span>
   </span>
 
     
