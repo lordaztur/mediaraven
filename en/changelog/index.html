@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v125-automatic-video-conversion-to-mp4-when-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.5 — Automatic video conversion to MP4 when needed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v124-rate-limiter-to-prevent-flood-control-exceeded" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1632,6 +1643,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v125-automatic-video-conversion-to-mp4-when-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.5 — Automatic video conversion to MP4 when needed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v124-rate-limiter-to-prevent-flood-control-exceeded" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1729,6 +1751,22 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v125-automatic-video-conversion-to-mp4-when-needed">v1.2.5 — Automatic video conversion to MP4 when needed<a class="headerlink" href="#v125-automatic-video-conversion-to-mp4-when-needed" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🎞️ <strong>Videos in formats not supported by Telegram's native player are converted to MP4 before sending.</strong> Telegram only guarantees a streaming player for MP4 H.264+AAC (<a href="https://core.telegram.org/bots/api#sendvideo">Bot API docs</a>: "other formats may be sent as Document"). Previously, <code>.webm</code>/<code>.mkv</code>/<code>.avi</code>/<code>.flv</code> would land as documents with no player; now they become MP4 before <code>send_video</code>.</li>
+<li>🧠 <strong>Smart strategy (probe + minimal remux/re-encode)</strong>: <code>ffprobe</code> detects vcodec/acodec. If already H.264 → <code>-c:v copy</code> (instant, lossless). If AAC → <code>-c:a copy</code>. Otherwise, re-encode only the incompatible stream. If remux fails (codec doesn't fit MP4 container), auto-fallback to full re-encode.</li>
+<li>✅ Compatible extensions (<code>.mp4</code>/<code>.m4v</code>/<code>.mov</code>) pass through with no ffprobe/ffmpeg call.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li><code>state.FFPROBE_PATH</code> + <code>init_ffmpeg</code> now discovers both <code>ffmpeg</code> and <code>ffprobe</code> in PATH in <code>lifecycle/startup.py</code></li>
+<li><code>is_telegram_compatible_video_ext</code>, <code>async_ffprobe_codecs</code>, <code>async_ensure_telegram_video</code> in <code>utils.py</code></li>
+<li><code>_ensure_video</code> helper in <code>telegram_io.py</code> (single-file and media_group)</li>
+<li>Config <code>VIDEO_CONVERT_TIMEOUT</code> (default 900s) in <code>config.py</code> + <code>customization.example.{json,en.json}</code></li>
+<li>13 new log keys (PT/EN): <code>startup.ffprobe_*</code>, <code>utils.ffprobe_*</code>, <code>utils.video_convert_*</code></li>
+<li>11 tests in <code>tests/test_video_convert.py</code> + 4 tests in <code>tests/test_telegram_io_timeouts.py</code></li>
+</ul>
 <h2 id="v124-rate-limiter-to-prevent-flood-control-exceeded">v1.2.4 — Rate limiter to prevent Flood control exceeded<a class="headerlink" href="#v124-rate-limiter-to-prevent-flood-control-exceeded" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1882,7 +1920,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 13, 2026 16:02:58 UTC"><span class="timeago" datetime="2026-05-13T16:02:58+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 13, 2026 16:02:58 UTC">2026-05-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 13, 2026 23:30:50 UTC"><span class="timeago" datetime="2026-05-13T23:30:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 13, 2026 23:30:50 UTC">2026-05-13</span>
   </span>
 
     
