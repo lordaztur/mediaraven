@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.4 — Rate limiter to prevent Flood control exceeded
+
+**Major changes:**
+
+- 🚦 **`AIORateLimiter` enabled** in `ApplicationBuilder`. Previously, when Telegram returned `RetryAfter: Flood control exceeded. Retry in N seconds` (on `edit_text`/`send_*`), the exception bubbled up without retry and the user's request failed. Now PTB respects `Retry-After` on all requests automatically — waits N+ε and retries, without propagating errors to the handler.
+
+**Added:**
+
+- `builder.rate_limiter(AIORateLimiter())` in `mediaraven.py`
+- `python-telegram-bot[rate-limiter]==22.7` in `requirements.txt` (pulls `aiolimiter` as a transitive dependency)
+
 ## v1.2.3 — GIFs sent as animation (not buggy video)
 
 **Major changes:**

@@ -1,6 +1,6 @@
 import sys
 
-from telegram.ext import ApplicationBuilder, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import AIORateLimiter, ApplicationBuilder, CallbackQueryHandler, MessageHandler, filters
 
 from config import (
     LOCAL_API_URL,
@@ -44,6 +44,7 @@ if __name__ == '__main__':
     builder.base_url(LOCAL_API_URL)
     builder.base_file_url(LOCAL_FILE_URL)
     builder.local_mode(True)
+    builder.rate_limiter(AIORateLimiter())
     builder.post_init(init_globals)
     builder.post_shutdown(stop_globals)
     application = builder.concurrent_updates(True).build()
