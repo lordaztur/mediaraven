@@ -112,3 +112,56 @@ def test_apply_format_selection_progressive_keeps_max_height():
     with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
         _ytdlp._apply_format_selection(opts, platform, None, info=info)
     assert '[height<=1920]' in opts['format']
+
+
+def test_apply_format_selection_reddit_sets_impersonate_by_default():
+    opts = {}
+    platform = Platform(reddit=True)
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, platform, None)
+    assert 'impersonate' in opts
+
+
+def test_apply_format_selection_reddit_skips_impersonate_when_disabled():
+    opts = {}
+    platform = Platform(reddit=True)
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, platform, None, use_impersonate=False)
+    assert 'impersonate' not in opts
+
+
+def test_apply_format_selection_pops_existing_impersonate_when_disabled():
+    from yt_dlp.networking.impersonate import ImpersonateTarget
+    opts = {'impersonate': ImpersonateTarget('chrome')}
+    platform = Platform(reddit=True)
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, platform, None, use_impersonate=False)
+    assert 'impersonate' not in opts
+
+
+def test_apply_format_selection_facebook_keeps_impersonate_even_with_use_imp_false():
+    opts = {}
+    platform = Platform(facebook=True)
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, platform, None)
+    assert 'impersonate' in opts
+    opts2 = {}
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts2, platform, None, use_impersonate=False)
+    assert 'impersonate' not in opts2
+
+
+def test_expand_attempts_reddit_tries_no_imp_first():
+    attempts = ['no_cookie', 'with_cookie']
+    expanded = _ytdlp._expand_attempts_with_impersonate(attempts, Platform(reddit=True))
+    assert expanded == [
+        ('no_cookie', False), ('with_cookie', False),
+        ('no_cookie', True), ('with_cookie', True),
+    ]
+
+
+def test_expand_attempts_other_platforms_keep_impersonate_on():
+    attempts = ['no_cookie', 'with_cookie']
+    for plat in (Platform(youtube=True), Platform(facebook=True), Platform(instagram=True), None):
+        expanded = _ytdlp._expand_attempts_with_impersonate(attempts, plat)
+        assert expanded == [('no_cookie', True), ('with_cookie', True)]

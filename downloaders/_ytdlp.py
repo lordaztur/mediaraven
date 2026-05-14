@@ -89,6 +89,7 @@ def _apply_format_selection(
     platform: Platform,
     target_lang: Optional[str],
     info: Optional[dict] = None,
+    use_impersonate: bool = True,
 ) -> None:
     h = cfg("YTDLP_MAX_HEIGHT")
     cap_mb = cfg("TELEGRAM_MAX_UPLOAD_MB")
@@ -120,8 +121,10 @@ def _apply_format_selection(
         )
         opts['merge_output_format'] = 'mp4'
 
-    if platform.facebook or platform.instagram or platform.reddit:
+    if use_impersonate and (platform.facebook or platform.instagram or platform.reddit):
         opts['impersonate'] = ImpersonateTarget('chrome')
+    elif not use_impersonate:
+        opts.pop('impersonate', None)
 
 
 def _yt_dlp_extract(opts: dict[str, Any], url: str, download: bool = False) -> Optional[dict]:
@@ -169,6 +172,14 @@ def _attempt_order(has_firefox_cookie: bool, target_lang: Optional[str]) -> list
     return attempts
 
 
+def _expand_attempts_with_impersonate(
+    attempts: list[str], platform: Optional[Platform],
+) -> list[tuple[str, bool]]:
+    if platform is not None and platform.reddit:
+        return [(m, False) for m in attempts] + [(m, True) for m in attempts]
+    return [(m, True) for m in attempts]
+
+
 async def _pre_extract(base_opts: dict[str, Any], url: str, mode: str) -> Optional[dict]:
     extract_opts = base_opts.copy()
     extract_opts.pop('format', None)
@@ -196,7 +207,9 @@ async def _run_ytdlp_with_cookie_fallback(
     downloaded_files: list[str] = []
 
     last_exc: Optional[BaseException] = None
-    for mode in _attempt_order(has_firefox_cookie, target_lang):
+    base_attempts = _attempt_order(has_firefox_cookie, target_lang)
+    expanded_attempts = _expand_attempts_with_impersonate(base_attempts, platform)
+    for mode, use_imp in expanded_attempts:
         _wipe_folder(unique_folder)
 
         current_opts = base_opts.copy()
@@ -205,10 +218,13 @@ async def _run_ytdlp_with_cookie_fallback(
             current_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
 
         if platform is not None:
-            info_for_select = pre_info or await _pre_extract(base_opts, url, mode)
-            if info_for_select:
-                _apply_format_selection(current_opts, platform, target_lang, info=info_for_select)
+            info_for_select = pre_info or (None if platform.reddit else await _pre_extract(base_opts, url, mode))
+            _apply_format_selection(
+                current_opts, platform, target_lang,
+                info=info_for_select, use_impersonate=use_imp,
+            )
 
+        attempt_label = f"{mode}{'_imp' if use_imp else '_noimp'}"
         try:
             info = await loop.run_in_executor(
                 state.YTDLP_POOL, _yt_dlp_extract, current_opts, url, True
@@ -226,12 +242,12 @@ async def _run_ytdlp_with_cookie_fallback(
             current_files = _list_downloaded_files(unique_folder)
             if current_files:
                 downloaded_files = sorted(current_files)
-                logger.info(lmsg("_ytdlp.download_bem_sucedido", mode=mode))
+                logger.info(lmsg("_ytdlp.download_bem_sucedido", mode=attempt_label))
                 break
-            logger.warning(lmsg("_ytdlp.yt_dlp_falhou", mode=mode))
+            logger.warning(lmsg("_ytdlp.yt_dlp_falhou", mode=attempt_label))
         except Exception as e:
             last_exc = e
-            logger.warning(lmsg("_ytdlp.yt_dlp_exce_o", mode=mode, e=e))
+            logger.warning(lmsg("_ytdlp.yt_dlp_exce_o", mode=attempt_label, e=e))
 
     if not downloaded_files and last_exc is not None:
         logger.debug(lmsg("_ytdlp.stack_trace_last_exc"), exc_info=last_exc)

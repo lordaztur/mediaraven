@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.2.6 — Reddit: try without impersonate first (fixes IP-block)
+
+**Major changes:**
+
+- 🐛 **Reddit was returning `Your IP address is unable to access the Reddit API` when yt-dlp was called with `impersonate=ImpersonateTarget('chrome')`** (enabled for Reddit in v1.0.x). Result: `bestvideo+bestaudio/best` failed on any video post, and the bot fell through to the generic scraper which grabbed avatars/community icons instead of the video. Now, for Reddit, attempts are expanded to `[no_cookie+no_imp, with_cookie+no_imp, no_cookie+imp, with_cookie+imp]` — impersonate becomes a fallback instead of default. Facebook/Instagram unchanged (always impersonate).
+- 🧪 Manually verified: without impersonate, yt-dlp downloads Reddit video normally (~5 MB in 2s); with impersonate, returns IP-block.
+
+**Refactors:**
+
+- `_apply_format_selection` got `use_impersonate: bool = True` parameter in `downloaders/_ytdlp.py` — when False, does `opts.pop('impersonate', None)` (just gating the add isn't enough since the dispatcher injects impersonate into `base_opts` before the loop, and `current_opts.copy()` inherits it)
+- New helper `_expand_attempts_with_impersonate(attempts, platform)` — for Reddit returns `[(m, False) for m in attempts] + [(m, True) for m in attempts]`; for others keeps `[(m, True) for m in attempts]`
+- Main loop in `_run_ytdlp_with_cookie_fallback` now iterates `(mode, use_imp)`, calls `_apply_format_selection` on every iteration (not only when pre-extract info is present — otherwise the gating is skipped), and skips `_pre_extract` for Reddit (Reddit uses `format='bestvideo+bestaudio/best'` directly)
+- Attempt log includes `_imp`/`_noimp` suffix in `mode` for diagnostics
+
+**Added:**
+
+- 6 tests in `tests/test_ytdlp_format_selection.py` (impersonate gating + pop when inherited + expand_attempts)
+
 ## v1.2.5 — Automatic video conversion to MP4 when needed
 
 **Major changes:**
