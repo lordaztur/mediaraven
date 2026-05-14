@@ -245,7 +245,6 @@ def is_telegram_compatible_video_ext(filepath: str) -> bool:
 
 
 async def async_ffprobe_codecs(filepath: str, timeout: int = 30) -> tuple[Optional[str], Optional[str]]:
-    """Retorna (vcodec, acodec). None se ffprobe ausente/falhou. acodec='' se não houver áudio."""
     ffprobe_bin = state.FFPROBE_PATH
     if not ffprobe_bin:
         return None, None
@@ -300,12 +299,6 @@ async def async_ffprobe_codecs(filepath: str, timeout: int = 30) -> tuple[Option
 
 
 async def async_ensure_telegram_video(filepath: str, timeout: int = 600) -> Optional[str]:
-    """Garante que o vídeo é compatível com player nativo do Telegram (MP4 H.264 + AAC).
-
-    Retorna path final (pode ser o mesmo `filepath`) ou None se falhar.
-    Se a extensão já for compatível (.mp4/.m4v/.mov), passa direto.
-    Caso contrário, faz probe + remux (se já h264+aac) ou re-encode mínimo.
-    """
     if is_telegram_compatible_video_ext(filepath):
         return filepath
 

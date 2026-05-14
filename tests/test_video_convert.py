@@ -1,4 +1,3 @@
-"""Testes do conversor smart de vídeo (probe + remux/re-encode)."""
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -81,7 +80,6 @@ async def test_ensure_video_returns_none_when_ffmpeg_missing(tmp_path):
 
 @pytest.mark.asyncio
 async def test_ensure_video_remux_when_h264_aac(tmp_path):
-    """Codecs já compatíveis → comando ffmpeg deve usar -c:v copy + -c:a copy."""
     f = tmp_path / "clip.mkv"
     f.write_bytes(b"x")
     out_target = tmp_path / "clip.tg.mp4"
