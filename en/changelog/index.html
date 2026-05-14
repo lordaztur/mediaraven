@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.6 — Reddit: try without impersonate first (fixes IP-block)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v125-automatic-video-conversion-to-mp4-when-needed" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1643,6 +1654,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.6 — Reddit: try without impersonate first (fixes IP-block)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v125-automatic-video-conversion-to-mp4-when-needed" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1751,6 +1773,23 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v126-reddit-try-without-impersonate-first-fixes-ip-block">v1.2.6 — Reddit: try without impersonate first (fixes IP-block)<a class="headerlink" href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐛 <strong>Reddit was returning <code>Your IP address is unable to access the Reddit API</code> when yt-dlp was called with <code>impersonate=ImpersonateTarget('chrome')</code></strong> (enabled for Reddit in v1.0.x). Result: <code>bestvideo+bestaudio/best</code> failed on any video post, and the bot fell through to the generic scraper which grabbed avatars/community icons instead of the video. Now, for Reddit, attempts are expanded to <code>[no_cookie+no_imp, with_cookie+no_imp, no_cookie+imp, with_cookie+imp]</code> — impersonate becomes a fallback instead of default. Facebook/Instagram unchanged (always impersonate).</li>
+<li>🧪 Manually verified: without impersonate, yt-dlp downloads Reddit video normally (~5 MB in 2s); with impersonate, returns IP-block.</li>
+</ul>
+<p><strong>Refactors:</strong></p>
+<ul>
+<li><code>_apply_format_selection</code> got <code>use_impersonate: bool = True</code> parameter in <code>downloaders/_ytdlp.py</code></li>
+<li>New helper <code>_expand_attempts_with_impersonate(attempts, platform)</code> — for Reddit returns <code>[(m, False) for m in attempts] + [(m, True) for m in attempts]</code>; for others keeps <code>[(m, True) for m in attempts]</code></li>
+<li>Main loop in <code>_run_ytdlp_with_cookie_fallback</code> now iterates <code>(mode, use_imp)</code> and propagates to <code>_apply_format_selection</code></li>
+<li>Attempt log includes <code>_imp</code>/<code>_noimp</code> suffix in <code>mode</code> for diagnostics</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>5 tests in <code>tests/test_ytdlp_format_selection.py</code> (impersonate gating + expand_attempts)</li>
+</ul>
 <h2 id="v125-automatic-video-conversion-to-mp4-when-needed">v1.2.5 — Automatic video conversion to MP4 when needed<a class="headerlink" href="#v125-automatic-video-conversion-to-mp4-when-needed" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1920,7 +1959,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 13, 2026 23:30:50 UTC"><span class="timeago" datetime="2026-05-13T23:30:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 13, 2026 23:30:50 UTC">2026-05-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 14, 2026 20:26:02 UTC"><span class="timeago" datetime="2026-05-14T20:26:02+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 14, 2026 20:26:02 UTC">2026-05-14</span>
   </span>
 
     
