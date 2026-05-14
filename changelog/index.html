@@ -1779,14 +1779,14 @@
 </ul>
 <p><strong>Refatorações:</strong></p>
 <ul>
-<li><code>_apply_format_selection</code> ganhou parâmetro <code>use_impersonate: bool = True</code> em <code>downloaders/_ytdlp.py</code></li>
+<li><code>_apply_format_selection</code> ganhou parâmetro <code>use_impersonate: bool = True</code> em <code>downloaders/_ytdlp.py</code> — quando False, faz <code>opts.pop('impersonate', None)</code> (gating só de adicionar não basta porque o dispatcher injeta impersonate em <code>base_opts</code> antes do loop, e o <code>current_opts.copy()</code> herda)</li>
 <li>Novo helper <code>_expand_attempts_with_impersonate(attempts, platform)</code> — pra Reddit retorna <code>[(m, False) for m in attempts] + [(m, True) for m in attempts]</code>; pra outros mantém <code>[(m, True) for m in attempts]</code></li>
-<li>Loop principal de <code>_run_ytdlp_with_cookie_fallback</code> agora itera <code>(mode, use_imp)</code> e propaga pra <code>_apply_format_selection</code></li>
+<li>Loop principal de <code>_run_ytdlp_with_cookie_fallback</code> agora itera <code>(mode, use_imp)</code>, chama <code>_apply_format_selection</code> em toda iteração (não só quando há info do pre-extract — senão o gating é pulado), e pula <code>_pre_extract</code> pra Reddit (Reddit usa <code>format='bestvideo+bestaudio/best'</code> direto)</li>
 <li>Log da tentativa inclui sufixo <code>_imp</code>/<code>_noimp</code> no <code>mode</code> pra diagnose</li>
 </ul>
 <p><strong>Adicionado:</strong></p>
 <ul>
-<li>5 testes em <code>tests/test_ytdlp_format_selection.py</code> (impersonate gating + expand_attempts)</li>
+<li>6 testes em <code>tests/test_ytdlp_format_selection.py</code> (impersonate gating + pop quando herdado + expand_attempts)</li>
 </ul>
 <h2 id="v125-conversao-automatica-de-video-pra-mp4-quando-necessario">v1.2.5 — Conversão automática de vídeo pra MP4 quando necessário<a class="headerlink" href="#v125-conversao-automatica-de-video-pra-mp4-quando-necessario" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>

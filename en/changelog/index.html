@@ -1781,14 +1781,14 @@
 </ul>
 <p><strong>Refactors:</strong></p>
 <ul>
-<li><code>_apply_format_selection</code> got <code>use_impersonate: bool = True</code> parameter in <code>downloaders/_ytdlp.py</code></li>
+<li><code>_apply_format_selection</code> got <code>use_impersonate: bool = True</code> parameter in <code>downloaders/_ytdlp.py</code> — when False, does <code>opts.pop('impersonate', None)</code> (just gating the add isn't enough since the dispatcher injects impersonate into <code>base_opts</code> before the loop, and <code>current_opts.copy()</code> inherits it)</li>
 <li>New helper <code>_expand_attempts_with_impersonate(attempts, platform)</code> — for Reddit returns <code>[(m, False) for m in attempts] + [(m, True) for m in attempts]</code>; for others keeps <code>[(m, True) for m in attempts]</code></li>
-<li>Main loop in <code>_run_ytdlp_with_cookie_fallback</code> now iterates <code>(mode, use_imp)</code> and propagates to <code>_apply_format_selection</code></li>
+<li>Main loop in <code>_run_ytdlp_with_cookie_fallback</code> now iterates <code>(mode, use_imp)</code>, calls <code>_apply_format_selection</code> on every iteration (not only when pre-extract info is present — otherwise the gating is skipped), and skips <code>_pre_extract</code> for Reddit (Reddit uses <code>format='bestvideo+bestaudio/best'</code> directly)</li>
 <li>Attempt log includes <code>_imp</code>/<code>_noimp</code> suffix in <code>mode</code> for diagnostics</li>
 </ul>
 <p><strong>Added:</strong></p>
 <ul>
-<li>5 tests in <code>tests/test_ytdlp_format_selection.py</code> (impersonate gating + expand_attempts)</li>
+<li>6 tests in <code>tests/test_ytdlp_format_selection.py</code> (impersonate gating + pop when inherited + expand_attempts)</li>
 </ul>
 <h2 id="v125-automatic-video-conversion-to-mp4-when-needed">v1.2.5 — Automatic video conversion to MP4 when needed<a class="headerlink" href="#v125-automatic-video-conversion-to-mp4-when-needed" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
