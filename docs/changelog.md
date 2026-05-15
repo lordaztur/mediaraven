@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.7 — AIORateLimiter agora retenta de verdade (max_retries=3)
+
+**Major changes:**
+
+- 🐛 **No v1.2.4 o `AIORateLimiter` foi adicionado, mas com `max_retries=0` (default).** Resultado: ao bater em flood control (`Retry in N seconds`), o limiter só logava `Rate limit hit after maximum of 0 retries` e relançava a `RetryAfter`, fazendo a request original falhar e o handler explodir — exatamente o sintoma que o v1.2.4 tentou corrigir. O status_msg ficava travado em "baixando" porque o `_safe_edit` para "internal_error" também caía no mesmo flood. Agora `AIORateLimiter(max_retries=3)`: o limiter espera o `Retry-After` informado pelo Telegram e retenta até 3 vezes automaticamente.
+
 ## v1.2.6 — Reddit: tentativa sem impersonate primeiro (corrige IP-block)
 
 **Major changes:**

@@ -44,7 +44,7 @@ if __name__ == '__main__':
     builder.base_url(LOCAL_API_URL)
     builder.base_file_url(LOCAL_FILE_URL)
     builder.local_mode(True)
-    builder.rate_limiter(AIORateLimiter())
+    builder.rate_limiter(AIORateLimiter(max_retries=3))
     builder.post_init(init_globals)
     builder.post_shutdown(stop_globals)
     application = builder.concurrent_updates(True).build()

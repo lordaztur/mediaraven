@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.7 — AIORateLimiter actually retries now (max_retries=3)
+
+**Major changes:**
+
+- 🐛 **In v1.2.4 the `AIORateLimiter` was added, but with `max_retries=0` (default).** Result: on flood control (`Retry in N seconds`), the limiter only logged `Rate limit hit after maximum of 0 retries` and re-raised `RetryAfter`, making the original request fail and the handler blow up — exactly the symptom v1.2.4 tried to fix. The status_msg got stuck on "downloading" because `_safe_edit` to "internal_error" hit the same flood. Now `AIORateLimiter(max_retries=3)`: the limiter waits for `Retry-After` from Telegram and retries up to 3 times automatically.
+
 ## v1.2.6 — Reddit: try without impersonate first (fixes IP-block)
 
 **Major changes:**
