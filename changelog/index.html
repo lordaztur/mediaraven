@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v127-aioratelimiter-agora-retenta-de-verdade-max_retries3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.7 — AIORateLimiter agora retenta de verdade (max_retries=3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v126-reddit-tentativa-sem-impersonate-primeiro-corrige-ip-block" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1652,6 +1663,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v127-aioratelimiter-agora-retenta-de-verdade-max_retries3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.7 — AIORateLimiter agora retenta de verdade (max_retries=3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v126-reddit-tentativa-sem-impersonate-primeiro-corrige-ip-block" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1771,6 +1793,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v127-aioratelimiter-agora-retenta-de-verdade-max_retries3">v1.2.7 — AIORateLimiter agora retenta de verdade (max_retries=3)<a class="headerlink" href="#v127-aioratelimiter-agora-retenta-de-verdade-max_retries3" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐛 <strong>No v1.2.4 o <code>AIORateLimiter</code> foi adicionado, mas com <code>max_retries=0</code> (default).</strong> Resultado: ao bater em flood control (<code>Retry in N seconds</code>), o limiter só logava <code>Rate limit hit after maximum of 0 retries</code> e relançava a <code>RetryAfter</code>, fazendo a request original falhar e o handler explodir — exatamente o sintoma que o v1.2.4 tentou corrigir. O status_msg ficava travado em "baixando" porque o <code>_safe_edit</code> para "internal_error" também caía no mesmo flood. Agora <code>AIORateLimiter(max_retries=3)</code>: o limiter espera o <code>Retry-After</code> informado pelo Telegram e retenta até 3 vezes automaticamente.</li>
+</ul>
 <h2 id="v126-reddit-tentativa-sem-impersonate-primeiro-corrige-ip-block">v1.2.6 — Reddit: tentativa sem impersonate primeiro (corrige IP-block)<a class="headerlink" href="#v126-reddit-tentativa-sem-impersonate-primeiro-corrige-ip-block" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1957,7 +1984,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="14 de maio de 2026 20:26:02 UTC"><span class="timeago" datetime="2026-05-14T20:26:02+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="14 de maio de 2026 20:26:02 UTC">2026-05-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="15 de maio de 2026 19:18:00 UTC"><span class="timeago" datetime="2026-05-15T19:18:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="15 de maio de 2026 19:18:00 UTC">2026-05-15</span>
   </span>
 
     

@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v127-aioratelimiter-actually-retries-now-max_retries3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.7 — AIORateLimiter actually retries now (max_retries=3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1654,6 +1665,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v127-aioratelimiter-actually-retries-now-max_retries3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.7 — AIORateLimiter actually retries now (max_retries=3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1773,6 +1795,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v127-aioratelimiter-actually-retries-now-max_retries3">v1.2.7 — AIORateLimiter actually retries now (max_retries=3)<a class="headerlink" href="#v127-aioratelimiter-actually-retries-now-max_retries3" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐛 <strong>In v1.2.4 the <code>AIORateLimiter</code> was added, but with <code>max_retries=0</code> (default).</strong> Result: on flood control (<code>Retry in N seconds</code>), the limiter only logged <code>Rate limit hit after maximum of 0 retries</code> and re-raised <code>RetryAfter</code>, making the original request fail and the handler blow up — exactly the symptom v1.2.4 tried to fix. The status_msg got stuck on "downloading" because <code>_safe_edit</code> to "internal_error" hit the same flood. Now <code>AIORateLimiter(max_retries=3)</code>: the limiter waits for <code>Retry-After</code> from Telegram and retries up to 3 times automatically.</li>
+</ul>
 <h2 id="v126-reddit-try-without-impersonate-first-fixes-ip-block">v1.2.6 — Reddit: try without impersonate first (fixes IP-block)<a class="headerlink" href="#v126-reddit-try-without-impersonate-first-fixes-ip-block" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1959,7 +1986,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 14, 2026 20:26:02 UTC"><span class="timeago" datetime="2026-05-14T20:26:02+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 14, 2026 20:26:02 UTC">2026-05-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 15, 2026 19:18:00 UTC"><span class="timeago" datetime="2026-05-15T19:18:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 15, 2026 19:18:00 UTC">2026-05-15</span>
   </span>
 
     
