@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v128-threads-extract-media-from-linked_inline_media-media_type19-posts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.8 — Threads: extract media from linked_inline_media (media_type=19 posts)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v127-aioratelimiter-actually-retries-now-max_retries3" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1665,6 +1676,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v128-threads-extract-media-from-linked_inline_media-media_type19-posts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.8 — Threads: extract media from linked_inline_media (media_type=19 posts)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v127-aioratelimiter-actually-retries-now-max_retries3" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1795,6 +1817,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v128-threads-extract-media-from-linked_inline_media-media_type19-posts">v1.2.8 — Threads: extract media from <code>linked_inline_media</code> (media_type=19 posts)<a class="headerlink" href="#v128-threads-extract-media-from-linked_inline_media-media_type19-posts" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🧵 <strong>Threads posts with <code>media_type=19</code> (audio-augmented / new format) had media in <code>text_post_app_info.linked_inline_media</code></strong>, a field <code>_extract_media</code> didn't cover. The post has <code>video_versions</code> at root level as falsy/empty and <code>image_versions2.candidates: []</code>, so the bot fell into the "no media, caption only" branch and replied with text. Now <code>_extract_media</code> recurses into <code>linked_inline_media</code> (same structure: <code>carousel_media</code>/<code>video_versions</code>/<code>image_versions2</code>) before the <code>share_info.quoted_post</code> fallback. Direct media still takes precedence.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>3 tests in <code>tests/test_threads.py</code> (<code>linked_inline_media</code> with video, with image, direct-media precedence)</li>
+</ul>
 <h2 id="v127-aioratelimiter-actually-retries-now-max_retries3">v1.2.7 — AIORateLimiter actually retries now (max_retries=3)<a class="headerlink" href="#v127-aioratelimiter-actually-retries-now-max_retries3" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -1986,7 +2017,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 15, 2026 19:18:00 UTC"><span class="timeago" datetime="2026-05-15T19:18:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 15, 2026 19:18:00 UTC">2026-05-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2026 13:15:21 UTC"><span class="timeago" datetime="2026-05-23T13:15:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2026 13:15:21 UTC">2026-05-23</span>
   </span>
 
     
