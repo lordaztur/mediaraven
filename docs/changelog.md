@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.8 — Threads: extrai mídia de `linked_inline_media` (posts media_type=19)
+
+**Major changes:**
+
+- 🧵 **Posts Threads com `media_type=19` (audio-augmented / format novo) tinham a mídia em `text_post_app_info.linked_inline_media`**, campo que `_extract_media` não cobria. O post tem `video_versions` no nível raiz como falsy/empty e `image_versions2.candidates: []`, daí o bot caía no branch "sem mídia, só caption" e respondia com texto. Agora `_extract_media` chama-se recursivamente em `linked_inline_media` (mesma estrutura: `carousel_media`/`video_versions`/`image_versions2`) antes do fallback de `share_info.quoted_post`. Mídia direta continua tendo precedência.
+
+**Adicionado:**
+
+- 3 testes em `tests/test_threads.py` (`linked_inline_media` com vídeo, com imagem, precedência da mídia direta)
+
 ## v1.2.7 — AIORateLimiter agora retenta de verdade (max_retries=3)
 
 **Major changes:**

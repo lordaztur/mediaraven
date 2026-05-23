@@ -90,7 +90,14 @@ def _extract_media(post: dict) -> list[tuple[str, str]]:
         if url:
             return [("image", url)]
 
-    share_info = ((post.get("text_post_app_info") or {}).get("share_info") or {})
+    tpai = post.get("text_post_app_info") or {}
+    linked = tpai.get("linked_inline_media")
+    if isinstance(linked, dict):
+        linked_media = _extract_media(linked)
+        if linked_media:
+            return linked_media
+
+    share_info = tpai.get("share_info") or {}
     quoted = share_info.get("quoted_attachment_post") or share_info.get("quoted_post")
     if isinstance(quoted, dict):
         return _extract_media(quoted)

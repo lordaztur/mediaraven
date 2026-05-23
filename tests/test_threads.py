@@ -83,6 +83,54 @@ def test_extract_media_empty_post_returns_empty():
     assert _extract_media({"media_type": 1}) == []
 
 
+def test_extract_media_from_linked_inline_media():
+    post = {
+        "media_type": 19,
+        "image_versions2": {"candidates": []},
+        "text_post_app_info": {
+            "linked_inline_media": {
+                "media_type": 2,
+                "video_versions": [
+                    {"width": 640, "url": "https://cdn/video640.mp4"},
+                    {"width": 1280, "url": "https://cdn/video1280.mp4"},
+                ],
+            },
+        },
+    }
+    media = _extract_media(post)
+    assert media == [("video", "https://cdn/video1280.mp4")]
+
+
+def test_extract_media_linked_inline_media_image():
+    post = {
+        "media_type": 19,
+        "image_versions2": {"candidates": []},
+        "text_post_app_info": {
+            "linked_inline_media": {
+                "media_type": 1,
+                "image_versions2": {"candidates": [{"width": 1080, "url": "https://cdn/x.jpg"}]},
+            },
+        },
+    }
+    media = _extract_media(post)
+    assert media == [("image", "https://cdn/x.jpg")]
+
+
+def test_extract_media_prefers_direct_media_over_linked():
+    post = {
+        "media_type": 2,
+        "video_versions": [{"width": 720, "url": "https://cdn/direct.mp4"}],
+        "text_post_app_info": {
+            "linked_inline_media": {
+                "media_type": 2,
+                "video_versions": [{"width": 720, "url": "https://cdn/linked.mp4"}],
+            },
+        },
+    }
+    media = _extract_media(post)
+    assert media == [("video", "https://cdn/direct.mp4")]
+
+
 def test_find_post_by_code_returns_match_with_media_type():
     tree = {
         "data": {
