@@ -55,6 +55,7 @@
 
   "downloader_status": {
     "ytdlp_success": "✅ yt-dlp",
+    "facebook_gallery": "📘 Facebook Gallery [{count} arquivos]",
     "ytdlp_private": "🔒 Vídeo privado. O dono não compartilhou publicamente.",
     "ytdlp_unavailable": "🚫 Vídeo indisponível.",
     "ytdlp_removed": "🗑️ Vídeo/conta removido(a).",

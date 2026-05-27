@@ -32,10 +32,25 @@ def test_is_junk_url_real_image():
 
 
 def test_is_junk_url_avatar_not_filtered_by_url():
-    # Filtro de avatar/icon agora é via min_size pós-download, não URL.
-    # Antes pegava sites legítimos (Google /badges/, GitHub /logos/).
     assert not is_junk_url("https://cdn.example.com/avatars/123.jpg")
     assert not is_junk_url("https://example.com/static/icons/sprite.png")
+
+
+def test_is_junk_url_facebook_static_assets():
+    assert is_junk_url("https://static.xx.fbcdn.net/rsrc.php/v3/y8/r/sticker.png")
+    assert is_junk_url("https://www.facebook.com/rsrc.php/v3/y8/r/asset.png")
+    assert is_junk_url("https://external.fbcdn.net/safe_image.php?url=https://x.com/y.jpg")
+
+
+def test_is_junk_url_reddit_ui_assets():
+    assert is_junk_url("https://styles.redditmedia.com/t5_xxx/styles/communityIcon_abc.png?frame=1")
+    assert is_junk_url("https://preview.redd.it/snoovatar/avatars/abc-headshot.png")
+    assert is_junk_url("https://alb.reddit.com/i.gif?za=...")
+
+
+def test_is_junk_url_keeps_real_fb_post_image():
+    assert not is_junk_url("https://scontent-xx1-1.xx.fbcdn.net/v/t39.30808-6/123_456_789_n.jpg")
+    assert not is_junk_url("https://scontent.cdninstagram.com/v/t51/post.jpg")
 
 
 def test_classify_video_extension():

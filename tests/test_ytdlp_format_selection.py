@@ -160,9 +160,19 @@ def test_expand_attempts_reddit_tries_no_imp_first():
     ]
 
 
-def test_expand_attempts_other_platforms_keep_impersonate_on():
+def test_expand_attempts_facebook_and_instagram_also_try_no_imp_first():
     attempts = ['no_cookie', 'with_cookie']
-    for plat in (Platform(youtube=True), Platform(facebook=True), Platform(instagram=True), None):
+    for plat in (Platform(facebook=True), Platform(instagram=True)):
+        expanded = _ytdlp._expand_attempts_with_impersonate(attempts, plat)
+        assert expanded == [
+            ('no_cookie', False), ('with_cookie', False),
+            ('no_cookie', True), ('with_cookie', True),
+        ]
+
+
+def test_expand_attempts_youtube_and_other_skip_no_imp_path():
+    attempts = ['no_cookie', 'with_cookie']
+    for plat in (Platform(youtube=True), None):
         expanded = _ytdlp._expand_attempts_with_impersonate(attempts, plat)
         assert expanded == [('no_cookie', True), ('with_cookie', True)]
 
@@ -205,4 +215,24 @@ def test_classify_ytdlp_errors_returns_none_when_unrecognized():
 
 def test_classify_ytdlp_errors_first_pattern_wins():
     err = ["Private video. Sign in if you've been granted access. Also age-restricted"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'private'
+
+
+def test_classify_ytdlp_errors_facebook_registered_users():
+    err = ["ERROR: [facebook] 123: This video is only available for registered users. Use --cookies-from-browser"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'sign_in_required'
+
+
+def test_classify_ytdlp_errors_use_cookies_hint():
+    err = ["ERROR: [extractor] Something failed. Use --cookies to authenticate"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'sign_in_required'
+
+
+def test_classify_ytdlp_errors_too_many_requests():
+    err = ["ERROR: 429 Too Many Requests"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'rate_limited'
+
+
+def test_classify_ytdlp_errors_private_account():
+    err = ["This account is private"]
     assert _ytdlp._classify_ytdlp_errors(err) == 'private'

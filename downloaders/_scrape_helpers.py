@@ -28,11 +28,16 @@ _JUNK_PATH_HINTS = (
     'tracking', 'analytics', 'beacon',
     'gtag', 'doubleclick', 'googletagmanager',
     '/favicon.',
+    '/rsrc.php/', '/safe_image.php',
+    'headshot', 'snoovatar', '_profile', 'communityicon', 'profileicon',
+    'communityicon_', 'awardicon', 'profileicon_',
 )
 _JUNK_HOST_HINTS = (
     'doubleclick.net', 'googletagmanager.com', 'google-analytics.com',
     'facebook.com/tr', 'connect.facebook.net',
     'scorecardresearch.com', 'quantserve.com',
+    'static.xx.fbcdn.net', 'static.cdninstagram.com',
+    'styles.redditmedia.com', 'alb.reddit.com', 'id.rlcdn.com',
 )
 
 

@@ -45,7 +45,12 @@
     "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine activated for YouTube bypass: {arg0}",
     "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks.",
-    "unrecoverable_skip_fallbacks": "🛑 Unrecoverable error ({reason}) for {url}; skipping fallbacks (avoids scraper picking up the error page logo)."
+    "unrecoverable_skip_fallbacks": "🛑 Unrecoverable error ({reason}) for {url}; skipping fallbacks (avoids scraper picking up the error page logo).",
+    "facebook_owner_mismatch": "⚠️ yt-dlp returned content from an uploader different from the original post: URL uid={url_uid} vs yt-dlp uid={yt_uid} ({yt_uploader}). Discarding."
+  },
+  "facebook": {
+    "tentando_gallery_dl": "📘 Trying gallery-dl for Facebook (carousel/gallery): {arg0}",
+    "gallery_dl_ok": "📘 gallery-dl OK: {n} file(s) downloaded"
   },
   "fallback": {
     "curl_cffi_falhou": "curl_cffi failed for {arg0}: {e}",
@@ -74,7 +79,6 @@
     "tentando_gallery_dl": "🖼️ Trying gallery-dl...",
     "prepare_stats": "🧹 _prepare_for_download: {n_in} entry(ies) → {n_out} (junk={junked}, dedupe={deduped})",
     "gallery_dl_timeout": "⚠️ gallery-dl timeout ({timeout}s) for {url}",
-    "facebook_image_only_dropped": "⚠️ Scraper found {n} media items for Facebook, but none are video — likely UI junk. Discarding.",
     "article_detected": "📰 Article detected ({body_len} chars body, {caption_len} chars caption) at {url}",
     "combined_stats": "🔎 Combined: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (after dedupe), {n_iframes} embed iframe(s).",
     "article_media_filtered": "📰 Filtering article media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest.",

@@ -45,7 +45,12 @@
     "aten_o_deno_n_o": "⚠️ Atenção: Deno não encontrado! Downloads do YouTube podem falhar por JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine ativado para bypass do YouTube: {arg0}",
     "falha_no_yt": "⚠️ Falha no yt-dlp para {arg0}. Iniciando Fallbacks.",
-    "unrecoverable_skip_fallbacks": "🛑 Erro não recuperável ({reason}) pra {url}; pulando fallbacks (evita scraper pegar logo da página de erro)."
+    "unrecoverable_skip_fallbacks": "🛑 Erro não recuperável ({reason}) pra {url}; pulando fallbacks (evita scraper pegar logo da página de erro).",
+    "facebook_owner_mismatch": "⚠️ yt-dlp retornou conteúdo de uploader diferente do post original: URL uid={url_uid} vs yt-dlp uid={yt_uid} ({yt_uploader}). Descartando."
+  },
+  "facebook": {
+    "tentando_gallery_dl": "📘 Tentando gallery-dl pra Facebook (carrossel/galeria): {arg0}",
+    "gallery_dl_ok": "📘 gallery-dl OK: {n} arquivo(s) baixado(s)"
   },
   "fallback": {
     "curl_cffi_falhou": "curl_cffi falhou pra {arg0}: {e}",
@@ -74,7 +79,6 @@
     "tentando_gallery_dl": "🖼️ Tentando gallery-dl...",
     "prepare_stats": "🧹 _prepare_for_download: {n_in} entrada(s) → {n_out} (junk={junked}, dedupe={deduped})",
     "gallery_dl_timeout": "⚠️ gallery-dl timeout ({timeout}s) pra {url}",
-    "facebook_image_only_dropped": "⚠️ Scraper achou {n} mídias para Facebook, mas nenhuma é vídeo — provavelmente lixo de UI. Descartando.",
     "article_detected": "📰 Artigo detectado ({body_len} chars body, caption {caption_len} chars) em {url}",
     "combined_stats": "🔎 Combinado: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (após dedupe), {n_iframes} iframe(s) embed.",
     "article_media_filtered": "📰 Filtrando mídia do artigo: {n_combined} candidata(s) oficiais (og:image/jsonld), descartando o resto.",

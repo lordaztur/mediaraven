@@ -139,9 +139,11 @@ class _ErrorCapturingLogger:
 
 _UNRECOVERABLE_PATTERNS: list[tuple[str, str]] = [
     ('private video', 'private'),
+    ('this account is private', 'private'),
     ('members-only', 'members_only'),
     ('join this channel', 'members_only'),
     ('this video is available to this channel', 'members_only'),
+    ('restricted to subscribers', 'members_only'),
     ('confirm your age', 'age_restricted'),
     ('age-restricted', 'age_restricted'),
     ('not available in your country', 'geo_blocked'),
@@ -150,15 +152,28 @@ _UNRECOVERABLE_PATTERNS: list[tuple[str, str]] = [
     ('removed by the uploader', 'removed'),
     ('removed by the user', 'removed'),
     ('this video has been removed', 'removed'),
+    ('this video is no longer available', 'removed'),
     ('account has been terminated', 'removed'),
     ('account has been suspended', 'removed'),
     ('premieres in', 'live_not_started'),
     ('this live event will begin', 'live_not_started'),
     ('video unavailable', 'unavailable'),
+    ('this content isn\'t available', 'unavailable'),
+    ('this tweet is unavailable', 'unavailable'),
+    ('no video formats found', 'unavailable'),
+    ('no media found', 'unavailable'),
+    ('cannot parse data', 'unavailable'),
+    ('only available for registered users', 'sign_in_required'),
+    ('only available for registered', 'sign_in_required'),
+    ('only available to registered', 'sign_in_required'),
+    ('use --cookies', 'sign_in_required'),
     ('login required', 'sign_in_required'),
     ('sign in to confirm', 'sign_in_required'),
+    ('requires login', 'sign_in_required'),
+    ('please log in', 'sign_in_required'),
     ('rate-limit reached', 'rate_limited'),
     ('http error 429', 'rate_limited'),
+    ('too many requests', 'rate_limited'),
 ]
 
 
@@ -229,7 +244,10 @@ def _attempt_order(has_firefox_cookie: bool, target_lang: Optional[str]) -> list
 def _expand_attempts_with_impersonate(
     attempts: list[str], platform: Optional[Platform],
 ) -> list[tuple[str, bool]]:
-    if platform is not None and platform.reddit:
+    uses_impersonate = platform is not None and (
+        platform.facebook or platform.instagram or platform.reddit
+    )
+    if uses_impersonate:
         return [(m, False) for m in attempts] + [(m, True) for m in attempts]
     return [(m, True) for m in attempts]
 

@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.2.10 — Dedicated Facebook handler (carousels via gallery-dl) + yt-dlp uploader validation + unified attempt order + broader classifier coverage
+
+**Major changes:**
+
+- 📘 **New dedicated Facebook handler in `downloaders/facebook.py`**. For any FB link, the dispatcher now tries `gallery-dl` first (with Firefox cookies) — gallery-dl extracts image carousels correctly via SSR API, avoiding timeline scraping. If gallery-dl finds files → uses it directly with status `📘 Facebook Gallery [N files]`. Otherwise falls through to the normal flow (yt-dlp for video). Confirmed: a 20-image carousel post that returned the wrong video now comes complete (~250KB each).
+- 🛡️ **`facebook_owner_mismatch` validation after yt-dlp success on FB.** Facebook extractor in yt-dlp has a bug: when the original post is image-only, it "finds" any embedded video on the page (sponsored/recommendation/comment) and returns it as "success". Practical result: user sends a carousel link and receives a random video from another user. Now: we compare `uploader_id` returned by yt-dlp against the numeric user_id from the URL (`facebook.com/<UID>/posts/...`). On mismatch, we discard the result and continue to fallbacks.
+- 🍪 **`_gallery_dl_run` now injects Firefox cookies** (via `gdl_config.set(('extractor',), 'cookies', ('firefox', profile))`). Needed for FB; no side effects on other platforms (Pinterest/Imgur already worked without auth).
+- 🖼️ **Facebook image carousels download even without login.** The `_drop_facebook_image_only` heuristic (introduced in v1.0.x to avoid 50+ UI thumbnails when user sent video links) was too aggressive: it discarded ANY FB post without `.mp4` as "UI junk", which included legit photo/carousel posts. **Function removed.** Replaced by expanding `is_junk_url` with known FB/Reddit UI hosts/paths (`static.xx.fbcdn.net`, `static.cdninstagram.com`, `styles.redditmedia.com`, `alb.reddit.com`, `id.rlcdn.com`, `/rsrc.php/`, `/safe_image.php`, `headshot`, `snoovatar`, `_profile`, `communityicon`, `profileicon`, `awardicon`) — UI is now filtered at the source (before download) and real post images pass through.
+- 🔁 **`_expand_attempts_with_impersonate` now applies the "no_imp first, imp as fallback" pattern to Facebook/Instagram too** (previously Reddit-only). For FB/IG/Reddit: 4 attempts `[no_cookie+no_imp, with_cookie+no_imp, no_cookie+imp, with_cookie+imp]`. For YouTube/others (don't use impersonate): 2 attempts as before. Why: manual tests with Facebook showed that `impersonate=chrome` makes FB return a heavy SPA that yt-dlp can't parse (`"Cannot parse data"`), while without impersonate it returns a semantic error (`"No video formats found"`) that the classifier can recognize and respond to correctly.
+- 🛑 **Facebook with "This video is only available for registered users" wasn't being classified by v1.2.9** — fell through to the scraper and the heuristic discarded everything. Added patterns: `only available for registered users`, `only available for registered`, `only available to registered`, `use --cookies`, `requires login`, `please log in`. Other new patterns: `this account is private` → `private`, `restricted to subscribers` → `members_only`, `this content isn't available`/`this tweet is unavailable`/`no video formats found`/`no media found`/`cannot parse data` → `unavailable`, `this video is no longer available` → `removed`, `too many requests` → `rate_limited`.
+
+**Removed:**
+
+- `_drop_facebook_image_only` function in `downloaders/fallback.py` (and 4 call sites)
+- Log key `fallback.facebook_image_only_dropped` (PT/EN)
+
+**Added:**
+
+- New module `downloaders/facebook.py` with `download_facebook_gallery` and `facebook_owner_mismatch`
+- UI message `downloader_status.facebook_gallery` (PT/EN) and 2 log keys `facebook.tentando_gallery_dl`, `facebook.gallery_dl_ok`, `dispatcher.facebook_owner_mismatch`
+- 5 tests in `tests/test_facebook.py` (mismatch detection: no info / match / mismatch / share URL / no uploader_id)
+- 4 tests in `tests/test_ytdlp_format_selection.py` (registered users / use --cookies / 429 / private account)
+- `test_expand_attempts_facebook_and_instagram_also_try_no_imp_first` in `tests/test_ytdlp_format_selection.py`
+- 3 tests in `tests/test_scrape_helpers.py` covering new junk patterns (FB static, Reddit UI, real FB post image)
+
 ## v1.2.9 — Detect unrecoverable yt-dlp errors (private/removed/geo/etc.) and skip fallbacks
 
 **Major changes:**

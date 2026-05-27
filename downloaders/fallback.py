@@ -7,7 +7,7 @@ from urllib.parse import quote, urlparse
 from curl_cffi import requests as curl_requests
 
 import state
-from config import cfg
+from config import cfg, FIREFOX_PROFILE_PATH
 from messages import lmsg, msg
 from utils import (
     async_download_file,
@@ -410,6 +410,8 @@ async def _gallery_dl_run(url: str, folder: str) -> list[str]:
         gdl_config.set(('extractor',), 'filename', 'galdl_{num:>03}.{extension}')
         gdl_config.set(('extractor',), 'skip', True)
         gdl_config.set((), 'output', {'mode': 'null'})
+        if os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite')):
+            gdl_config.set(('extractor',), 'cookies', ('firefox', FIREFOX_PROFILE_PATH))
 
         loop = asyncio.get_running_loop()
 
@@ -487,16 +489,6 @@ def _build_status(
     return msg(status_key, media_type=label, count=count_override or len(files))
 
 
-def _drop_facebook_image_only(files: list[str], page_url: str) -> list[str]:
-    if not _is_facebook(page_url):
-        return files
-    has_video = any(f.endswith('.mp4') for f in files)
-    if has_video:
-        return files
-    logger.warning(lmsg("fallback.facebook_image_only_dropped", n=len(files)))
-    return []
-
-
 async def fetch_article_caption(url: str, html: Optional[str] = None) -> tuple[str, str]:
     if cfg("SCRAPE_ARTICLE_EXTRACT") != "yes":
         return "", ""
@@ -568,7 +560,6 @@ async def scrape_fallback(
     failed = 0
     if prepared:
         files, failed = await _download_all(prepared, url, unique_folder)
-        files = _drop_facebook_image_only(files, url)
 
     if files:
         return files, _build_status(files, "downloader_status.scraper"), article_short, article_full, is_article

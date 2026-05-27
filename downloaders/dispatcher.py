@@ -38,6 +38,7 @@ from ._ytdlp import (
     _yt_dlp_extract,
 )
 
+from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_owner_mismatch
 from .fallback import fetch_article_caption, scrape_fallback
 from .instagram import download_instagram_instagrapi
 from .instagram_embed import download_instagram_embed
@@ -189,6 +190,11 @@ async def download_media(
             if rj_files:
                 return await _finalize_success(rj_files, rj_status, rj_short, rj_full, url, platform_label, started)
 
+        if platform.facebook:
+            fb_files, fb_status, fb_short, fb_full = await download_facebook_gallery(url, unique_folder)
+            if fb_files:
+                return await _finalize_success(fb_files, fb_status, fb_short, fb_full, url, platform_label, started)
+
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:
             logger.warning(lmsg("dispatcher.aten_o_deno_n_o"))
@@ -210,6 +216,16 @@ async def download_media(
         )
 
         caption_short, caption_full = _build_caption(info_dict, url)
+
+        if downloaded_files and platform.facebook and facebook_owner_mismatch(url, info_dict):
+            logger.warning(lmsg(
+                "dispatcher.facebook_owner_mismatch",
+                url_uid=_FB_NUMERIC_USER_RE.search(url).group(1) if _FB_NUMERIC_USER_RE.search(url) else '?',
+                yt_uid=info_dict.get('uploader_id'),
+                yt_uploader=info_dict.get('uploader'),
+            ))
+            _wipe_folder(unique_folder)
+            downloaded_files = []
 
         if downloaded_files:
             return await _finalize_success(
