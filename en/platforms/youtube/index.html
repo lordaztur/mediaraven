@@ -863,6 +863,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#unrecoverable-error-detection-v129" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unrecoverable error detection (v1.2.9+)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1691,6 +1702,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#unrecoverable-error-detection-v129" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unrecoverable error detection (v1.2.9+)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1789,6 +1811,65 @@
 <li><strong>Age-restricted video</strong> → same thing, needs cookies from a logged-in adult session.</li>
 <li><strong>Live stream</strong> → not supported (yt-dlp could, but bot doesn't handle it).</li>
 </ul>
+<h2 id="unrecoverable-error-detection-v129">Unrecoverable error detection (v1.2.9+)<a class="headerlink" href="#unrecoverable-error-detection-v129" title="Permanent link">&para;</a></h2>
+<p>When yt-dlp fails with an unrecoverable error (private/removed/geo-blocked/etc.), the bot <strong>no longer falls through to the generic scraper</strong> (which would pick up the YouTube/Google logo from the error page as if it were the media). Instead, it returns a clear message:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Detected by</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>private</code></td>
+<td><code>Private video</code></td>
+<td>🔒 Private video</td>
+</tr>
+<tr>
+<td><code>removed</code></td>
+<td><code>removed by the uploader</code> / <code>account has been terminated/suspended</code></td>
+<td>🗑️ Video/account removed</td>
+</tr>
+<tr>
+<td><code>geo_blocked</code></td>
+<td><code>not available in your country</code> / <code>blocked it in your country</code></td>
+<td>🌍 Video blocked in region</td>
+</tr>
+<tr>
+<td><code>members_only</code></td>
+<td><code>members-only</code> / <code>Join this channel</code></td>
+<td>🔐 Members-only</td>
+</tr>
+<tr>
+<td><code>age_restricted</code></td>
+<td><code>confirm your age</code> / <code>age-restricted</code></td>
+<td>🔞 Age-restricted</td>
+</tr>
+<tr>
+<td><code>sign_in_required</code></td>
+<td><code>Sign in to confirm</code> / <code>login required</code></td>
+<td>🔑 Login required</td>
+</tr>
+<tr>
+<td><code>live_not_started</code></td>
+<td><code>Premieres in</code> / <code>This live event will begin</code></td>
+<td>📅 Live hasn't started</td>
+</tr>
+<tr>
+<td><code>unavailable</code></td>
+<td><code>Video unavailable</code></td>
+<td>🚫 Video unavailable</td>
+</tr>
+<tr>
+<td><code>rate_limited</code></td>
+<td><code>rate-limit reached</code> / <code>HTTP error 429</code></td>
+<td>⏳ Rate-limited</td>
+</tr>
+</tbody>
+</table>
+<p>Messages customizable via <code>downloader_status.ytdlp_{category}</code> in <code>messages.json</code>.</p>
 
 
 
@@ -1811,7 +1892,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 26, 2026 17:37:00 UTC"><span class="timeago" datetime="2026-04-26T17:37:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 26, 2026 17:37:00 UTC">2026-04-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 27, 2026 00:07:45 UTC"><span class="timeago" datetime="2026-05-27T00:07:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 27, 2026 00:07:45 UTC">2026-05-27</span>
   </span>
 
     

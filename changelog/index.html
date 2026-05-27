@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v129-detecta-erros-nao-recuperaveis-do-yt-dlp-privadoremovidogeoetc-e-pula-fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.9 — Detecta erros não recuperáveis do yt-dlp (privado/removido/geo/etc.) e pula fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v128-threads-extrai-midia-de-linked_inline_media-posts-media_type19" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1674,6 +1685,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v129-detecta-erros-nao-recuperaveis-do-yt-dlp-privadoremovidogeoetc-e-pula-fallbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.9 — Detecta erros não recuperáveis do yt-dlp (privado/removido/geo/etc.) e pula fallbacks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v128-threads-extrai-midia-de-linked_inline_media-posts-media_type19" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1815,6 +1837,25 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v129-detecta-erros-nao-recuperaveis-do-yt-dlp-privadoremovidogeoetc-e-pula-fallbacks">v1.2.9 — Detecta erros não recuperáveis do yt-dlp (privado/removido/geo/etc.) e pula fallbacks<a class="headerlink" href="#v129-detecta-erros-nao-recuperaveis-do-yt-dlp-privadoremovidogeoetc-e-pula-fallbacks" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🛑 <strong>Vídeo privado/removido/geo-bloqueado/etc. agora retorna mensagem clara</strong> em vez de cair pro scraper genérico (que pegava o logo do YouTube/Google da página de erro como se fosse a mídia). Antes: link de vídeo privado → yt-dlp falha → scraper raspa página → manda logo do Google pro chat. Agora: yt-dlp captura o erro, classifica como <code>private</code>/<code>removed</code>/<code>geo_blocked</code>/<code>members_only</code>/<code>age_restricted</code>/<code>sign_in_required</code>/<code>live_not_started</code>/<code>unavailable</code>/<code>rate_limited</code>, e o dispatcher para na hora com mensagem específica.</li>
+<li>🪵 <strong>Captura de erros do yt-dlp via <code>logger=</code> no opts</strong> em vez de mexer com <code>ignoreerrors</code>. Cada chamada de extração agora retorna <code>(info, error_messages)</code> quando <code>capture_errors=True</code>. O classifier compara contra 21 padrões conhecidos (case-insensitive) e retorna a categoria.</li>
+</ul>
+<p><strong>Refatorações:</strong></p>
+<ul>
+<li><code>_yt_dlp_extract</code> aceita <code>capture_errors: bool = False</code>; quando True retorna tupla <code>(info, errors)</code> em vez de só <code>info</code></li>
+<li>Novo helper <code>_classify_ytdlp_errors(error_messages) -&gt; Optional[str]</code> em <code>downloaders/_ytdlp.py</code> com padrões pra: <code>private</code>, <code>members_only</code>, <code>age_restricted</code>, <code>geo_blocked</code>, <code>removed</code>, <code>live_not_started</code>, <code>unavailable</code>, <code>sign_in_required</code>, <code>rate_limited</code></li>
+<li><code>_run_ytdlp_with_cookie_fallback</code> agora retorna <code>(files, info, unrecoverable_reason)</code>. Em vez de só listar arquivos, acumula erros de todas as tentativas e classifica no final</li>
+<li><code>dispatcher.download_media</code> checa <code>unrecoverable_reason</code> antes de chamar fallbacks; se setado, retorna <code>msg("downloader_status.ytdlp_{reason}")</code> direto</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>9 mensagens UI (PT/EN) em <code>downloader_status.ytdlp_{private,unavailable,removed,geo_blocked,members_only,age_restricted,sign_in_required,live_not_started,rate_limited}</code></li>
+<li>2 chaves de log: <code>_ytdlp.unrecoverable_reason</code>, <code>dispatcher.unrecoverable_skip_fallbacks</code></li>
+<li>9 testes em <code>tests/test_ytdlp_format_selection.py</code> (classifier por categoria + fallback None) + 1 teste de integração em <code>tests/test_dispatcher_integration.py</code></li>
+</ul>
 <h2 id="v128-threads-extrai-midia-de-linked_inline_media-posts-media_type19">v1.2.8 — Threads: extrai mídia de <code>linked_inline_media</code> (posts media_type=19)<a class="headerlink" href="#v128-threads-extrai-midia-de-linked_inline_media-posts-media_type19" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2015,7 +2056,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="23 de maio de 2026 13:15:21 UTC"><span class="timeago" datetime="2026-05-23T13:15:21+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="23 de maio de 2026 13:15:21 UTC">2026-05-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="27 de maio de 2026 00:07:45 UTC"><span class="timeago" datetime="2026-05-27T00:07:45+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="27 de maio de 2026 00:07:45 UTC">2026-05-27</span>
   </span>
 
     
