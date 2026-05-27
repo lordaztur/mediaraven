@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1210-dedicated-facebook-handler-carousels-via-gallery-dl-yt-dlp-uploader-validation-unified-attempt-order-broader-classifier-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.10 — Dedicated Facebook handler (carousels via gallery-dl) + yt-dlp uploader validation + unified attempt order + broader classifier coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v129-detect-unrecoverable-yt-dlp-errors-privateremovedgeoetc-and-skip-fallbacks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1687,6 +1698,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1210-dedicated-facebook-handler-carousels-via-gallery-dl-yt-dlp-uploader-validation-unified-attempt-order-broader-classifier-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.10 — Dedicated Facebook handler (carousels via gallery-dl) + yt-dlp uploader validation + unified attempt order + broader classifier coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v129-detect-unrecoverable-yt-dlp-errors-privateremovedgeoetc-and-skip-fallbacks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1839,6 +1861,30 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1210-dedicated-facebook-handler-carousels-via-gallery-dl-yt-dlp-uploader-validation-unified-attempt-order-broader-classifier-coverage">v1.2.10 — Dedicated Facebook handler (carousels via gallery-dl) + yt-dlp uploader validation + unified attempt order + broader classifier coverage<a class="headerlink" href="#v1210-dedicated-facebook-handler-carousels-via-gallery-dl-yt-dlp-uploader-validation-unified-attempt-order-broader-classifier-coverage" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📘 <strong>New dedicated Facebook handler in <code>downloaders/facebook.py</code></strong>. For any FB link, the dispatcher now tries <code>gallery-dl</code> first (with Firefox cookies) — gallery-dl extracts image carousels correctly via SSR API, avoiding timeline scraping. If gallery-dl finds files → uses it directly with status <code>📘 Facebook Gallery [N files]</code>. Otherwise falls through to the normal flow (yt-dlp for video). Confirmed: a 20-image carousel post that returned the wrong video now comes complete (~250KB each).</li>
+<li>🛡️ <strong><code>facebook_owner_mismatch</code> validation after yt-dlp success on FB.</strong> Facebook extractor in yt-dlp has a bug: when the original post is image-only, it "finds" any embedded video on the page (sponsored/recommendation/comment) and returns it as "success". Practical result: user sends a carousel link and receives a random video from another user. Now: we compare <code>uploader_id</code> returned by yt-dlp against the numeric user_id from the URL (<code>facebook.com/&lt;UID&gt;/posts/...</code>). On mismatch, we discard the result and continue to fallbacks.</li>
+<li>🍪 <strong><code>_gallery_dl_run</code> now injects Firefox cookies</strong> (via <code>gdl_config.set(('extractor',), 'cookies', ('firefox', profile))</code>). Needed for FB; no side effects on other platforms (Pinterest/Imgur already worked without auth).</li>
+<li>🖼️ <strong>Facebook image carousels download even without login.</strong> The <code>_drop_facebook_image_only</code> heuristic (introduced in v1.0.x to avoid 50+ UI thumbnails when user sent video links) was too aggressive: it discarded ANY FB post without <code>.mp4</code> as "UI junk", which included legit photo/carousel posts. <strong>Function removed.</strong> Replaced by expanding <code>is_junk_url</code> with known FB/Reddit UI hosts/paths (<code>static.xx.fbcdn.net</code>, <code>static.cdninstagram.com</code>, <code>styles.redditmedia.com</code>, <code>alb.reddit.com</code>, <code>id.rlcdn.com</code>, <code>/rsrc.php/</code>, <code>/safe_image.php</code>, <code>headshot</code>, <code>snoovatar</code>, <code>_profile</code>, <code>communityicon</code>, <code>profileicon</code>, <code>awardicon</code>) — UI is now filtered at the source (before download) and real post images pass through.</li>
+<li>🔁 <strong><code>_expand_attempts_with_impersonate</code> now applies the "no_imp first, imp as fallback" pattern to Facebook/Instagram too</strong> (previously Reddit-only). For FB/IG/Reddit: 4 attempts <code>[no_cookie+no_imp, with_cookie+no_imp, no_cookie+imp, with_cookie+imp]</code>. For YouTube/others (don't use impersonate): 2 attempts as before. Why: manual tests with Facebook showed that <code>impersonate=chrome</code> makes FB return a heavy SPA that yt-dlp can't parse (<code>"Cannot parse data"</code>), while without impersonate it returns a semantic error (<code>"No video formats found"</code>) that the classifier can recognize and respond to correctly.</li>
+<li>🛑 <strong>Facebook with "This video is only available for registered users" wasn't being classified by v1.2.9</strong> — fell through to the scraper and the heuristic discarded everything. Added patterns: <code>only available for registered users</code>, <code>only available for registered</code>, <code>only available to registered</code>, <code>use --cookies</code>, <code>requires login</code>, <code>please log in</code>. Other new patterns: <code>this account is private</code> → <code>private</code>, <code>restricted to subscribers</code> → <code>members_only</code>, <code>this content isn't available</code>/<code>this tweet is unavailable</code>/<code>no video formats found</code>/<code>no media found</code>/<code>cannot parse data</code> → <code>unavailable</code>, <code>this video is no longer available</code> → <code>removed</code>, <code>too many requests</code> → <code>rate_limited</code>.</li>
+</ul>
+<p><strong>Removed:</strong></p>
+<ul>
+<li><code>_drop_facebook_image_only</code> function in <code>downloaders/fallback.py</code> (and 4 call sites)</li>
+<li>Log key <code>fallback.facebook_image_only_dropped</code> (PT/EN)</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>New module <code>downloaders/facebook.py</code> with <code>download_facebook_gallery</code> and <code>facebook_owner_mismatch</code></li>
+<li>UI message <code>downloader_status.facebook_gallery</code> (PT/EN) and 2 log keys <code>facebook.tentando_gallery_dl</code>, <code>facebook.gallery_dl_ok</code>, <code>dispatcher.facebook_owner_mismatch</code></li>
+<li>5 tests in <code>tests/test_facebook.py</code> (mismatch detection: no info / match / mismatch / share URL / no uploader_id)</li>
+<li>4 tests in <code>tests/test_ytdlp_format_selection.py</code> (registered users / use --cookies / 429 / private account)</li>
+<li><code>test_expand_attempts_facebook_and_instagram_also_try_no_imp_first</code> in <code>tests/test_ytdlp_format_selection.py</code></li>
+<li>3 tests in <code>tests/test_scrape_helpers.py</code> covering new junk patterns (FB static, Reddit UI, real FB post image)</li>
+</ul>
 <h2 id="v129-detect-unrecoverable-yt-dlp-errors-privateremovedgeoetc-and-skip-fallbacks">v1.2.9 — Detect unrecoverable yt-dlp errors (private/removed/geo/etc.) and skip fallbacks<a class="headerlink" href="#v129-detect-unrecoverable-yt-dlp-errors-privateremovedgeoetc-and-skip-fallbacks" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2058,7 +2104,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 27, 2026 00:07:45 UTC"><span class="timeago" datetime="2026-05-27T00:07:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 27, 2026 00:07:45 UTC">2026-05-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 27, 2026 18:14:45 UTC"><span class="timeago" datetime="2026-05-27T18:14:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 27, 2026 18:14:45 UTC">2026-05-27</span>
   </span>
 
     
