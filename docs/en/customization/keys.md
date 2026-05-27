@@ -55,6 +55,8 @@
 | `MEDIA_GROUP_DELAY` | `4.0` | Delay (s) between chunks of 10 — controls flood-risk | 0 | 30 |
 | `STATUS_CYCLE_INTERVAL` | `5.0` | Interval (s) between status message rotations | 1 | 30 |
 | `TELEGRAM_UPLOAD_TIMEOUT` | `600` | Telegram upload timeout (s) | 30 | 3600 |
+| `TELEGRAM_MAX_UPLOAD_MB` | `2000` | Max file size (MB) — Bot API hard limit for bots (Premium doesn't affect) | 50 | 2000 |
+| `VIDEO_CONVERT_TIMEOUT` | `900` | Timeout (s) for ffmpeg MP4 conversion (webm/mkv/avi/flv) | 60 | 3600 |
 
 ## Platform-specific
 

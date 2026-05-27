@@ -165,3 +165,44 @@ def test_expand_attempts_other_platforms_keep_impersonate_on():
     for plat in (Platform(youtube=True), Platform(facebook=True), Platform(instagram=True), None):
         expanded = _ytdlp._expand_attempts_with_impersonate(attempts, plat)
         assert expanded == [('no_cookie', True), ('with_cookie', True)]
+
+
+def test_classify_ytdlp_errors_private():
+    err = ["ERROR: [youtube] xyz: Private video. Sign in if you've been granted access"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'private'
+
+
+def test_classify_ytdlp_errors_geo_blocked():
+    err = ["ERROR: Video is not available in your country."]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'geo_blocked'
+
+
+def test_classify_ytdlp_errors_removed():
+    err = ["This video has been removed by the uploader"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'removed'
+
+
+def test_classify_ytdlp_errors_members_only():
+    err = ["Join this channel to get access to members-only content"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'members_only'
+
+
+def test_classify_ytdlp_errors_age_restricted():
+    err = ["Sign in to confirm your age"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'age_restricted'
+
+
+def test_classify_ytdlp_errors_rate_limited():
+    err = ["HTTP Error 429: Too Many Requests"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'rate_limited'
+
+
+def test_classify_ytdlp_errors_returns_none_when_unrecognized():
+    err = ["Generic network error"]
+    assert _ytdlp._classify_ytdlp_errors(err) is None
+    assert _ytdlp._classify_ytdlp_errors([]) is None
+
+
+def test_classify_ytdlp_errors_first_pattern_wins():
+    err = ["Private video. Sign in if you've been granted access. Also age-restricted"]
+    assert _ytdlp._classify_ytdlp_errors(err) == 'private'

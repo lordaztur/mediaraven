@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.2.9 — Detect unrecoverable yt-dlp errors (private/removed/geo/etc.) and skip fallbacks
+
+**Major changes:**
+
+- 🛑 **Private/removed/geo-blocked/etc. videos now return a clear message** instead of falling through to the generic scraper (which was picking up the YouTube/Google logo from the error page as if it were the media). Before: private video link → yt-dlp fails → scraper scrapes page → sends Google logo to chat. Now: yt-dlp captures the error, classifies it as `private`/`removed`/`geo_blocked`/`members_only`/`age_restricted`/`sign_in_required`/`live_not_started`/`unavailable`/`rate_limited`, and the dispatcher stops immediately with a specific message.
+- 🪵 **yt-dlp error capture via `logger=` opts** instead of fiddling with `ignoreerrors`. Each extraction call now returns `(info, error_messages)` when `capture_errors=True`. The classifier matches against 21 known patterns (case-insensitive) and returns the category.
+
+**Refactors:**
+
+- `_yt_dlp_extract` takes `capture_errors: bool = False`; when True returns `(info, errors)` tuple instead of just `info`
+- New helper `_classify_ytdlp_errors(error_messages) -> Optional[str]` in `downloaders/_ytdlp.py` with patterns for: `private`, `members_only`, `age_restricted`, `geo_blocked`, `removed`, `live_not_started`, `unavailable`, `sign_in_required`, `rate_limited`
+- `_run_ytdlp_with_cookie_fallback` now returns `(files, info, unrecoverable_reason)`. Instead of just listing files, it accumulates errors from all attempts and classifies at the end
+- `dispatcher.download_media` checks `unrecoverable_reason` before calling fallbacks; if set, returns `msg("downloader_status.ytdlp_{reason}")` directly
+
+**Added:**
+
+- 9 UI messages (PT/EN) under `downloader_status.ytdlp_{private,unavailable,removed,geo_blocked,members_only,age_restricted,sign_in_required,live_not_started,rate_limited}`
+- 2 log keys: `_ytdlp.unrecoverable_reason`, `dispatcher.unrecoverable_skip_fallbacks`
+- 9 tests in `tests/test_ytdlp_format_selection.py` (classifier per category + None fallback) + 1 integration test in `tests/test_dispatcher_integration.py`
+
 ## v1.2.8 — Threads: extract media from `linked_inline_media` (media_type=19 posts)
 
 **Major changes:**

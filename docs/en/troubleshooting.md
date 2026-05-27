@@ -87,9 +87,15 @@ Make sure the profile has recent cookies (you opened YouTube in Firefox recently
 
 Same solution: cookies from a logged-in adult account.
 
-### YouTube: private video
+### YouTube: private / removed / geo-blocked video
 
-No way without cookies of an account that can see it.
+Since v1.2.9 the bot detects these yt-dlp errors and replies with a clear message (🔒/🗑️/🌍/etc.) instead of falling through to the generic scraper (which used to send the YouTube/Google logo from the error page). Full list at [YouTube → Unrecoverable error detection](platforms/youtube.md#unrecoverable-error-detection-v129).
+
+For an actually private video there's no way — only if your Firefox account has access.
+
+### YouTube: `.webm` video arrived as a document with no player
+
+Pre-v1.2.5 the bot sent `webm`/`mkv`/`avi`/`flv` as video, but Telegram only renders the native player for MP4 H.264+AAC. From v1.2.5 on, video in these formats is converted to MP4 before sending (probe + minimal remux/re-encode via ffmpeg). Configurable via `VIDEO_CONVERT_TIMEOUT` (default 900s).
 
 ### Reddit: 403 Forbidden
 

@@ -45,7 +45,7 @@ async def test_download_media_ytdlp_success(tmp_folder):
         f.write(b"x")
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
-                      new=AsyncMock(return_value=([fake_file], {'title': 'Teste', 'description': 'desc'}))), \
+                      new=AsyncMock(return_value=([fake_file], {'title': 'Teste', 'description': 'desc'}, None))), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "_detect_youtube_languages", new=AsyncMock(return_value=None)):
         files, status, short, full, is_article = await dispatcher.download_media(
@@ -64,7 +64,7 @@ async def test_download_media_falls_back_to_scraper(tmp_folder):
     scraped_file = os.path.join(tmp_folder, "scraped.jpg")
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
-                      new=AsyncMock(return_value=([], {}))), \
+                      new=AsyncMock(return_value=([], {}, None))), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "scrape_fallback",
                       new=AsyncMock(return_value=([scraped_file], "STATUS_SCRAPE", "", "", False))):
@@ -85,7 +85,7 @@ async def test_download_media_scraper_returns_article_caption(tmp_folder):
     article_full = article_short * 4
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
-                      new=AsyncMock(return_value=([], {}))), \
+                      new=AsyncMock(return_value=([], {}, None))), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "scrape_fallback",
                       new=AsyncMock(return_value=([scraped_file], "STATUS_SCRAPE", article_short, article_full, True))):
@@ -116,7 +116,7 @@ async def test_download_media_reddit_tries_json_first(tmp_folder):
 
     async def ytdlp_mock(*a, **kw):
         call_order.append("ytdlp")
-        return [], {}
+        return [], {}, None
 
     async def scrape_mock(url, folder):
         call_order.append("scrape")
@@ -151,7 +151,7 @@ async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
 
     async def ytdlp_mock(*a, **kw):
         call_order.append("ytdlp")
-        return [video_file], {"title": "vídeo legal", "description": "selftext aqui"}
+        return [video_file], {"title": "vídeo legal", "description": "selftext aqui"}, None
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
@@ -169,7 +169,7 @@ async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
 async def test_download_media_threads_goes_straight_to_playwright(tmp_folder):
     """Threads pula yt-dlp e vai direto para o Playwright."""
     pw_file = os.path.join(tmp_folder, "threads.mp4")
-    ytdlp_mock = AsyncMock(return_value=([], {}))
+    ytdlp_mock = AsyncMock(return_value=([], {}, None))
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=ytdlp_mock), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
@@ -200,10 +200,26 @@ async def test_download_media_multilang(tmp_folder):
 
 
 @pytest.mark.asyncio
+async def test_download_media_skips_fallbacks_on_unrecoverable(tmp_folder):
+    scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, "private"))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://youtube.com/watch?v=privado", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert scrape_mock.await_count == 0
+    assert "privado" in status.lower() or "private" in status.lower()
+
+
+@pytest.mark.asyncio
 async def test_download_media_returns_generic_fail_when_all_fail(tmp_folder):
     """yt-dlp e scrape vazios -> retorna status semântico generic_fail (handler usa generic_fail msg)."""
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
-                      new=AsyncMock(return_value=([], {'title': 'Só texto', 'description': 'conteúdo'}))), \
+                      new=AsyncMock(return_value=([], {'title': 'Só texto', 'description': 'conteúdo'}, None))), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "scrape_fallback",
                       new=AsyncMock(return_value=([], "fail", "", "", False))):

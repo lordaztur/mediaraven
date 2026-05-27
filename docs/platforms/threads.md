@@ -8,6 +8,7 @@ Extração via **JSON SSR** servido no HTML inicial. Como Threads é uma SPA pes
 - ✅ Posts de vídeo
 - ✅ Carrosséis (foto+vídeo misturados)
 - ✅ Reposts (delega pro post original via `quoted_attachment_post`)
+- ✅ Posts `media_type=19` com mídia "anexada" via `linked_inline_media` (v1.2.8+) — formato novo que o Threads passou a usar pra alguns posts com áudio
 - ✅ **Posts só com texto** → vira mensagem de texto formatada (sem mídia)
 - ❌ Stories
 - ❌ Posts deletados

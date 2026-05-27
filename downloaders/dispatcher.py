@@ -204,7 +204,7 @@ async def download_media(
                 metrics.record_multilang(platform_label)
                 return lang_buttons, "MULTILANG", "", "", False
 
-        downloaded_files, info_dict = await _run_ytdlp_with_cookie_fallback(
+        downloaded_files, info_dict, unrecoverable_reason = await _run_ytdlp_with_cookie_fallback(
             base_opts, url, unique_folder, has_firefox_cookie, target_lang,
             platform=platform,
         )
@@ -216,6 +216,12 @@ async def download_media(
                 downloaded_files, msg("downloader_status.ytdlp_success"),
                 caption_short, caption_full, url, platform_label, started,
             )
+
+        if unrecoverable_reason:
+            logger.info(lmsg("dispatcher.unrecoverable_skip_fallbacks", reason=unrecoverable_reason, url=safe_url(url)))
+            _wipe_folder(unique_folder)
+            metrics.record_failure(platform_label, time.monotonic() - started)
+            return [], msg(f"downloader_status.ytdlp_{unrecoverable_reason}"), "", "", False
 
         logger.warning(lmsg("dispatcher.falha_no_yt", arg0=safe_url(url)))
         _wipe_folder(unique_folder)

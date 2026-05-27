@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.2.9 — Detecta erros não recuperáveis do yt-dlp (privado/removido/geo/etc.) e pula fallbacks
+
+**Major changes:**
+
+- 🛑 **Vídeo privado/removido/geo-bloqueado/etc. agora retorna mensagem clara** em vez de cair pro scraper genérico (que pegava o logo do YouTube/Google da página de erro como se fosse a mídia). Antes: link de vídeo privado → yt-dlp falha → scraper raspa página → manda logo do Google pro chat. Agora: yt-dlp captura o erro, classifica como `private`/`removed`/`geo_blocked`/`members_only`/`age_restricted`/`sign_in_required`/`live_not_started`/`unavailable`/`rate_limited`, e o dispatcher para na hora com mensagem específica.
+- 🪵 **Captura de erros do yt-dlp via `logger=` no opts** em vez de mexer com `ignoreerrors`. Cada chamada de extração agora retorna `(info, error_messages)` quando `capture_errors=True`. O classifier compara contra 21 padrões conhecidos (case-insensitive) e retorna a categoria.
+
+**Refatorações:**
+
+- `_yt_dlp_extract` aceita `capture_errors: bool = False`; quando True retorna tupla `(info, errors)` em vez de só `info`
+- Novo helper `_classify_ytdlp_errors(error_messages) -> Optional[str]` em `downloaders/_ytdlp.py` com padrões pra: `private`, `members_only`, `age_restricted`, `geo_blocked`, `removed`, `live_not_started`, `unavailable`, `sign_in_required`, `rate_limited`
+- `_run_ytdlp_with_cookie_fallback` agora retorna `(files, info, unrecoverable_reason)`. Em vez de só listar arquivos, acumula erros de todas as tentativas e classifica no final
+- `dispatcher.download_media` checa `unrecoverable_reason` antes de chamar fallbacks; se setado, retorna `msg("downloader_status.ytdlp_{reason}")` direto
+
+**Adicionado:**
+
+- 9 mensagens UI (PT/EN) em `downloader_status.ytdlp_{private,unavailable,removed,geo_blocked,members_only,age_restricted,sign_in_required,live_not_started,rate_limited}`
+- 2 chaves de log: `_ytdlp.unrecoverable_reason`, `dispatcher.unrecoverable_skip_fallbacks`
+- 9 testes em `tests/test_ytdlp_format_selection.py` (classifier por categoria + fallback None) + 1 teste de integração em `tests/test_dispatcher_integration.py`
+
 ## v1.2.8 — Threads: extrai mídia de `linked_inline_media` (posts media_type=19)
 
 **Major changes:**

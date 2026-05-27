@@ -127,13 +127,67 @@ def _apply_format_selection(
         opts.pop('impersonate', None)
 
 
-def _yt_dlp_extract(opts: dict[str, Any], url: str, download: bool = False) -> Optional[dict]:
-    """Copia opts antes de mutar — evita contaminação cruzada entre tentativas."""
+class _ErrorCapturingLogger:
+    def __init__(self) -> None:
+        self.errors: list[str] = []
+    def debug(self, msg) -> None: pass
+    def info(self, msg) -> None: pass
+    def warning(self, msg) -> None: pass
+    def error(self, msg) -> None:
+        self.errors.append(str(msg))
+
+
+_UNRECOVERABLE_PATTERNS: list[tuple[str, str]] = [
+    ('private video', 'private'),
+    ('members-only', 'members_only'),
+    ('join this channel', 'members_only'),
+    ('this video is available to this channel', 'members_only'),
+    ('confirm your age', 'age_restricted'),
+    ('age-restricted', 'age_restricted'),
+    ('not available in your country', 'geo_blocked'),
+    ('not available from your location', 'geo_blocked'),
+    ('blocked it in your country', 'geo_blocked'),
+    ('removed by the uploader', 'removed'),
+    ('removed by the user', 'removed'),
+    ('this video has been removed', 'removed'),
+    ('account has been terminated', 'removed'),
+    ('account has been suspended', 'removed'),
+    ('premieres in', 'live_not_started'),
+    ('this live event will begin', 'live_not_started'),
+    ('video unavailable', 'unavailable'),
+    ('login required', 'sign_in_required'),
+    ('sign in to confirm', 'sign_in_required'),
+    ('rate-limit reached', 'rate_limited'),
+    ('http error 429', 'rate_limited'),
+]
+
+
+def _classify_ytdlp_errors(error_messages: list[str]) -> Optional[str]:
+    if not error_messages:
+        return None
+    blob = ' | '.join(error_messages).lower()
+    for needle, key in _UNRECOVERABLE_PATTERNS:
+        if needle in blob:
+            return key
+    return None
+
+
+def _yt_dlp_extract(
+    opts: dict[str, Any], url: str, download: bool = False,
+    capture_errors: bool = False,
+) -> Any:
     opts = dict(opts)
+    err_logger: Optional[_ErrorCapturingLogger] = None
+    if capture_errors:
+        err_logger = _ErrorCapturingLogger()
+        opts['logger'] = err_logger
     if not download:
         opts['extract_flat'] = False
     with yt_dlp.YoutubeDL(opts) as ydl:
-        return ydl.extract_info(url, download=download)
+        info = ydl.extract_info(url, download=download)
+    if capture_errors:
+        return info, err_logger.errors
+    return info
 
 
 def _list_downloaded_files(folder: str) -> list[str]:
@@ -201,10 +255,11 @@ async def _run_ytdlp_with_cookie_fallback(
     target_lang: Optional[str],
     platform: Optional[Platform] = None,
     pre_info: Optional[dict] = None,
-) -> tuple[list[str], dict[str, Any]]:
+) -> tuple[list[str], dict[str, Any], Optional[str]]:
     loop = asyncio.get_running_loop()
     info_dict: dict[str, Any] = {}
     downloaded_files: list[str] = []
+    all_errors: list[str] = []
 
     last_exc: Optional[BaseException] = None
     base_attempts = _attempt_order(has_firefox_cookie, target_lang)
@@ -226,9 +281,11 @@ async def _run_ytdlp_with_cookie_fallback(
 
         attempt_label = f"{mode}{'_imp' if use_imp else '_noimp'}"
         try:
-            info = await loop.run_in_executor(
-                state.YTDLP_POOL, _yt_dlp_extract, current_opts, url, True
+            result = await loop.run_in_executor(
+                state.YTDLP_POOL, _yt_dlp_extract, current_opts, url, True, True,
             )
+            info, attempt_errors = result
+            all_errors.extend(attempt_errors)
 
             if info:
                 if 'entries' in info and info.get('entries'):
@@ -252,4 +309,7 @@ async def _run_ytdlp_with_cookie_fallback(
     if not downloaded_files and last_exc is not None:
         logger.debug(lmsg("_ytdlp.stack_trace_last_exc"), exc_info=last_exc)
 
-    return downloaded_files, info_dict
+    reason = _classify_ytdlp_errors(all_errors) if not downloaded_files else None
+    if reason:
+        logger.info(lmsg("_ytdlp.unrecoverable_reason", reason=reason))
+    return downloaded_files, info_dict, reason

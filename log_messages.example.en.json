@@ -36,14 +36,16 @@
     "stack_trace_last_exc": "Stack trace of the last yt-dlp exception:",
     "hls_only_height_cap": "📺 HLS-only detected, using conservative height cap: {height}p",
     "tbr_cap": "📐 Bitrate cap applied: tbr<={max_tbr}kbps (duration {duration}s, cap {cap_mb}MB)",
-    "pre_extract_falhou": "⚠️ Pre-extract failed on attempt '{mode}': {e}"
+    "pre_extract_falhou": "⚠️ Pre-extract failed on attempt '{mode}': {e}",
+    "unrecoverable_reason": "🛑 yt-dlp reported unrecoverable error: {reason}"
   },
   "dispatcher": {
     "link_do_threads": "🧵 Threads link detected, routing directly to Playwright.",
     "link_do_x": "🐦 X link detected, routing directly to dedicated handler.",
     "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine activated for YouTube bypass: {arg0}",
-    "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks."
+    "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks.",
+    "unrecoverable_skip_fallbacks": "🛑 Unrecoverable error ({reason}) for {url}; skipping fallbacks (avoids scraper picking up the error page logo)."
   },
   "fallback": {
     "curl_cffi_falhou": "curl_cffi failed for {arg0}: {e}",

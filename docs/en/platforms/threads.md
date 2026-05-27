@@ -8,6 +8,7 @@ Extraction via **JSON SSR** served in initial HTML. Since Threads is a heavy SPA
 - ✅ Video posts
 - ✅ Carousels (mixed photo+video)
 - ✅ Reposts (delegates to original post via `quoted_attachment_post`)
+- ✅ `media_type=19` posts with media "attached" via `linked_inline_media` (v1.2.8+) — new format Threads started using for some audio-augmented posts
 - ✅ **Text-only posts** → become formatted text messages (no media)
 - ❌ Stories
 - ❌ Deleted posts

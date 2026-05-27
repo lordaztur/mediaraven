@@ -63,3 +63,21 @@ Sem Deno o bot ainda tenta — só falha em alguns casos específicos.
 - **"Sign in to confirm you're not a bot"** → cookies do Firefox de uma sessão logada resolvem (`FIREFOX_PROFILE_PATH`).
 - **Vídeo idade-restrita** → mesma coisa, precisa cookies de sessão logada.
 - **Live stream** → não suportado (yt-dlp poderia, mas bot não trata).
+
+## Detecção de erros não recuperáveis (v1.2.9+)
+
+Quando o yt-dlp falha com um erro irrecuperável (vídeo privado, removido, geo-bloqueado, etc.), o bot **não cai mais pro scraper genérico** (que pegaria o logo do YouTube/Google da página de erro como se fosse a mídia). Em vez disso, retorna mensagem clara:
+
+| Categoria | Detectado por | Mensagem |
+|---|---|---|
+| `private` | `Private video` | 🔒 Vídeo privado |
+| `removed` | `removed by the uploader` / `account has been terminated/suspended` | 🗑️ Vídeo/conta removido(a) |
+| `geo_blocked` | `not available in your country` / `blocked it in your country` | 🌍 Vídeo bloqueado na região |
+| `members_only` | `members-only` / `Join this channel` | 🔐 Vídeo restrito a membros |
+| `age_restricted` | `confirm your age` / `age-restricted` | 🔞 Vídeo com restrição de idade |
+| `sign_in_required` | `Sign in to confirm` / `login required` | 🔑 Vídeo exige login |
+| `live_not_started` | `Premieres in` / `This live event will begin` | 📅 Live ainda não começou |
+| `unavailable` | `Video unavailable` | 🚫 Vídeo indisponível |
+| `rate_limited` | `rate-limit reached` / `HTTP error 429` | ⏳ Rate-limited |
+
+Mensagens customizáveis via `downloader_status.ytdlp_{categoria}` no `messages.json`.

@@ -87,9 +87,15 @@ Confira que o perfil tem cookies recentes (você abriu o YouTube no Firefox rece
 
 Mesma solução: cookies de conta logada e maior de idade.
 
-### YouTube: vídeo privado
+### YouTube: vídeo privado / removido / geo-bloqueado
 
-Não tem como sem cookies da conta que pode ver.
+Desde v1.2.9 o bot detecta esses erros do yt-dlp e responde com mensagem clara (🔒/🗑️/🌍/etc.) em vez de cair pro scraper genérico (que costumava mandar o logo do YouTube/Google da página de erro). Lista completa em [YouTube → Detecção de erros não recuperáveis](platforms/youtube.md#deteccao-de-erros-nao-recuperaveis-v129).
+
+Pra vídeo privado de verdade não tem como — só se sua conta no Firefox tiver acesso.
+
+### YouTube: vídeo `.webm` chegou como documento sem player
+
+Pré-v1.2.5 o bot mandava `webm`/`mkv`/`avi`/`flv` como vídeo, mas Telegram só renderiza player nativo pra MP4 H.264+AAC. A partir do v1.2.5, vídeo nesses formatos é convertido pra MP4 antes do envio (probe + remux/re-encode mínimo via ffmpeg). Configurável via `VIDEO_CONVERT_TIMEOUT` (default 900s).
 
 ### Reddit: 403 Forbidden
 

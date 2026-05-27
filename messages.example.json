@@ -55,6 +55,15 @@
 
   "downloader_status": {
     "ytdlp_success": "✅ yt-dlp",
+    "ytdlp_private": "🔒 Vídeo privado. O dono não compartilhou publicamente.",
+    "ytdlp_unavailable": "🚫 Vídeo indisponível.",
+    "ytdlp_removed": "🗑️ Vídeo/conta removido(a).",
+    "ytdlp_geo_blocked": "🌍 Vídeo bloqueado na região do bot.",
+    "ytdlp_members_only": "🔐 Vídeo restrito a membros do canal.",
+    "ytdlp_age_restricted": "🔞 Vídeo com restrição de idade.",
+    "ytdlp_sign_in_required": "🔑 Vídeo exige login (conta não tem acesso).",
+    "ytdlp_live_not_started": "📅 Live ainda não começou.",
+    "ytdlp_rate_limited": "⏳ Rate-limited pela plataforma. Tente daqui a pouco.",
     "threads_fail": "⚠️ Falha ao processar este link do Threads.",
     "generic_fail": "❌ Não foi possível baixar a mídia.",
     "instagram_embed": "📸 IG Embed ({media_type})",
