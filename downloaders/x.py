@@ -64,16 +64,15 @@ def _media_from_extended_entities(media_list: list) -> list[tuple[str, str]]:
 
 def _tweet_ids(obj: dict) -> list[str]:
     ids: list[str] = []
-    for k in ("id_str", "rest_id", "id", "conversation_id_str"):
+    for k in ("id_str", "rest_id", "id"):
         v = obj.get(k)
         if v is not None:
             ids.append(str(v))
     legacy = obj.get("legacy")
     if isinstance(legacy, dict):
-        for k in ("id_str", "conversation_id_str"):
-            v = legacy.get(k)
-            if v is not None:
-                ids.append(str(v))
+        v = legacy.get("id_str")
+        if v is not None:
+            ids.append(str(v))
     return ids
 
 
@@ -82,10 +81,8 @@ def _walk_for_tweet_media(obj, tweet_id: str):
         ext = obj.get("extended_entities")
         if isinstance(ext, dict):
             media = ext.get("media")
-            if isinstance(media, list) and media:
-                ids = _tweet_ids(obj)
-                if not ids or tweet_id in ids:
-                    yield media
+            if isinstance(media, list) and media and tweet_id in _tweet_ids(obj):
+                yield media
         for v in obj.values():
             yield from _walk_for_tweet_media(v, tweet_id)
     elif isinstance(obj, list):
@@ -204,7 +201,8 @@ def _extract_from_data(data: dict, tweet_id: str) -> tuple[list[tuple[str, str]]
             tweet = {**tweet, "user": user_dict}
     media_items: list[tuple[str, str]] = []
     if tweet:
-        media_list = (tweet.get("extended_entities") or {}).get("media") or []
+        ext = tweet.get("extended_entities") or (tweet.get("legacy") or {}).get("extended_entities") or {}
+        media_list = ext.get("media") or []
         media_items = _media_from_extended_entities(media_list)
     if not media_items:
         for media in _walk_for_tweet_media(data, tweet_id):

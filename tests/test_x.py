@@ -286,6 +286,49 @@ def test_extract_from_data_resolves_user_dict_when_user_is_id():
     assert "tweet body" in cap_short
 
 
+def test_extract_from_data_ignores_reply_video_in_same_conversation():
+    data = {
+        "data": {
+            "threaded_conversation_with_injections_v2": {
+                "instructions": [{
+                    "entries": [
+                        {"content": {"itemContent": {"tweet_results": {"result": {
+                            "rest_id": "100",
+                            "legacy": {
+                                "id_str": "100",
+                                "conversation_id_str": "100",
+                                "extended_entities": {"media": [
+                                    {"type": "photo", "media_url_https": "https://pbs.twimg.com/focal.jpg"},
+                                ]},
+                            },
+                        }}}}},
+                        {"content": {"itemContent": {"tweet_results": {"result": {
+                            "rest_id": "200",
+                            "legacy": {
+                                "id_str": "200",
+                                "conversation_id_str": "100",
+                                "extended_entities": {"media": [
+                                    {"type": "video", "video_info": {"variants": [
+                                        {"content_type": "video/mp4", "bitrate": 9, "url": "https://video.twimg.com/reply.mp4"},
+                                    ]}},
+                                ]},
+                            },
+                        }}}}},
+                    ]
+                }]
+            }
+        }
+    }
+    media_items, _tweet = _extract_from_data(data, "100")
+    assert media_items == [("image", "https://pbs.twimg.com/focal.jpg?name=orig")]
+
+
+def test_walk_for_tweet_media_ignores_reply_in_same_conversation():
+    reply = {"id_str": "200", "conversation_id_str": "100",
+             "extended_entities": {"media": [{"type": "video"}]}}
+    assert list(_walk_for_tweet_media(reply, "100")) == []
+
+
 def test_walk_for_tweet_obj_finds_in_graphql_legacy_shape():
     response = {
         "data": {
