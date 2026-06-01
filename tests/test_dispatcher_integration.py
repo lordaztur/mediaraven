@@ -216,6 +216,71 @@ async def test_download_media_skips_fallbacks_on_unrecoverable(tmp_folder):
 
 
 @pytest.mark.asyncio
+async def test_download_media_instagram_sign_in_required_tries_instagrapi(tmp_folder):
+    ig_file = os.path.join(tmp_folder, "reel.mp4")
+    with open(ig_file, "wb") as f:
+        f.write(b"x")
+    instagrapi_mock = AsyncMock(return_value=([ig_file], "IG_STATUS", "leg", "leg"))
+    scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, "sign_in_required"))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_instagram_embed",
+                      new=AsyncMock(return_value=([], "", "", ""))), \
+         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None
+        )
+
+    assert files == [ig_file]
+    assert status == "IG_STATUS"
+    assert instagrapi_mock.await_count == 1
+    assert scrape_mock.await_count == 0
+
+
+@pytest.mark.asyncio
+async def test_download_media_instagram_sign_in_required_gives_up_without_scraper(tmp_folder):
+    instagrapi_mock = AsyncMock(return_value=([], "", "", ""))
+    scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, "sign_in_required"))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_instagram_embed",
+                      new=AsyncMock(return_value=([], "", "", ""))), \
+         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert instagrapi_mock.await_count == 1
+    assert scrape_mock.await_count == 0
+    assert "login" in status.lower()
+
+
+@pytest.mark.asyncio
+async def test_download_media_instagram_private_does_not_retry_instagrapi(tmp_folder):
+    instagrapi_mock = AsyncMock(return_value=([], "", "", ""))
+    scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, "private"))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_instagram_embed",
+                      new=AsyncMock(return_value=([], "", "", ""))), \
+         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert instagrapi_mock.await_count == 0
+    assert scrape_mock.await_count == 0
+
+
+@pytest.mark.asyncio
 async def test_download_media_returns_generic_fail_when_all_fail(tmp_folder):
     """yt-dlp e scrape vazios -> retorna status semântico generic_fail (handler usa generic_fail msg)."""
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",

@@ -49,6 +49,8 @@ from .x import download_x
 
 logger = logging.getLogger(__name__)
 
+_IG_AUTH_RETRY_REASONS = {"sign_in_required", "age_restricted", "unavailable"}
+
 
 __all__ = [
     "download_media",
@@ -234,8 +236,16 @@ async def download_media(
             )
 
         if unrecoverable_reason:
-            logger.info(lmsg("dispatcher.unrecoverable_skip_fallbacks", reason=unrecoverable_reason, url=safe_url(url)))
             _wipe_folder(unique_folder)
+            if platform.instagram and unrecoverable_reason in _IG_AUTH_RETRY_REASONS:
+                logger.info(lmsg("dispatcher.unrecoverable_try_instagrapi", reason=unrecoverable_reason, url=safe_url(url)))
+                ig_files, ig_status, ig_short, ig_full = await download_instagram_instagrapi(url, unique_folder)
+                if ig_files:
+                    return await _finalize_success(
+                        ig_files, ig_status, ig_short, ig_full, url, platform_label, started,
+                    )
+                _wipe_folder(unique_folder)
+            logger.info(lmsg("dispatcher.unrecoverable_skip_fallbacks", reason=unrecoverable_reason, url=safe_url(url)))
             metrics.record_failure(platform_label, time.monotonic() - started)
             return [], msg(f"downloader_status.ytdlp_{unrecoverable_reason}"), "", "", False
 

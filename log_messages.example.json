@@ -45,6 +45,7 @@
     "aten_o_deno_n_o": "⚠️ Atenção: Deno não encontrado! Downloads do YouTube podem falhar por JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine ativado para bypass do YouTube: {arg0}",
     "falha_no_yt": "⚠️ Falha no yt-dlp para {arg0}. Iniciando Fallbacks.",
+    "unrecoverable_try_instagrapi": "🔑 yt-dlp reportou {reason} pra {url}; tentando Instagrapi autenticado antes de desistir.",
     "unrecoverable_skip_fallbacks": "🛑 Erro não recuperável ({reason}) pra {url}; pulando fallbacks (evita scraper pegar logo da página de erro).",
     "facebook_owner_mismatch": "⚠️ yt-dlp retornou conteúdo de uploader diferente do post original: URL uid={url_uid} vs yt-dlp uid={yt_uid} ({yt_uploader}). Descartando."
   },
