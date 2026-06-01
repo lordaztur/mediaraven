@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1210-handler-dedicado-pro-facebook-carrosseis-via-gallery-dl-validacao-de-uploader-no-yt-dlp-ordem-unificada-de-tentativas-cobertura-ampliada-do-classifier" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1696,6 +1707,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1210-handler-dedicado-pro-facebook-carrosseis-via-gallery-dl-validacao-de-uploader-no-yt-dlp-ordem-unificada-de-tentativas-cobertura-ampliada-do-classifier" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1859,6 +1881,19 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login">v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login<a class="headerlink" href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐦 <strong>X: post de imagem retornava vídeo de uma reply da mesma thread.</strong> Causa raiz tripla em <code>downloaders/x.py</code>: (1) <code>_tweet_ids</code> incluía <code>conversation_id_str</code>, que é compartilhado por TODAS as replies da conversa — então qualquer reply "casava" com o ID do tweet alvo na resposta <code>TweetDetail</code> do GraphQL; (2) <code>_extract_from_data</code> só lia <code>tweet["extended_entities"]</code>, mas no GraphQL a mídia do tweet focal fica em <code>tweet["legacy"]["extended_entities"]</code>, então ficava vazio e caía num fallback frágil; (3) <code>_walk_for_tweet_media</code> tinha guarda permissiva <code>if not ids or tweet_id in ids</code> que pegava a mídia do primeiro objeto que casasse (uma reply com vídeo) ou que não tivesse ID nenhum. Correção: identidade agora é só <code>id_str</code>/<code>rest_id</code>/<code>id</code> (sem <code>conversation_id_str</code>), extração lê também <code>legacy.extended_entities</code>, e o walk exige match estrito de ID. Confirmado pelos logs: o link reportado vinha de guest vazio → Playwright autenticado → vídeo de reply.</li>
+<li>🔑 <strong>Instagram: erro de login do yt-dlp não desiste mais sem tentar a sessão autenticada.</strong> Quando o yt-dlp reporta <code>sign_in_required</code>/<code>age_restricted</code>/<code>unavailable</code> pra Instagram (conteúdo sensível/restrição de idade), o dispatcher agora tenta <code>download_instagram_instagrapi</code> (sessão logada de <code>ig_session.json</code>) antes de desistir, em vez de abortar no short-circuit <code>unrecoverable_reason</code>. O scraper genérico continua pulado nesses casos (preserva o motivo original do short-circuit: não pegar o logo da página de erro). Razões genuinamente irrecuperáveis (<code>private</code>/<code>removed</code>/etc.) continuam abortando direto.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Constante <code>_IG_AUTH_RETRY_REASONS = {"sign_in_required", "age_restricted", "unavailable"}</code> em <code>downloaders/dispatcher.py</code></li>
+<li>Chave de log <code>dispatcher.unrecoverable_try_instagrapi</code> (PT/EN)</li>
+<li>2 testes de regressão em <code>tests/test_x.py</code> (foto focal + reply com vídeo na mesma conversa → extrai a foto; walk ignora reply da mesma conversa)</li>
+<li>3 testes em <code>tests/test_dispatcher_integration.py</code> (IG <code>sign_in_required</code> → tenta Instagrapi e dá sucesso; Instagrapi vazio → desiste sem scraper; IG <code>private</code> → não tenta Instagrapi)</li>
+</ul>
 <h2 id="v1210-handler-dedicado-pro-facebook-carrosseis-via-gallery-dl-validacao-de-uploader-no-yt-dlp-ordem-unificada-de-tentativas-cobertura-ampliada-do-classifier">v1.2.10 — Handler dedicado pro Facebook (carrosséis via gallery-dl) + validação de uploader no yt-dlp + ordem unificada de tentativas + cobertura ampliada do classifier<a class="headerlink" href="#v1210-handler-dedicado-pro-facebook-carrosseis-via-gallery-dl-validacao-de-uploader-no-yt-dlp-ordem-unificada-de-tentativas-cobertura-ampliada-do-classifier" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2102,7 +2137,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="27 de maio de 2026 18:14:45 UTC"><span class="timeago" datetime="2026-05-27T18:14:45+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="27 de maio de 2026 18:14:45 UTC">2026-05-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="1 de junho de 2026 23:44:54 UTC"><span class="timeago" datetime="2026-06-01T23:44:54+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="1 de junho de 2026 23:44:54 UTC">2026-06-01</span>
   </span>
 
     
