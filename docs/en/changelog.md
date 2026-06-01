@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.11 — X returned a reply's video on an image post + Instagram tries authenticated Instagrapi on login errors
+
+**Major changes:**
+
+- 🐦 **X: an image post returned a video from a reply in the same thread.** Triple root cause in `downloaders/x.py`: (1) `_tweet_ids` included `conversation_id_str`, which is shared by ALL replies in the conversation — so any reply "matched" the target tweet ID inside the GraphQL `TweetDetail` response; (2) `_extract_from_data` only read `tweet["extended_entities"]`, but in GraphQL the focal tweet's media lives under `tweet["legacy"]["extended_entities"]`, so it came up empty and fell into a fragile fallback; (3) `_walk_for_tweet_media` had a permissive guard `if not ids or tweet_id in ids` that grabbed media from the first matching object (a reply with a video) or any object with no IDs at all. Fix: identity is now only `id_str`/`rest_id`/`id` (no `conversation_id_str`), extraction also reads `legacy.extended_entities`, and the walk requires a strict ID match. Confirmed by logs: the reported link went empty guest → authenticated Playwright → reply video.
+- 🔑 **Instagram: a yt-dlp login error no longer gives up without trying the authenticated session.** When yt-dlp reports `sign_in_required`/`age_restricted`/`unavailable` for Instagram (sensitive/age-restricted content), the dispatcher now tries `download_instagram_instagrapi` (logged-in session from `ig_session.json`) before giving up, instead of aborting on the `unrecoverable_reason` short-circuit. The generic scraper stays skipped in these cases (preserves the short-circuit's original purpose: not picking up the error-page logo). Genuinely unrecoverable reasons (`private`/`removed`/etc.) still abort immediately.
+
+**Added:**
+
+- `_IG_AUTH_RETRY_REASONS = {"sign_in_required", "age_restricted", "unavailable"}` constant in `downloaders/dispatcher.py`
+- Log key `dispatcher.unrecoverable_try_instagrapi` (PT/EN)
+- 2 regression tests in `tests/test_x.py` (focal photo + reply with video in the same conversation → extracts the photo; walk ignores a reply in the same conversation)
+- 3 tests in `tests/test_dispatcher_integration.py` (IG `sign_in_required` → tries Instagrapi and succeeds; empty Instagrapi → gives up without scraper; IG `private` → does not try Instagrapi)
+
 ## v1.2.10 — Dedicated Facebook handler (carousels via gallery-dl) + yt-dlp uploader validation + unified attempt order + broader classifier coverage
 
 **Major changes:**

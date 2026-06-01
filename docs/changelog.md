@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login
+
+**Major changes:**
+
+- 🐦 **X: post de imagem retornava vídeo de uma reply da mesma thread.** Causa raiz tripla em `downloaders/x.py`: (1) `_tweet_ids` incluía `conversation_id_str`, que é compartilhado por TODAS as replies da conversa — então qualquer reply "casava" com o ID do tweet alvo na resposta `TweetDetail` do GraphQL; (2) `_extract_from_data` só lia `tweet["extended_entities"]`, mas no GraphQL a mídia do tweet focal fica em `tweet["legacy"]["extended_entities"]`, então ficava vazio e caía num fallback frágil; (3) `_walk_for_tweet_media` tinha guarda permissiva `if not ids or tweet_id in ids` que pegava a mídia do primeiro objeto que casasse (uma reply com vídeo) ou que não tivesse ID nenhum. Correção: identidade agora é só `id_str`/`rest_id`/`id` (sem `conversation_id_str`), extração lê também `legacy.extended_entities`, e o walk exige match estrito de ID. Confirmado pelos logs: o link reportado vinha de guest vazio → Playwright autenticado → vídeo de reply.
+- 🔑 **Instagram: erro de login do yt-dlp não desiste mais sem tentar a sessão autenticada.** Quando o yt-dlp reporta `sign_in_required`/`age_restricted`/`unavailable` pra Instagram (conteúdo sensível/restrição de idade), o dispatcher agora tenta `download_instagram_instagrapi` (sessão logada de `ig_session.json`) antes de desistir, em vez de abortar no short-circuit `unrecoverable_reason`. O scraper genérico continua pulado nesses casos (preserva o motivo original do short-circuit: não pegar o logo da página de erro). Razões genuinamente irrecuperáveis (`private`/`removed`/etc.) continuam abortando direto.
+
+**Adicionado:**
+
+- Constante `_IG_AUTH_RETRY_REASONS = {"sign_in_required", "age_restricted", "unavailable"}` em `downloaders/dispatcher.py`
+- Chave de log `dispatcher.unrecoverable_try_instagrapi` (PT/EN)
+- 2 testes de regressão em `tests/test_x.py` (foto focal + reply com vídeo na mesma conversa → extrai a foto; walk ignora reply da mesma conversa)
+- 3 testes em `tests/test_dispatcher_integration.py` (IG `sign_in_required` → tenta Instagrapi e dá sucesso; Instagrapi vazio → desiste sem scraper; IG `private` → não tenta Instagrapi)
+
 ## v1.2.10 — Handler dedicado pro Facebook (carrosséis via gallery-dl) + validação de uploader no yt-dlp + ordem unificada de tentativas + cobertura ampliada do classifier
 
 **Major changes:**
