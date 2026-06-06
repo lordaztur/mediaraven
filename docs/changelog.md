@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.12 — Ignorar domínios silenciosamente (IGNORED_DOMAINS)
+
+**Major changes:**
+
+- 🔇 **Nova config `IGNORED_DOMAINS` pra ignorar domínios sem nenhum feedback no chat.** Links de domínios na lista passam batido: sem reação (emoji), sem prompt de download, sem mensagem de status — apenas ficam registrados no `bot.log` (`handlers.dominio_ignorado`). O filtro roda em `_extract_urls_from_update` (em `handlers.py`), logo após o dedup e **antes** do limite `MAX_URLS_PER_MESSAGE`, então domínios ignorados não consomem a cota de URLs. Se todas as URLs da mensagem forem ignoradas, o `handle_message` retorna cedo e nem a reação é setada.
+- ⚙️ **Configurável global ou por chat/usuário.** Global via `.env` (`IGNORED_DOMAINS=twitch.tv,spotify.com`) ou por chat/user via `customization.json` (`"IGNORED_DOMAINS": ["twitch.tv"]`), respeitando a precedência usual user > chat > default > .env.
+- 🌐 **Match por domínio exato e subdomínios.** Nova função pura `is_ignored_domain` em `utils.py` compara via `hostname` (case-insensitive, ignora porta): `example.com` também ignora `www.example.com`/`m.example.com`, mas `example.com.evil.com` não casa.
+
+**Adicionado:**
+
+- Constante `IGNORED_DOMAINS` em `config.py` (CSV do `.env`)
+- Função `is_ignored_domain` em `utils.py`
+- Chave de log `handlers.dominio_ignorado` (PT/EN)
+- Doc do campo `IGNORED_DOMAINS` em `customization.example.json`/`.en.json` e `.env_example`/`.en`
+- 6 testes de `is_ignored_domain` em `tests/test_utils_helpers.py` e 4 testes de filtragem em `tests/test_url_extraction.py`
+
 ## v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login
 
 **Major changes:**

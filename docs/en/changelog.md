@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)
+
+**Major changes:**
+
+- 🔇 **New `IGNORED_DOMAINS` config to ignore domains with no chat feedback at all.** Links from listed domains are skipped: no reaction (emoji), no download prompt, no status message — they're only recorded in `bot.log` (`handlers.dominio_ignorado`). The filter runs in `_extract_urls_from_update` (in `handlers.py`), right after dedup and **before** the `MAX_URLS_PER_MESSAGE` limit, so ignored domains don't consume the URL quota. If every URL in the message is ignored, `handle_message` returns early and not even the reaction is set.
+- ⚙️ **Configurable globally or per chat/user.** Globally via `.env` (`IGNORED_DOMAINS=twitch.tv,spotify.com`) or per chat/user via `customization.json` (`"IGNORED_DOMAINS": ["twitch.tv"]`), following the usual user > chat > default > .env precedence.
+- 🌐 **Exact-domain and subdomain matching.** New pure function `is_ignored_domain` in `utils.py` compares via `hostname` (case-insensitive, port-agnostic): `example.com` also ignores `www.example.com`/`m.example.com`, while `example.com.evil.com` does not match.
+
+**Added:**
+
+- `IGNORED_DOMAINS` constant in `config.py` (CSV from `.env`)
+- `is_ignored_domain` function in `utils.py`
+- Log key `handlers.dominio_ignorado` (PT/EN)
+- Docs for the `IGNORED_DOMAINS` field in `customization.example.json`/`.en.json` and `.env_example`/`.en`
+- 6 `is_ignored_domain` tests in `tests/test_utils_helpers.py` and 4 filtering tests in `tests/test_url_extraction.py`
+
 ## v1.2.11 — X returned a reply's video on an image post + Instagram tries authenticated Instagrapi on login errors
 
 **Major changes:**
