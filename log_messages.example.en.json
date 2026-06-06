@@ -161,6 +161,7 @@
     "x_x_x": "📊 {outcome} {status_or_error} | {arg0}",
     "falha_ao_setar": "Failed to set reaction: {e}",
     "urls_exceed_limit": "Message with {n} URLs exceeds the limit; processing only the first {max}.",
+    "dominio_ignorado": "🔇 Domain on the ignore list; skipping silently without processing: {url}",
     "allowed_user_outside_whitelist": "👤 Allowed user {user_id} used the bot in chat {chat_id} (outside whitelist) — {n} URL(s)."
   },
   "instagram_login": {

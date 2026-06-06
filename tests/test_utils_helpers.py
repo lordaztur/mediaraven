@@ -4,7 +4,36 @@ import os
 from PIL import Image
 
 from config import cfg
-from utils import chunk_html_text, normalize_image, safe_url
+from utils import chunk_html_text, is_ignored_domain, normalize_image, safe_url
+
+
+def test_is_ignored_domain_exact_match():
+    assert is_ignored_domain("https://twitch.tv/foo", ["twitch.tv"]) is True
+
+
+def test_is_ignored_domain_matches_subdomain():
+    assert is_ignored_domain("https://www.twitch.tv/foo", ["twitch.tv"]) is True
+    assert is_ignored_domain("https://m.example.com/x?y=1", ["example.com"]) is True
+
+
+def test_is_ignored_domain_does_not_match_sibling_or_suffix():
+    assert is_ignored_domain("https://nottwitch.tv/foo", ["twitch.tv"]) is False
+    assert is_ignored_domain("https://example.com.evil.com/", ["example.com"]) is False
+
+
+def test_is_ignored_domain_case_insensitive_and_port():
+    assert is_ignored_domain("https://WWW.Example.COM:8080/p", ["example.com"]) is True
+
+
+def test_is_ignored_domain_handles_leading_dot_and_whitespace_entries():
+    assert is_ignored_domain("https://example.com/", [" .example.com "]) is True
+
+
+def test_is_ignored_domain_empty_or_invalid_inputs():
+    assert is_ignored_domain("https://example.com", []) is False
+    assert is_ignored_domain("https://example.com", None) is False
+    assert is_ignored_domain("https://example.com", "example.com") is False
+    assert is_ignored_domain("not a url", ["example.com"]) is False
 
 
 def test_chunk_html_text_returns_single_when_below_limit():

@@ -23,7 +23,7 @@ from lifecycle import get_chat_lock
 from messages import lmsg, msg, msg_list
 from downloaders._caption import CAPTION_MAX, TEXT_MAX
 from telegram_io import send_downloaded_media
-from utils import chunk_html_text, cycle_status_message, safe_cleanup, safe_url
+from utils import chunk_html_text, cycle_status_message, is_ignored_domain, safe_cleanup, safe_url
 
 logger = logging.getLogger(__name__)
 
@@ -573,6 +573,17 @@ def _extract_urls_from_update(update: Update) -> list[str]:
         urls.append(candidate)
 
     deduped = list(dict.fromkeys(urls))
+
+    ignored = cfg("IGNORED_DOMAINS")
+    if ignored:
+        kept: list[str] = []
+        for candidate in deduped:
+            if is_ignored_domain(candidate, ignored):
+                logger.info(lmsg("handlers.dominio_ignorado", url=safe_url(candidate)))
+            else:
+                kept.append(candidate)
+        deduped = kept
+
     if len(deduped) > cfg("MAX_URLS_PER_MESSAGE"):
         logger.warning(lmsg(
             "handlers.urls_exceed_limit",

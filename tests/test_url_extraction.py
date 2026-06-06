@@ -2,6 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
+import pytest
+
+import config
 from handlers import _extract_urls_from_update
 
 
@@ -84,3 +87,48 @@ def test_falls_back_to_caption_when_no_text():
         _caption_entities={entity: "https://captioned.example"},
     )
     assert _extract_urls_from_update(FakeUpdate(message=msg)) == ["https://captioned.example"]
+
+
+@pytest.fixture
+def set_ignored_domains(monkeypatch):
+    def _apply(domains):
+        monkeypatch.setitem(config._CUSTOMIZATION["default"], "IGNORED_DOMAINS", domains)
+    return _apply
+
+
+def test_ignored_domain_is_dropped_silently(set_ignored_domains):
+    set_ignored_domains(["twitch.tv"])
+    e1 = FakeEntity(type='url')
+    e2 = FakeEntity(type='url')
+    msg = FakeMessage(
+        text="https://twitch.tv/live https://youtube.com/watch?v=1",
+        _entities={e1: "https://twitch.tv/live", e2: "https://youtube.com/watch?v=1"},
+    )
+    assert _extract_urls_from_update(FakeUpdate(message=msg)) == [
+        "https://youtube.com/watch?v=1",
+    ]
+
+
+def test_ignored_domain_matches_subdomain(set_ignored_domains):
+    set_ignored_domains(["twitch.tv"])
+    entity = FakeEntity(type='url')
+    msg = FakeMessage(text="https://www.twitch.tv/x", _entities={entity: "https://www.twitch.tv/x"})
+    assert _extract_urls_from_update(FakeUpdate(message=msg)) == []
+
+
+def test_all_urls_ignored_returns_empty(set_ignored_domains):
+    set_ignored_domains(["twitch.tv", "spotify.com"])
+    e1 = FakeEntity(type='url')
+    e2 = FakeEntity(type='text_link', url="https://open.spotify.com/track/abc")
+    msg = FakeMessage(
+        text="https://twitch.tv/a link",
+        _entities={e1: "https://twitch.tv/a", e2: "link"},
+    )
+    assert _extract_urls_from_update(FakeUpdate(message=msg)) == []
+
+
+def test_empty_ignore_list_processes_everything(set_ignored_domains):
+    set_ignored_domains([])
+    entity = FakeEntity(type='url')
+    msg = FakeMessage(text="https://twitch.tv/x", _entities={entity: "https://twitch.tv/x"})
+    assert _extract_urls_from_update(FakeUpdate(message=msg)) == ["https://twitch.tv/x"]

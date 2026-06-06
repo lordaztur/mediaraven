@@ -51,6 +51,9 @@
     "_doc_MAX_URLS_PER_MESSAGE": "Max URLs processed in a single Telegram message (protects against paste-bombs). Min 1, max 50.",
     "MAX_URLS_PER_MESSAGE": 20,
 
+    "_doc_IGNORED_DOMAINS": "List of domains to silently ignore — links from these domains are skipped with no reaction, prompt, or any chat message (only logged). Matches the exact domain and subdomains (e.g. \"example.com\" also ignores \"www.example.com\" and \"m.example.com\"). Defaults from .env (IGNORED_DOMAINS); rename the line below to override per chat/user here (this OVERRIDES the .env value). Ex: [\"twitch.tv\", \"spotify.com\"].",
+    "__IGNORED_DOMAINS": [],
+
     "_doc_YTDLP_MAX_HEIGHT": "Max video height (pixels) to download. 480/720 (SD/HD), 1080 (Full HD), 1920 (1440p), 2160 (4K), 4320 (8K). Min 144.",
     "YTDLP_MAX_HEIGHT": 1920,
 

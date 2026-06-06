@@ -66,6 +66,22 @@ def safe_url(url: str, max_length: Optional[int] = None) -> str:
     return cleaned
 
 
+def is_ignored_domain(url: str, ignored: Any) -> bool:
+    if not ignored or not isinstance(ignored, (list, tuple)):
+        return False
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        return False
+    if not host:
+        return False
+    for entry in ignored:
+        dom = str(entry).strip().lower().lstrip(".")
+        if dom and (host == dom or host.endswith("." + dom)):
+            return True
+    return False
+
+
 def normalize_image(filepath: str, min_size: int = 50, quality: int = 95) -> Optional[str]:
     try:
         with Image.open(filepath) as img:
