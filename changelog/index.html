@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1212-ignorar-dominios-silenciosamente-ignored_domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.12 — Ignorar domínios silenciosamente (IGNORED_DOMAINS)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1707,6 +1718,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1212-ignorar-dominios-silenciosamente-ignored_domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.12 — Ignorar domínios silenciosamente (IGNORED_DOMAINS)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1881,6 +1903,21 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1212-ignorar-dominios-silenciosamente-ignored_domains">v1.2.12 — Ignorar domínios silenciosamente (IGNORED_DOMAINS)<a class="headerlink" href="#v1212-ignorar-dominios-silenciosamente-ignored_domains" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔇 <strong>Nova config <code>IGNORED_DOMAINS</code> pra ignorar domínios sem nenhum feedback no chat.</strong> Links de domínios na lista passam batido: sem reação (emoji), sem prompt de download, sem mensagem de status — apenas ficam registrados no <code>bot.log</code> (<code>handlers.dominio_ignorado</code>). O filtro roda em <code>_extract_urls_from_update</code> (em <code>handlers.py</code>), logo após o dedup e <strong>antes</strong> do limite <code>MAX_URLS_PER_MESSAGE</code>, então domínios ignorados não consomem a cota de URLs. Se todas as URLs da mensagem forem ignoradas, o <code>handle_message</code> retorna cedo e nem a reação é setada.</li>
+<li>⚙️ <strong>Configurável global ou por chat/usuário.</strong> Global via <code>.env</code> (<code>IGNORED_DOMAINS=twitch.tv,spotify.com</code>) ou por chat/user via <code>customization.json</code> (<code>"IGNORED_DOMAINS": ["twitch.tv"]</code>), respeitando a precedência usual user &gt; chat &gt; default &gt; .env.</li>
+<li>🌐 <strong>Match por domínio exato e subdomínios.</strong> Nova função pura <code>is_ignored_domain</code> em <code>utils.py</code> compara via <code>hostname</code> (case-insensitive, ignora porta): <code>example.com</code> também ignora <code>www.example.com</code>/<code>m.example.com</code>, mas <code>example.com.evil.com</code> não casa.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Constante <code>IGNORED_DOMAINS</code> em <code>config.py</code> (CSV do <code>.env</code>)</li>
+<li>Função <code>is_ignored_domain</code> em <code>utils.py</code></li>
+<li>Chave de log <code>handlers.dominio_ignorado</code> (PT/EN)</li>
+<li>Doc do campo <code>IGNORED_DOMAINS</code> em <code>customization.example.json</code>/<code>.en.json</code> e <code>.env_example</code>/<code>.en</code></li>
+<li>6 testes de <code>is_ignored_domain</code> em <code>tests/test_utils_helpers.py</code> e 4 testes de filtragem em <code>tests/test_url_extraction.py</code></li>
+</ul>
 <h2 id="v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login">v1.2.11 — X devolvia vídeo de reply em post de imagem + Instagram tenta Instagrapi autenticado em erro de login<a class="headerlink" href="#v1211-x-devolvia-video-de-reply-em-post-de-imagem-instagram-tenta-instagrapi-autenticado-em-erro-de-login" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2137,7 +2174,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="1 de junho de 2026 23:44:54 UTC"><span class="timeago" datetime="2026-06-01T23:44:54+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="1 de junho de 2026 23:44:54 UTC">2026-06-01</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="6 de junho de 2026 02:01:16 UTC"><span class="timeago" datetime="2026-06-06T02:01:16+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="6 de junho de 2026 02:01:16 UTC">2026-06-06</span>
   </span>
 
     

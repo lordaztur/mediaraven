@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1212-silently-ignore-domains-ignored_domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1211-x-returned-a-replys-video-on-an-image-post-instagram-tries-authenticated-instagrapi-on-login-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1709,6 +1720,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1212-silently-ignore-domains-ignored_domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1211-x-returned-a-replys-video-on-an-image-post-instagram-tries-authenticated-instagrapi-on-login-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1883,6 +1905,21 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1212-silently-ignore-domains-ignored_domains">v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)<a class="headerlink" href="#v1212-silently-ignore-domains-ignored_domains" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔇 <strong>New <code>IGNORED_DOMAINS</code> config to ignore domains with no chat feedback at all.</strong> Links from listed domains are skipped: no reaction (emoji), no download prompt, no status message — they're only recorded in <code>bot.log</code> (<code>handlers.dominio_ignorado</code>). The filter runs in <code>_extract_urls_from_update</code> (in <code>handlers.py</code>), right after dedup and <strong>before</strong> the <code>MAX_URLS_PER_MESSAGE</code> limit, so ignored domains don't consume the URL quota. If every URL in the message is ignored, <code>handle_message</code> returns early and not even the reaction is set.</li>
+<li>⚙️ <strong>Configurable globally or per chat/user.</strong> Globally via <code>.env</code> (<code>IGNORED_DOMAINS=twitch.tv,spotify.com</code>) or per chat/user via <code>customization.json</code> (<code>"IGNORED_DOMAINS": ["twitch.tv"]</code>), following the usual user &gt; chat &gt; default &gt; .env precedence.</li>
+<li>🌐 <strong>Exact-domain and subdomain matching.</strong> New pure function <code>is_ignored_domain</code> in <code>utils.py</code> compares via <code>hostname</code> (case-insensitive, port-agnostic): <code>example.com</code> also ignores <code>www.example.com</code>/<code>m.example.com</code>, while <code>example.com.evil.com</code> does not match.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li><code>IGNORED_DOMAINS</code> constant in <code>config.py</code> (CSV from <code>.env</code>)</li>
+<li><code>is_ignored_domain</code> function in <code>utils.py</code></li>
+<li>Log key <code>handlers.dominio_ignorado</code> (PT/EN)</li>
+<li>Docs for the <code>IGNORED_DOMAINS</code> field in <code>customization.example.json</code>/<code>.en.json</code> and <code>.env_example</code>/<code>.en</code></li>
+<li>6 <code>is_ignored_domain</code> tests in <code>tests/test_utils_helpers.py</code> and 4 filtering tests in <code>tests/test_url_extraction.py</code></li>
+</ul>
 <h2 id="v1211-x-returned-a-replys-video-on-an-image-post-instagram-tries-authenticated-instagrapi-on-login-errors">v1.2.11 — X returned a reply's video on an image post + Instagram tries authenticated Instagrapi on login errors<a class="headerlink" href="#v1211-x-returned-a-replys-video-on-an-image-post-instagram-tries-authenticated-instagrapi-on-login-errors" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2139,7 +2176,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 1, 2026 23:44:54 UTC"><span class="timeago" datetime="2026-06-01T23:44:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 1, 2026 23:44:54 UTC">2026-06-01</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 6, 2026 02:01:16 UTC"><span class="timeago" datetime="2026-06-06T02:01:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 6, 2026 02:01:16 UTC">2026-06-06</span>
   </span>
 
     
