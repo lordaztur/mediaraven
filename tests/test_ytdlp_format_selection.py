@@ -1,7 +1,24 @@
+import os
 from unittest.mock import patch
+
+from yt_dlp import YoutubeDL
 
 from downloaders import _ytdlp
 from downloaders._platform import Platform
+
+
+def test_base_opts_outtmpl_truncates_long_title():
+    opts = _ytdlp._build_ytdlp_base_opts("/tmp/task")
+    assert "%(title).150B" in opts["outtmpl"]
+
+
+def test_long_title_filename_stays_under_filesystem_limit():
+    opts = _ytdlp._build_ytdlp_base_opts("/tmp/task")
+    ydl = YoutubeDL(opts)
+    name = ydl.prepare_filename({"title": "A" * 600, "id": "948043184851169", "ext": "mp4"})
+    base = os.path.basename(name)
+    assert len(base.encode()) <= 255
+    assert base.endswith("[948043184851169].mp4")
 
 
 def test_calc_max_tbr_kbps_basic():

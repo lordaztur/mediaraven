@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
     opts: dict[str, Any] = {
-        'outtmpl': os.path.join(unique_folder, '%(title)s [%(id)s].%(ext)s'),
+        'outtmpl': os.path.join(unique_folder, '%(title).150B [%(id)s].%(ext)s'),
         'restrictfilenames': True,
         'writedescription': False,
         'quiet': True,
