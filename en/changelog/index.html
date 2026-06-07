@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1213-facebook-reels-failed-due-to-long-filename-enametoolong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.13 — Facebook Reels failed due to long filename (ENAMETOOLONG)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1212-silently-ignore-domains-ignored_domains" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1720,6 +1731,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1213-facebook-reels-failed-due-to-long-filename-enametoolong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.13 — Facebook Reels failed due to long filename (ENAMETOOLONG)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1212-silently-ignore-domains-ignored_domains" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1905,6 +1927,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1213-facebook-reels-failed-due-to-long-filename-enametoolong">v1.2.13 — Facebook Reels failed due to long filename (ENAMETOOLONG)<a class="headerlink" href="#v1213-facebook-reels-failed-due-to-long-filename-enametoolong" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐦 <strong>Facebook Reels (and any long-title video) download correctly again.</strong> yt-dlp's <code>outtmpl</code> used <code>%(title)s [%(id)s].%(ext)s</code>; FB Reels carry the entire caption (300+ chars) as the title, and even with <code>restrictfilenames</code> yt-dlp doesn't cap the length, so the filename blew past the filesystem's 255-byte limit and the download died with <code>[Errno 36] File name too long</code>. Since <code>base_opts</code> has <code>ignoreerrors=True</code>, the error was swallowed silently: no file, no exception — all 4 yt-dlp attempts "failed", it fell through to the generic scraper, which returned UI thumbnails (40x40/10x10) as <code>🕸️ Scraper Deep Search (Images)</code>. Practical result: user sent a Reel and got random images instead of the video. Fixed by truncating the title to <code>%(title).150B</code> (150 bytes) — the <code>[id].ext</code> suffix keeps the final name around 170 bytes, comfortably under 255. Applies to all platforms. yt-dlp extraction always worked (AV1 formats available); only the output filename broke.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>2 tests in <code>tests/test_ytdlp_format_selection.py</code> (outtmpl contains the truncation; a 600-char title yields a name ≤ 255 bytes via <code>YoutubeDL.prepare_filename</code>, preserving <code>[id].ext</code>)</li>
+</ul>
 <h2 id="v1212-silently-ignore-domains-ignored_domains">v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)<a class="headerlink" href="#v1212-silently-ignore-domains-ignored_domains" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2176,7 +2207,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 6, 2026 02:14:59 UTC"><span class="timeago" datetime="2026-06-06T02:14:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 6, 2026 02:14:59 UTC">2026-06-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 7, 2026 05:03:32 UTC"><span class="timeago" datetime="2026-06-07T05:03:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 7, 2026 05:03:32 UTC">2026-06-07</span>
   </span>
 
     
