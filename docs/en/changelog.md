@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.13 — Facebook Reels failed due to long filename (ENAMETOOLONG)
+
+**Major changes:**
+
+- 🐦 **Facebook Reels (and any long-title video) download correctly again.** yt-dlp's `outtmpl` used `%(title)s [%(id)s].%(ext)s`; FB Reels carry the entire caption (300+ chars) as the title, and even with `restrictfilenames` yt-dlp doesn't cap the length, so the filename blew past the filesystem's 255-byte limit and the download died with `[Errno 36] File name too long`. Since `base_opts` has `ignoreerrors=True`, the error was swallowed silently: no file, no exception — all 4 yt-dlp attempts "failed", it fell through to the generic scraper, which returned UI thumbnails (40x40/10x10) as `🕸️ Scraper Deep Search (Images)`. Practical result: user sent a Reel and got random images instead of the video. Fixed by truncating the title to `%(title).150B` (150 bytes) — the `[id].ext` suffix keeps the final name around 170 bytes, comfortably under 255. Applies to all platforms. yt-dlp extraction always worked (AV1 formats available); only the output filename broke.
+
+**Added:**
+
+- 2 tests in `tests/test_ytdlp_format_selection.py` (outtmpl contains the truncation; a 600-char title yields a name ≤ 255 bytes via `YoutubeDL.prepare_filename`, preserving `[id].ext`)
+
 ## v1.2.12 — Silently ignore domains (IGNORED_DOMAINS)
 
 **Major changes:**
