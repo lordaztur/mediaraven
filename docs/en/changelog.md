@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.14 — Instagram Reels came through as images (embed cover) + yt-dlp/instagrapi update
+
+**Major changes:**
+
+- 📸 **Instagram Reels come through as video again.** The embed endpoint (`/embed/captioned/`) started returning, for many reels, `is_video=true` but **no `video_url`** (only the cover in `display_url`/`display_resources`, `product_type=clips`). In `_media_from_node` (`downloaders/instagram_embed.py`), since `is_video` was true but `video_url` was empty, the code **fell through to the image branch and returned the cover** — the embed treated that as success and the dispatcher returned the image without ever trying yt-dlp/Instagrapi (which fetch the video). Fixed: a node marked as video never degrades to its cover — it returns empty, the embed fails, and the fallback takes over. Confirmed: reels that came as `IG Embed (Image/Album)` are now downloaded as video by yt-dlp.
+- ⬆️ **yt-dlp `2026.3.17` → `2026.6.9` and instagrapi `2.3.0` → `2.16.0`.** The two libraries driving IG/FB extraction were stale (instagrapi 13 versions behind). Validated: clean `pip check`, yt-dlp extracts real reels, and every instagrapi method the bot uses (`media_pk_from_url`, `media_info`, `photo_download`, `video_download`, `album_download`, `login`, `dump_settings`, `load_settings`) exists in 2.16.0. Pillow `11.3.0` → `12.2.0` and requests `2.32.5` → `2.34.2` were bumped as transitive deps of instagrapi.
+
+**Added:**
+
+- Regression test in `tests/test_instagram_embed.py` (a video node without `video_url` does not fall back to the cover)
+
 ## v1.2.13 — Facebook Reels failed due to long filename (ENAMETOOLONG)
 
 **Major changes:**

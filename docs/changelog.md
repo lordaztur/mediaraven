@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.14 — Reels do Instagram vinham como imagem (capa do embed) + atualização yt-dlp/instagrapi
+
+**Major changes:**
+
+- 📸 **Reels do Instagram voltam a vir como vídeo.** O endpoint de embed (`/embed/captioned/`) passou a devolver, pra vários reels, `is_video=true` mas **sem `video_url`** (só a capa em `display_url`/`display_resources`, `product_type=clips`). Em `_media_from_node` (`downloaders/instagram_embed.py`), como `is_video` era verdadeiro mas `video_url` vazio, o código **caía no branch de imagem e retornava a capa** — o embed tratava isso como sucesso e o dispatcher devolvia a imagem sem nunca tentar yt-dlp/Instagrapi (que pegam o vídeo). Corrigido: um nó marcado como vídeo nunca degrada pra capa — retorna vazio, o embed falha e o fallback assume. Confirmado: reels que vinham como `IG Embed (Imagem/Álbum)` agora são baixados em vídeo pelo yt-dlp.
+- ⬆️ **yt-dlp `2026.3.17` → `2026.6.9` e instagrapi `2.3.0` → `2.16.0`.** As duas libs que dirigem a extração de IG/FB estavam defasadas (instagrapi 13 versões atrás). Validado: `pip check` limpo, yt-dlp extrai reels reais, todos os métodos do instagrapi usados pelo bot (`media_pk_from_url`, `media_info`, `photo_download`, `video_download`, `album_download`, `login`, `dump_settings`, `load_settings`) presentes na 2.16.0. Pillow `11.3.0` → `12.2.0` e requests `2.32.5` → `2.34.2` subiram como dependências transitivas do instagrapi.
+
+**Adicionado:**
+
+- Teste de regressão em `tests/test_instagram_embed.py` (nó de vídeo sem `video_url` não cai pra capa)
+
 ## v1.2.13 — Reels do Facebook falhavam por nome de arquivo longo (ENAMETOOLONG)
 
 **Major changes:**
