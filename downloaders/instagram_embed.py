@@ -72,8 +72,7 @@ def _media_from_node(node: dict) -> list[tuple[str, str]]:
             return out
     if node.get("is_video"):
         url = node.get("video_url")
-        if url:
-            return [("video", url)]
+        return [("video", url)] if url else []
     img = _best_image_url(node)
     if img:
         return [("image", img)]

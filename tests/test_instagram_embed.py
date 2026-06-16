@@ -117,6 +117,16 @@ def test_media_from_empty_node_returns_empty():
     assert _media_from_node({"display_url": None}) == []
 
 
+def test_video_node_without_video_url_does_not_fall_back_to_cover():
+    node = {
+        "is_video": True,
+        "video_url": "",
+        "display_url": "https://instagram.example/cover.jpg",
+        "display_resources": [{"src": "https://instagram.example/cover.jpg", "config_width": 1080}],
+    }
+    assert _media_from_node(node) == []
+
+
 def test_parse_context_json_extracts_nested_json():
     payload = {"a": 1, "b": "hello"}
     inner_str = json.dumps(payload)
