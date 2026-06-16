@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1214-reels-do-instagram-vinham-como-imagem-capa-do-embed-atualizacao-yt-dlpinstagrapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.14 — Reels do Instagram vinham como imagem (capa do embed) + atualização yt-dlp/instagrapi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1213-reels-do-facebook-falhavam-por-nome-de-arquivo-longo-enametoolong" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1729,6 +1740,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1214-reels-do-instagram-vinham-como-imagem-capa-do-embed-atualizacao-yt-dlpinstagrapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.14 — Reels do Instagram vinham como imagem (capa do embed) + atualização yt-dlp/instagrapi
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1213-reels-do-facebook-falhavam-por-nome-de-arquivo-longo-enametoolong" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1925,6 +1947,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1214-reels-do-instagram-vinham-como-imagem-capa-do-embed-atualizacao-yt-dlpinstagrapi">v1.2.14 — Reels do Instagram vinham como imagem (capa do embed) + atualização yt-dlp/instagrapi<a class="headerlink" href="#v1214-reels-do-instagram-vinham-como-imagem-capa-do-embed-atualizacao-yt-dlpinstagrapi" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📸 <strong>Reels do Instagram voltam a vir como vídeo.</strong> O endpoint de embed (<code>/embed/captioned/</code>) passou a devolver, pra vários reels, <code>is_video=true</code> mas <strong>sem <code>video_url</code></strong> (só a capa em <code>display_url</code>/<code>display_resources</code>, <code>product_type=clips</code>). Em <code>_media_from_node</code> (<code>downloaders/instagram_embed.py</code>), como <code>is_video</code> era verdadeiro mas <code>video_url</code> vazio, o código <strong>caía no branch de imagem e retornava a capa</strong> — o embed tratava isso como sucesso e o dispatcher devolvia a imagem sem nunca tentar yt-dlp/Instagrapi (que pegam o vídeo). Corrigido: um nó marcado como vídeo nunca degrada pra capa — retorna vazio, o embed falha e o fallback assume. Confirmado: reels que vinham como <code>IG Embed (Imagem/Álbum)</code> agora são baixados em vídeo pelo yt-dlp.</li>
+<li>⬆️ <strong>yt-dlp <code>2026.3.17</code> → <code>2026.6.9</code> e instagrapi <code>2.3.0</code> → <code>2.16.0</code>.</strong> As duas libs que dirigem a extração de IG/FB estavam defasadas (instagrapi 13 versões atrás). Validado: <code>pip check</code> limpo, yt-dlp extrai reels reais, todos os métodos do instagrapi usados pelo bot (<code>media_pk_from_url</code>, <code>media_info</code>, <code>photo_download</code>, <code>video_download</code>, <code>album_download</code>, <code>login</code>, <code>dump_settings</code>, <code>load_settings</code>) presentes na 2.16.0. Pillow <code>11.3.0</code> → <code>12.2.0</code> e requests <code>2.32.5</code> → <code>2.34.2</code> subiram como dependências transitivas do instagrapi.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Teste de regressão em <code>tests/test_instagram_embed.py</code> (nó de vídeo sem <code>video_url</code> não cai pra capa)</li>
+</ul>
 <h2 id="v1213-reels-do-facebook-falhavam-por-nome-de-arquivo-longo-enametoolong">v1.2.13 — Reels do Facebook falhavam por nome de arquivo longo (ENAMETOOLONG)<a class="headerlink" href="#v1213-reels-do-facebook-falhavam-por-nome-de-arquivo-longo-enametoolong" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2205,7 +2237,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="7 de junho de 2026 05:03:32 UTC"><span class="timeago" datetime="2026-06-07T05:03:32+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="7 de junho de 2026 05:03:32 UTC">2026-06-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="16 de junho de 2026 19:44:54 UTC"><span class="timeago" datetime="2026-06-16T19:44:54+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="16 de junho de 2026 19:44:54 UTC">2026-06-16</span>
   </span>
 
     
