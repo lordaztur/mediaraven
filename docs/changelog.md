@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.15 — Foto única do Instagram falhava (Instagrapi re-buscava pelo GraphQL público bloqueado)
+
+**Major changes:**
+
+- 📸 **Posts de foto única do Instagram voltam a baixar.** O bot já obtinha o `media_info` pela API privada autenticada (`i.instagram.com/api/v1/media/{pk}/info/`, funciona), mas pra foto única (`media_type == 1`) chamava `photo_download(media_pk)`, que internamente **re-busca os metadados pelo GraphQL público** (`media_info_gql`). O Instagram fechou esse endpoint público: ele agora responde `401 Unauthorized`, o instagrapi devolve `None` e o download estourava `AttributeError: 'NoneType' object has no attribute 'get'`. Resultado prático: o usuário mandava uma foto e recebia erro/"exige login" ou a capa do embed, mesmo com a conta logada. Vídeos e álbuns nunca foram afetados porque `video_download`/`album_download` usam a API privada (`media_info_v1`/`media_info`), não o GraphQL público — só o caminho de foto única usava `media_info_gql`.
+- 🔧 **Correção:** foto única agora baixa via `photo_download_by_url(media_info.thumbnail_url)`, reusando o `media_info` que já temos da API privada — o re-fetch pelo GraphQL público bloqueado é eliminado. Validado ao vivo contra o post que falhava: baixa a imagem real (1311×1452 JPEG) em vez de erro.
+
+**Adicionado:**
+
+- `tests/test_instagram_instagrapi.py` — teste de regressão garantindo que foto única usa `photo_download_by_url` e nunca `photo_download(media_pk)`
+
 ## v1.2.14 — Reels do Instagram vinham como imagem (capa do embed) + atualização yt-dlp/instagrapi
 
 **Major changes:**

@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.15 — Single-photo Instagram posts failed (Instagrapi re-fetched via the blocked public GraphQL)
+
+**Major changes:**
+
+- 📸 **Single-photo Instagram posts download again.** The bot already fetched `media_info` via the authenticated private API (`i.instagram.com/api/v1/media/{pk}/info/`, works), but for a single photo (`media_type == 1`) it called `photo_download(media_pk)`, which internally **re-fetches the metadata via the public GraphQL** (`media_info_gql`). Instagram locked that public endpoint down: it now returns `401 Unauthorized`, instagrapi returns `None`, and the download blew up with `AttributeError: 'NoneType' object has no attribute 'get'`. Practical result: the user sent a photo and got an error/"login required" or the embed cover, even while the account was logged in. Videos and albums were never affected because `video_download`/`album_download` use the private API (`media_info_v1`/`media_info`), not the public GraphQL — only the single-photo path used `media_info_gql`.
+- 🔧 **Fix:** single photos now download via `photo_download_by_url(media_info.thumbnail_url)`, reusing the `media_info` we already have from the private API — the re-fetch via the blocked public GraphQL is eliminated. Validated live against the failing post: downloads the real image (1311×1452 JPEG) instead of an error.
+
+**Added:**
+
+- `tests/test_instagram_instagrapi.py` — regression test ensuring single photos use `photo_download_by_url` and never `photo_download(media_pk)`
+
 ## v1.2.14 — Instagram Reels came through as images (embed cover) + yt-dlp/instagrapi update
 
 **Major changes:**
