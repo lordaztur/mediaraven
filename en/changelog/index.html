@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1215-single-photo-instagram-posts-failed-instagrapi-re-fetched-via-the-blocked-public-graphql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.15 — Single-photo Instagram posts failed (Instagrapi re-fetched via the blocked public GraphQL)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1214-instagram-reels-came-through-as-images-embed-cover-yt-dlpinstagrapi-update" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1742,6 +1753,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1215-single-photo-instagram-posts-failed-instagrapi-re-fetched-via-the-blocked-public-graphql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.15 — Single-photo Instagram posts failed (Instagrapi re-fetched via the blocked public GraphQL)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1214-instagram-reels-came-through-as-images-embed-cover-yt-dlpinstagrapi-update" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1949,6 +1971,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1215-single-photo-instagram-posts-failed-instagrapi-re-fetched-via-the-blocked-public-graphql">v1.2.15 — Single-photo Instagram posts failed (Instagrapi re-fetched via the blocked public GraphQL)<a class="headerlink" href="#v1215-single-photo-instagram-posts-failed-instagrapi-re-fetched-via-the-blocked-public-graphql" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📸 <strong>Single-photo Instagram posts download again.</strong> The bot already fetched <code>media_info</code> via the authenticated private API (<code>i.instagram.com/api/v1/media/{pk}/info/</code>, works), but for a single photo (<code>media_type == 1</code>) it called <code>photo_download(media_pk)</code>, which internally <strong>re-fetches the metadata via the public GraphQL</strong> (<code>media_info_gql</code>). Instagram locked that public endpoint down: it now returns <code>401 Unauthorized</code>, instagrapi returns <code>None</code>, and the download blew up with <code>AttributeError: 'NoneType' object has no attribute 'get'</code>. Practical result: the user sent a photo and got an error/"login required" or the embed cover, even while the account was logged in. Videos and albums were never affected because <code>video_download</code>/<code>album_download</code> use the private API (<code>media_info_v1</code>/<code>media_info</code>), not the public GraphQL — only the single-photo path used <code>media_info_gql</code>.</li>
+<li>🔧 <strong>Fix:</strong> single photos now download via <code>photo_download_by_url(media_info.thumbnail_url)</code>, reusing the <code>media_info</code> we already have from the private API — the re-fetch via the blocked public GraphQL is eliminated. Validated live against the failing post: downloads the real image (1311×1452 JPEG) instead of an error.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li><code>tests/test_instagram_instagrapi.py</code> — regression test ensuring single photos use <code>photo_download_by_url</code> and never <code>photo_download(media_pk)</code></li>
+</ul>
 <h2 id="v1214-instagram-reels-came-through-as-images-embed-cover-yt-dlpinstagrapi-update">v1.2.14 — Instagram Reels came through as images (embed cover) + yt-dlp/instagrapi update<a class="headerlink" href="#v1214-instagram-reels-came-through-as-images-embed-cover-yt-dlpinstagrapi-update" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2239,7 +2271,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 16, 2026 19:44:54 UTC"><span class="timeago" datetime="2026-06-16T19:44:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 16, 2026 19:44:54 UTC">2026-06-16</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 29, 2026 16:35:51 UTC"><span class="timeago" datetime="2026-06-29T16:35:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 29, 2026 16:35:51 UTC">2026-06-29</span>
   </span>
 
     
