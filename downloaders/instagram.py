@@ -71,7 +71,8 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
 
             paths = []
             if media_info.media_type == 1:
-                paths.append(str(state.IG_CLIENT.photo_download(media_pk, folder=unique_folder)))
+                paths.append(str(state.IG_CLIENT.photo_download_by_url(
+                    str(media_info.thumbnail_url), folder=unique_folder)))
             elif media_info.media_type == 2:
                 paths.append(str(state.IG_CLIENT.video_download(media_pk, folder=unique_folder)))
             elif media_info.media_type == 8:
