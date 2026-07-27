@@ -37,6 +37,7 @@
     "hls_only_height_cap": "📺 HLS-only detected, using conservative height cap: {height}p",
     "tbr_cap": "📐 Bitrate cap applied: tbr<={max_tbr}kbps (duration {duration}s, cap {cap_mb}MB)",
     "pre_extract_falhou": "⚠️ Pre-extract failed on attempt '{mode}': {e}",
+    "live_detectada": "🔴 Live detected ({reason}); cancelling download.",
     "unrecoverable_reason": "🛑 yt-dlp reported unrecoverable error: {reason}"
   },
   "dispatcher": {

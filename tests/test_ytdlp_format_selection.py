@@ -1,10 +1,46 @@
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from yt_dlp import YoutubeDL
 
 from downloaders import _ytdlp
 from downloaders._platform import Platform
+
+
+@pytest.mark.parametrize("info,expected", [
+    ({"live_status": "is_live"}, "live_in_progress"),
+    ({"is_live": True}, "live_in_progress"),
+    ({"is_live": True, "live_status": "is_live"}, "live_in_progress"),
+    ({"live_status": "is_upcoming"}, "live_not_started"),
+    ({"live_status": "was_live"}, None),
+    ({"live_status": "post_live"}, None),
+    ({"live_status": "not_live"}, None),
+    ({"is_live": False}, None),
+    ({}, None),
+    (None, None),
+])
+def test_live_reason(info, expected):
+    assert _ytdlp._live_reason(info) == expected
+
+
+@pytest.mark.asyncio
+async def test_run_ytdlp_cancels_download_on_live(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        _ytdlp, "_pre_extract",
+        AsyncMock(return_value={"live_status": "is_live", "title": "LIVE AGORA"}),
+    )
+    extract_spy = MagicMock()
+    monkeypatch.setattr(_ytdlp, "_yt_dlp_extract", extract_spy)
+
+    files, info, reason = await _ytdlp._run_ytdlp_with_cookie_fallback(
+        {}, "https://youtube.com/watch?v=abc", str(tmp_path / "nope"),
+        has_firefox_cookie=False, target_lang=None, platform=Platform(youtube=True),
+    )
+
+    assert files == []
+    assert reason == "live_in_progress"
+    extract_spy.assert_not_called()
 
 
 def test_base_opts_outtmpl_truncates_long_title():

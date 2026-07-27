@@ -57,6 +57,19 @@ def _is_hls_only(formats: list[dict]) -> bool:
     return has_video
 
 
+def _live_reason(info: Optional[dict]) -> Optional[str]:
+    if not isinstance(info, dict):
+        return None
+    status = info.get('live_status')
+    if status == 'is_live':
+        return 'live_in_progress'
+    if status == 'is_upcoming':
+        return 'live_not_started'
+    if info.get('is_live') and status not in ('was_live', 'post_live', 'not_live'):
+        return 'live_in_progress'
+    return None
+
+
 def _build_format_selector(
     height: int,
     cap_mb: int,
@@ -292,6 +305,10 @@ async def _run_ytdlp_with_cookie_fallback(
 
         if platform is not None:
             info_for_select = pre_info or (None if platform.reddit else await _pre_extract(base_opts, url, mode))
+            live_reason = _live_reason(info_for_select)
+            if live_reason:
+                logger.info(lmsg("_ytdlp.live_detectada", reason=live_reason))
+                return [], info_for_select or {}, live_reason
             _apply_format_selection(
                 current_opts, platform, target_lang,
                 info=info_for_select, use_impersonate=use_imp,

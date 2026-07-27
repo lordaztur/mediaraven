@@ -64,6 +64,7 @@
     "ytdlp_age_restricted": "🔞 Vídeo com restrição de idade.",
     "ytdlp_sign_in_required": "🔑 Vídeo exige login (conta não tem acesso).",
     "ytdlp_live_not_started": "📅 Live ainda não começou.",
+    "ytdlp_live_in_progress": "🔴 Live em andamento. Download cancelado.",
     "ytdlp_rate_limited": "⏳ Rate-limited pela plataforma. Tente daqui a pouco.",
     "threads_fail": "⚠️ Falha ao processar este link do Threads.",
     "generic_fail": "❌ Não foi possível baixar a mídia.",
