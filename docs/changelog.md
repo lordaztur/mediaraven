@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.16 — Detecta live em andamento e cancela o download
+
+**Major changes:**
+
+- 🔴 **Lives em andamento agora são detectadas e o download é cancelado.** O bot já fazia um pre-extract (`extract_info(download=False)`) antes de baixar; aproveitando isso, o novo `_live_reason(info)` (`downloaders/_ytdlp.py`) lê `live_status`/`is_live` do yt-dlp: `is_live`/`live_status=="is_live"` → `live_in_progress` (cancela); `live_status=="is_upcoming"` → `live_not_started` (barra também live agendada); `was_live`/`post_live`/`not_live` → segue normal (VOD de live encerrada continua baixável). Assim que a live é identificada, `_run_ytdlp_with_cookie_fallback` retorna o motivo **antes de tentar baixar** — o download de fato nem é iniciado. O dispatcher já trata `unrecoverable_reason`, então mostra a mensagem e pula os fallbacks. Motivo: baixar uma live em andamento trava/consome recursos sem nunca finalizar.
+- 💬 Nova mensagem de status `🔴 Live em andamento. Download cancelado.` (PT/EN) e log `🔴 Live detectada (...); cancelando download.`
+
+**Adicionado:**
+
+- 10 casos de teste para `_live_reason` + teste async provando que o download (`_yt_dlp_extract`) não é chamado quando a live é detectada, em `tests/test_ytdlp_format_selection.py`
+
 ## v1.2.15 — Foto única do Instagram falhava (Instagrapi re-buscava pelo GraphQL público bloqueado)
 
 **Major changes:**

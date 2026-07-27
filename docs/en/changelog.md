@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.16 — Detect ongoing live and cancel the download
+
+**Major changes:**
+
+- 🔴 **Ongoing live streams are now detected and the download is cancelled.** The bot already ran a pre-extract (`extract_info(download=False)`) before downloading; leveraging that, the new `_live_reason(info)` (`downloaders/_ytdlp.py`) reads yt-dlp's `live_status`/`is_live`: `is_live`/`live_status=="is_live"` → `live_in_progress` (cancel); `live_status=="is_upcoming"` → `live_not_started` (also blocks scheduled lives); `was_live`/`post_live`/`not_live` → proceeds normally (a finished live's VOD stays downloadable). As soon as the live is identified, `_run_ytdlp_with_cookie_fallback` returns the reason **before attempting the download** — the actual download never starts. The dispatcher already handles `unrecoverable_reason`, so it shows the message and skips fallbacks. Rationale: downloading an ongoing live hangs/wastes resources and never completes.
+- 💬 New status message `🔴 Live in progress. Download cancelled.` (PT/EN) and log `🔴 Live detected (...); cancelling download.`
+
+**Added:**
+
+- 10 test cases for `_live_reason` + an async test proving the download (`_yt_dlp_extract`) is never called when a live is detected, in `tests/test_ytdlp_format_selection.py`
+
 ## v1.2.15 — Single-photo Instagram posts failed (Instagrapi re-fetched via the blocked public GraphQL)
 
 **Major changes:**
