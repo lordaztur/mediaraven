@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.17 — Links `/share/` do Threads voltam a baixar
+
+**Major changes:**
+
+- 🧵 **Links de compartilhamento do Threads (`threads.com/share/XXXX`) voltam a baixar.** O formato novo de share não expõe o código do post na URL, então `_extract_post_code` (regex `/post/(...)`) falhava e o bot abortava com "Não consegui extrair código do post da URL" antes mesmo de carregar a página. O `/share/` não faz redirect HTTP (responde 200 e redireciona via JS), mas o Playwright — que o Threads já usa — segue o redirect: após carregar, `page.url` vira a URL canônica (`/@user/post/CODE`). **Correção:** `_fetch_html` agora também devolve a URL final, e o novo `_resolve_post_code` obtém o código na ordem url → URL final (pós-redirect) → `og:url` do HTML. Links `/@user/post/CODE` normais seguem funcionando igual. Validado ponta a ponta: um `/share/` real resolve pra `Db0CFC1jJmq` e extrai o vídeo.
+
+**Adicionado:**
+
+- `_resolve_post_code` e `_OG_URL_RE` em `downloaders/threads.py`; `_fetch_html` retorna `(html, final_url)`
+- 4 testes de `_resolve_post_code` em `tests/test_threads.py` (url direta, URL final pós-share, fallback `og:url`, irresolvível)
+
 ## v1.2.16 — Detecta live em andamento e cancela o download
 
 **Major changes:**
