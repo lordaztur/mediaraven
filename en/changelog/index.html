@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1217-threads-share-links-download-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.17 — Threads /share/ links download again
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1216-detect-ongoing-live-and-cancel-the-download" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1764,6 +1775,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1217-threads-share-links-download-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.17 — Threads /share/ links download again
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1216-detect-ongoing-live-and-cancel-the-download" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1993,6 +2015,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1217-threads-share-links-download-again">v1.2.17 — Threads <code>/share/</code> links download again<a class="headerlink" href="#v1217-threads-share-links-download-again" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🧵 <strong>Threads share links (<code>threads.com/share/XXXX</code>) download again.</strong> The new share format doesn't expose the post code in the URL, so <code>_extract_post_code</code> (regex <code>/post/(...)</code>) failed and the bot bailed with "couldn't extract post code from URL" before even loading the page. The <code>/share/</code> link does no HTTP redirect (it returns 200 and redirects via JS), but Playwright — which Threads already uses — follows the redirect: after loading, <code>page.url</code> becomes the canonical URL (<code>/@user/post/CODE</code>). <strong>Fix:</strong> <code>_fetch_html</code> now also returns the final URL, and the new <code>_resolve_post_code</code> obtains the code in order url → final URL (post-redirect) → <code>og:url</code> from the HTML. Normal <code>/@user/post/CODE</code> links keep working the same. Validated end-to-end: a real <code>/share/</code> resolves to <code>Db0CFC1jJmq</code> and extracts the video.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li><code>_resolve_post_code</code> and <code>_OG_URL_RE</code> in <code>downloaders/threads.py</code>; <code>_fetch_html</code> returns <code>(html, final_url)</code></li>
+<li>4 <code>_resolve_post_code</code> tests in <code>tests/test_threads.py</code> (direct url, post-share final URL, <code>og:url</code> fallback, unresolvable)</li>
+</ul>
 <h2 id="v1216-detect-ongoing-live-and-cancel-the-download">v1.2.16 — Detect ongoing live and cancel the download<a class="headerlink" href="#v1216-detect-ongoing-live-and-cancel-the-download" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2303,7 +2335,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 27, 2026 20:19:44 UTC"><span class="timeago" datetime="2026-07-27T20:19:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 27, 2026 20:19:44 UTC">2026-07-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 9, 2026 19:34:57 UTC"><span class="timeago" datetime="2026-08-09T19:34:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 9, 2026 19:34:57 UTC">2026-08-09</span>
   </span>
 
     
