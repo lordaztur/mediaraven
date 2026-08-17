@@ -230,6 +230,39 @@ def test_expand_attempts_youtube_and_other_skip_no_imp_path():
         assert expanded == [('no_cookie', True), ('with_cookie', True)]
 
 
+@pytest.mark.parametrize("url", [
+    "https://www.tiktok.com/@g1/video/7633238536191364353",
+    "https://vt.tiktok.com/ZSX7fMpYn",
+    "https://vm.tiktok.com/abc123/",
+])
+def test_detect_platform_recognizes_tiktok(url):
+    from downloaders._platform import _detect_platform
+    assert _detect_platform(url).tiktok is True
+
+
+def test_detect_platform_non_tiktok_is_false():
+    from downloaders._platform import _detect_platform
+    assert _detect_platform("https://www.youtube.com/watch?v=x").tiktok is False
+
+
+def test_attempt_order_tiktok_prioritizes_cookies():
+    tiktok = Platform(tiktok=True)
+    assert _ytdlp._attempt_order(True, None, tiktok) == ["with_cookie", "no_cookie"]
+    assert _ytdlp._attempt_order(False, None, tiktok) == ["no_cookie"]
+
+
+def test_attempt_order_non_tiktok_keeps_no_cookie_first():
+    assert _ytdlp._attempt_order(True, None, Platform(youtube=True)) == ["no_cookie", "with_cookie"]
+    assert _ytdlp._attempt_order(True, None, None) == ["no_cookie", "with_cookie"]
+
+
+def test_apply_format_selection_tiktok_sets_impersonate():
+    opts = {}
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, Platform(tiktok=True), None, use_impersonate=True)
+    assert 'impersonate' in opts
+
+
 def test_classify_ytdlp_errors_private():
     err = ["ERROR: [youtube] xyz: Private video. Sign in if you've been granted access"]
     assert _ytdlp._classify_ytdlp_errors(err) == 'private'

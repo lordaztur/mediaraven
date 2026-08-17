@@ -97,7 +97,7 @@ async def _run_platform_fallbacks(
 
 
 def _platform_label(platform: Platform) -> str:
-    for name in ('youtube', 'instagram', 'threads', 'reddit', 'facebook', 'x'):
+    for name in ('youtube', 'instagram', 'threads', 'reddit', 'facebook', 'x', 'tiktok'):
         if getattr(platform, name):
             return name
     return 'other'

@@ -134,7 +134,7 @@ def _apply_format_selection(
         )
         opts['merge_output_format'] = 'mp4'
 
-    if use_impersonate and (platform.facebook or platform.instagram or platform.reddit):
+    if use_impersonate and (platform.facebook or platform.instagram or platform.reddit or platform.tiktok):
         opts['impersonate'] = ImpersonateTarget('chrome')
     elif not use_impersonate:
         opts.pop('impersonate', None)
@@ -241,9 +241,12 @@ def _wipe_folder(folder: str) -> None:
                 logger.debug(lmsg("_ytdlp.falha_ao_remover", full_path=full_path, e=e))
 
 
-def _attempt_order(has_firefox_cookie: bool, target_lang: Optional[str]) -> list[str]:
+def _attempt_order(
+    has_firefox_cookie: bool, target_lang: Optional[str], platform: Optional[Platform] = None,
+) -> list[str]:
     attempts: list[str] = []
-    if target_lang and target_lang != 'original':
+    cookie_first = bool(target_lang and target_lang != 'original') or bool(platform and platform.tiktok)
+    if cookie_first:
         if has_firefox_cookie:
             attempts.append("with_cookie")
         attempts.append("no_cookie")
@@ -293,7 +296,7 @@ async def _run_ytdlp_with_cookie_fallback(
     all_errors: list[str] = []
 
     last_exc: Optional[BaseException] = None
-    base_attempts = _attempt_order(has_firefox_cookie, target_lang)
+    base_attempts = _attempt_order(has_firefox_cookie, target_lang, platform)
     expanded_attempts = _expand_attempts_with_impersonate(base_attempts, platform)
     for mode, use_imp in expanded_attempts:
         _wipe_folder(unique_folder)

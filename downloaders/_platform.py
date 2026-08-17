@@ -18,6 +18,7 @@ class Platform:
     reddit: bool = False
     facebook: bool = False
     x: bool = False
+    tiktok: bool = False
 
 
 _PLATFORM_HOSTS = {
@@ -27,6 +28,7 @@ _PLATFORM_HOSTS = {
     'reddit': ('reddit.com', 'redd.it', 'old.reddit.com', 'new.reddit.com'),
     'facebook': ('facebook.com', 'fb.com', 'fb.watch', 'm.facebook.com'),
     'x': ('x.com', 'twitter.com', 'mobile.twitter.com', 'fxtwitter.com', 'vxtwitter.com', 'fixupx.com'),
+    'tiktok': ('tiktok.com', 'vt.tiktok.com', 'vm.tiktok.com'),
 }
 
 
@@ -51,6 +53,7 @@ def _detect_platform(url: str) -> Platform:
         reddit=_host_matches(host, _PLATFORM_HOSTS['reddit']),
         facebook=_host_matches(host, _PLATFORM_HOSTS['facebook']),
         x=_host_matches(host, _PLATFORM_HOSTS['x']),
+        tiktok=_host_matches(host, _PLATFORM_HOSTS['tiktok']),
     )
 
 
