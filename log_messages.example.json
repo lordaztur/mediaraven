@@ -47,6 +47,9 @@
     "deno_js_engine": "🦕 Deno JS Engine ativado para bypass do YouTube: {arg0}",
     "falha_no_yt": "⚠️ Falha no yt-dlp para {arg0}. Iniciando Fallbacks.",
     "unrecoverable_try_instagrapi": "🔑 yt-dlp reportou {reason} pra {url}; tentando Instagrapi autenticado antes de desistir.",
+    "reddit_link_redispatch": "🔗 Post do Reddit é link pra alvo conhecido; re-despachando como se fosse enviado direto: {url}",
+    "reddit_link_card": "🔗 Post do Reddit é link externo (notícia); enviando thumb + título + link: {url}",
+    "reddit_link_thumb_falhou": "⚠️ Falha ao baixar thumb do link externo do Reddit: {e}",
     "unrecoverable_skip_fallbacks": "🛑 Erro não recuperável ({reason}) pra {url}; pulando fallbacks (evita scraper pegar logo da página de erro).",
     "facebook_owner_mismatch": "⚠️ yt-dlp retornou conteúdo de uploader diferente do post original: URL uid={url_uid} vs yt-dlp uid={yt_uid} ({yt_uploader}). Descartando."
   },

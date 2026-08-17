@@ -6,11 +6,12 @@ import logging
 import os
 import time
 from typing import Optional
+from urllib.parse import urlparse
 
 import metrics
 import state
 from config import FIREFOX_PROFILE_PATH
-from utils import safe_url
+from utils import async_download_file, normalize_image, safe_url
 
 from messages import lmsg, msg
 
@@ -23,6 +24,7 @@ from ._languages import (
 from ._platform import (
     Platform,
     _detect_platform,
+    _is_kwai_host,
     _normalize_youtube_url,
     _resolve_facebook_share_url,
     _resolve_kwai_url,
@@ -42,7 +44,7 @@ from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_o
 from .fallback import fetch_article_caption, scrape_fallback
 from .instagram import download_instagram_instagrapi
 from .instagram_embed import download_instagram_embed
-from .reddit_json import download_reddit_json
+from .reddit_json import download_reddit_json, resolve_reddit_external_link
 from .reddit_playwright import download_reddit_playwright
 from .threads import download_threads
 from .x import download_x
@@ -103,6 +105,41 @@ def _platform_label(platform: Platform) -> str:
     return 'other'
 
 
+def _is_known_media_target(url: str) -> bool:
+    """True se o link externo aponta pra um alvo que o mediaraven sabe baixar
+    (plataforma dedicada ou kwai) — nesse caso re-despachamos como se o link
+    tivesse sido enviado direto."""
+    p = _detect_platform(url)
+    if p.youtube or p.instagram or p.tiktok or p.x or p.facebook or p.threads:
+        return True
+    try:
+        host = (urlparse(url).netloc or '').lower()
+    except Exception:
+        return False
+    return _is_kwai_host(host)
+
+
+async def _reddit_news_card(
+    link: dict, unique_folder: str, platform_label: str, started: float,
+) -> tuple[list, str, str, str, bool]:
+    news_url = link['external_url']
+    files: list[str] = []
+    thumb = link.get('thumbnail_url')
+    if thumb:
+        thumb_path = os.path.join(unique_folder, 'reddit_link_thumb.jpg')
+        try:
+            if await async_download_file(thumb, thumb_path):
+                normalized = normalize_image(thumb_path, min_size=1)
+                if normalized:
+                    files = [normalized]
+        except Exception as e:
+            logger.debug(lmsg("dispatcher.reddit_link_thumb_falhou", e=e))
+    caption_short, caption_full = _build_caption({'title': link.get('title') or ''}, news_url)
+    metrics.record_success(platform_label, time.monotonic() - started)
+    logger.info(lmsg("dispatcher.reddit_link_card", url=safe_url(news_url)))
+    return files, msg("downloader_status.reddit_link_card"), caption_short, caption_full, True
+
+
 def _caption_is_weak(caption: str) -> bool:
     if not caption or not caption.strip():
         return True
@@ -144,6 +181,7 @@ async def download_media(
     unique_folder: str,
     target_lang: Optional[str] = None,
     detect_languages: bool = True,
+    _depth: int = 0,
 ) -> tuple[list, str, str, str, bool]:
     started = time.monotonic()
     platform_label = 'other'
@@ -188,7 +226,19 @@ async def download_media(
                 return await _finalize_success(embed_files, embed_status, embed_short, embed_full, url, platform_label, started)
 
         if platform.reddit:
-            rj_files, rj_status, rj_short, rj_full = await download_reddit_json(url, unique_folder)
+            link, reddit_post_data = await resolve_reddit_external_link(url)
+            if link and link.get('external_url'):
+                inner_url = link['external_url']
+                if _depth < 2 and _is_known_media_target(inner_url):
+                    logger.info(lmsg("dispatcher.reddit_link_redispatch", url=safe_url(inner_url)))
+                    return await download_media(
+                        inner_url, unique_folder, target_lang, detect_languages, _depth + 1,
+                    )
+                return await _reddit_news_card(link, unique_folder, platform_label, started)
+
+            rj_files, rj_status, rj_short, rj_full = await download_reddit_json(
+                url, unique_folder, post_data=reddit_post_data,
+            )
             if rj_files:
                 return await _finalize_success(rj_files, rj_status, rj_short, rj_full, url, platform_label, started)
 

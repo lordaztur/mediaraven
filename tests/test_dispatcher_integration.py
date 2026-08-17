@@ -106,7 +106,7 @@ async def test_download_media_reddit_tries_json_first(tmp_folder):
     reddit_json_file = os.path.join(tmp_folder, "rj.jpg")
     call_order = []
 
-    async def reddit_json_mock(url, folder):
+    async def reddit_json_mock(url, folder, post_data=None):
         call_order.append("json")
         return [reddit_json_file], "OK_JSON", "OK_CAP", "OK_CAP_FULL"
 
@@ -124,6 +124,7 @@ async def test_download_media_reddit_tries_json_first(tmp_folder):
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "resolve_reddit_external_link", new=AsyncMock(return_value=(None, None))), \
          patch.object(dispatcher, "download_reddit_json", new=AsyncMock(side_effect=reddit_json_mock)), \
          patch.object(dispatcher, "download_reddit_playwright", new=AsyncMock(side_effect=reddit_pw_mock)), \
          patch.object(dispatcher, "scrape_fallback", new=AsyncMock(side_effect=scrape_mock)):
@@ -145,7 +146,7 @@ async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
         f.write(b"x")
     call_order = []
 
-    async def reddit_json_mock(url, folder):
+    async def reddit_json_mock(url, folder, post_data=None):
         call_order.append("json")
         return [], "fail", "", ""
 
@@ -155,6 +156,7 @@ async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
 
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "resolve_reddit_external_link", new=AsyncMock(return_value=(None, None))), \
          patch.object(dispatcher, "download_reddit_json", new=AsyncMock(side_effect=reddit_json_mock)):
         files, status, short, full, is_article = await dispatcher.download_media(
             "https://reddit.com/r/foo/comments/y/", tmp_folder, target_lang=None
@@ -163,6 +165,58 @@ async def test_download_media_reddit_video_falls_back_to_ytdlp(tmp_folder):
     assert files == [video_file]
     assert call_order == ["json", "ytdlp"]
     assert "vídeo legal" in short
+
+
+@pytest.mark.asyncio
+async def test_reddit_external_known_target_redispatches(tmp_folder):
+    """Post do Reddit que é link pra YouTube -> baixa como se o YouTube fosse enviado."""
+    yt_file = os.path.join(tmp_folder, "yt.mp4")
+    with open(yt_file, "wb") as f:
+        f.write(b"x")
+    link = {"external_url": "https://youtu.be/abc123", "title": "t", "thumbnail_url": None}
+
+    async def ytdlp_mock(*a, **kw):
+        return [yt_file], {"title": "vídeo do youtube"}, None
+
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(side_effect=ytdlp_mock)), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "resolve_reddit_external_link", new=AsyncMock(return_value=(link, {}))), \
+         patch.object(dispatcher, "_detect_youtube_languages", new=AsyncMock(return_value=None)):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.reddit.com/r/videos/comments/x/", tmp_folder, target_lang=None
+        )
+
+    assert files == [yt_file]
+    assert "vídeo do youtube" in short
+
+
+@pytest.mark.asyncio
+async def test_reddit_external_news_returns_link_card(tmp_folder):
+    """Post do Reddit que é link de notícia -> thumb + título + link da notícia."""
+    thumb_file = os.path.join(tmp_folder, "reddit_link_thumb.jpg")
+    link = {
+        "external_url": "https://g1.globo.com/materia.html",
+        "title": "Manchete da Notícia",
+        "thumbnail_url": "https://preview.redd.it/x.jpg?s=abc",
+    }
+
+    async def fake_download(url, path):
+        with open(path, "wb") as f:
+            f.write(b"jpeg")
+        return True
+
+    with patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "resolve_reddit_external_link", new=AsyncMock(return_value=(link, {}))), \
+         patch.object(dispatcher, "async_download_file", new=AsyncMock(side_effect=fake_download)), \
+         patch.object(dispatcher, "normalize_image", new=lambda p, min_size=1: p):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.reddit.com/r/brasil/comments/y/", tmp_folder, target_lang=None
+        )
+
+    assert files == [thumb_file]
+    assert is_article is True
+    assert "Manchete da Notícia" in short
+    assert "g1.globo.com/materia.html" in full
 
 
 @pytest.mark.asyncio

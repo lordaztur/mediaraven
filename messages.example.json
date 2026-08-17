@@ -76,6 +76,7 @@
     "reddit_json_fail": "⚠️ Falha ao extrair imagens do Reddit.",
     "reddit_playwright": "👽 Playwright (Imagens)",
     "reddit_playwright_fail": "⚠️ Falha ao extrair imagens do Reddit.",
+    "reddit_link_card": "🔗 Link externo (notícia)",
     "threads_playwright": "🧵 Playwright Threads ({media_type})",
     "threads_text_only": "🧵 Threads (Texto)",
     "threads_playwright_fail": "⚠️ Falha ao extrair mídias do Threads.",

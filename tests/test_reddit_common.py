@@ -4,7 +4,64 @@ from downloaders.reddit_common import (
     clean_reddit_media_url,
     is_reddit_media_url,
     looks_like_image,
+    reddit_external_link,
 )
+
+
+def _news_post(**over):
+    base = {
+        "is_self": False,
+        "title": "Notícia importante",
+        "domain": "g1.globo.com",
+        "url_overridden_by_dest": "https://g1.globo.com/materia.html",
+        "url": "https://g1.globo.com/materia.html",
+        "preview": {"images": [{"source": {"url": "https://preview.redd.it/x.jpg?width=640&amp;s=abc"}}]},
+    }
+    base.update(over)
+    return base
+
+
+def test_reddit_external_link_news_returns_url_title_thumb():
+    out = reddit_external_link(_news_post())
+    assert out["external_url"] == "https://g1.globo.com/materia.html"
+    assert out["title"] == "Notícia importante"
+    assert out["thumbnail_url"] == "https://preview.redd.it/x.jpg?width=640&s=abc"
+
+
+def test_reddit_external_link_youtube_link():
+    out = reddit_external_link(_news_post(domain="youtube.com",
+                                         url_overridden_by_dest="https://youtu.be/abc",
+                                         url="https://youtu.be/abc"))
+    assert out["external_url"] == "https://youtu.be/abc"
+
+
+def test_reddit_external_link_none_for_self_post():
+    assert reddit_external_link(_news_post(is_self=True, domain="self.brasil")) is None
+
+
+def test_reddit_external_link_none_for_video():
+    assert reddit_external_link(_news_post(is_video=True)) is None
+    assert reddit_external_link(_news_post(post_hint="hosted:video")) is None
+
+
+def test_reddit_external_link_none_for_gallery():
+    assert reddit_external_link(_news_post(media_metadata={"a": {}})) is None
+
+
+def test_reddit_external_link_none_for_reddit_native_hosts():
+    for dest in ("https://i.redd.it/x.jpg", "https://v.redd.it/x", "https://www.reddit.com/r/a/comments/b/"):
+        assert reddit_external_link(_news_post(url_overridden_by_dest=dest, url=dest)) is None
+
+
+def test_reddit_external_link_none_for_direct_image():
+    assert reddit_external_link(_news_post(domain="imgur.com",
+                                           url_overridden_by_dest="https://i.imgur.com/x.jpg",
+                                           url="https://i.imgur.com/x.jpg")) is None
+
+
+def test_reddit_external_link_no_preview_thumb_is_none():
+    out = reddit_external_link(_news_post(preview={}))
+    assert out["thumbnail_url"] is None
 
 
 def test_clean_unescapes_entities():
