@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido
+
+**Major changes:**
+
+- 🔗 **Post do Reddit que é só um link externo agora é tratado pelo destino, não pela thumbnail solta.** Antes, um post-link (ex: notícia) caía no `download_reddit_json` que baixava a imagem de preview e enviava com o título/link do Reddit. Agora o dispatcher, antes de baixar, resolve o link externo do post (`resolve_reddit_external_link`, via o mesmo JSON do Reddit — reaproveitado pra não buscar duas vezes) e decide:
+  - **Alvo conhecido do mediaraven** (YouTube, Instagram, TikTok, X, Facebook, Threads, Kwai): **re-despacha** `download_media` no link interno — baixa a mídia como se aquele link tivesse sido enviado direto (com guarda de profundidade contra loop).
+  - **Link de notícia / site genérico**: envia um **card** com a **thumbnail** do post + **título** + **link pra notícia** (não o link do Reddit). A legenda vem incluída por padrão (tratado como artigo).
+- Mídia nativa do Reddit (imagens, galerias, vídeos, self-posts) segue exatamente o fluxo de antes — só links externos mudam de comportamento.
+
+**Adicionado:**
+
+- Helper puro `reddit_external_link(post_data)` em `downloaders/reddit_common.py` (classifica link externo vs mídia nativa)
+- `resolve_reddit_external_link(url)` em `downloaders/reddit_json.py` (retorna `(link, post_data)`, reaproveitando o fetch); `download_reddit_json` aceita `post_data` pré-buscado
+- `_is_known_media_target(url)` e `_reddit_news_card(...)` no dispatcher; `download_media` ganhou guarda de recursão `_depth`
+- Mensagem `downloader_status.reddit_link_card` (PT/EN) e 3 chaves de log do dispatcher
+- 10 testes (8 de `reddit_external_link` em `tests/test_reddit_common.py`, 2 de integração: re-despacho de alvo conhecido e card de notícia)
+
 ## v1.2.18 — TikTok: yt-dlp atualizado + cookies logados primeiro com impersonation
 
 **Contexto:** o TikTok passou a bloquear o IP do servidor com WAF/captcha. O yt-dlp 2026.6.9 nem tentava o novo desafio do TikTok (falha determinística "Unexpected response from webpage request"), e o fallback do scraper só pegava um preview de 2s (não o vídeo real). Bloqueio de IP não se resolve 100% por código, mas dá pra maximizar a chance com uma sessão logada.

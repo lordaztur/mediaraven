@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.19 — Reddit link posts: news card or re-dispatch of a known target
+
+**Major changes:**
+
+- 🔗 **A Reddit post that is just an external link is now handled by its destination, not by a stray thumbnail.** Previously a link post (e.g. a news article) fell into `download_reddit_json`, which downloaded the preview image and sent it with the Reddit title/link. Now the dispatcher, before downloading, resolves the post's external link (`resolve_reddit_external_link`, using the same Reddit JSON — reused so it isn't fetched twice) and decides:
+  - **Known mediaraven target** (YouTube, Instagram, TikTok, X, Facebook, Threads, Kwai): **re-dispatches** `download_media` on the inner link — downloads the media as if that link had been sent directly (with a depth guard against loops).
+  - **News / generic site link**: sends a **card** with the post's **thumbnail** + **title** + **link to the news** (not the Reddit link). The caption is included by default (treated as an article).
+- Reddit-native media (images, galleries, videos, self-posts) follows exactly the previous flow — only external links change behavior.
+
+**Added:**
+
+- Pure helper `reddit_external_link(post_data)` in `downloaders/reddit_common.py` (classifies external link vs native media)
+- `resolve_reddit_external_link(url)` in `downloaders/reddit_json.py` (returns `(link, post_data)`, reusing the fetch); `download_reddit_json` accepts pre-fetched `post_data`
+- `_is_known_media_target(url)` and `_reddit_news_card(...)` in the dispatcher; `download_media` gained a `_depth` recursion guard
+- `downloader_status.reddit_link_card` message (PT/EN) and 3 dispatcher log keys
+- 10 tests (8 for `reddit_external_link` in `tests/test_reddit_common.py`, 2 integration: known-target re-dispatch and news card)
+
 ## v1.2.18 — TikTok: yt-dlp updated + logged-in cookies first with impersonation
 
 **Context:** TikTok started blocking the server's IP with a WAF/captcha. yt-dlp 2026.6.9 didn't even attempt TikTok's new challenge (deterministic "Unexpected response from webpage request" failure), and the scraper fallback only grabbed a 2s preview (not the real video). An IP block can't be fully solved in code, but a logged-in session maximizes the odds.
