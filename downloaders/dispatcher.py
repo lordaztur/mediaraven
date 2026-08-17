@@ -6,7 +6,6 @@ import logging
 import os
 import time
 from typing import Optional
-from urllib.parse import urlparse
 
 import metrics
 import state
@@ -24,7 +23,6 @@ from ._languages import (
 from ._platform import (
     Platform,
     _detect_platform,
-    _is_kwai_host,
     _normalize_youtube_url,
     _resolve_facebook_share_url,
     _resolve_kwai_url,
@@ -103,20 +101,6 @@ def _platform_label(platform: Platform) -> str:
         if getattr(platform, name):
             return name
     return 'other'
-
-
-def _is_known_media_target(url: str) -> bool:
-    """True se o link externo aponta pra um alvo que o mediaraven sabe baixar
-    (plataforma dedicada ou kwai) — nesse caso re-despachamos como se o link
-    tivesse sido enviado direto."""
-    p = _detect_platform(url)
-    if p.youtube or p.instagram or p.tiktok or p.x or p.facebook or p.threads:
-        return True
-    try:
-        host = (urlparse(url).netloc or '').lower()
-    except Exception:
-        return False
-    return _is_kwai_host(host)
 
 
 async def _reddit_news_card(
@@ -227,13 +211,15 @@ async def download_media(
 
         if platform.reddit:
             link, reddit_post_data = await resolve_reddit_external_link(url)
-            if link and link.get('external_url'):
+            if link and link.get('external_url') and _depth < 2:
                 inner_url = link['external_url']
-                if _depth < 2 and _is_known_media_target(inner_url):
-                    logger.info(lmsg("dispatcher.reddit_link_redispatch", url=safe_url(inner_url)))
-                    return await download_media(
-                        inner_url, unique_folder, target_lang, detect_languages, _depth + 1,
-                    )
+                logger.info(lmsg("dispatcher.reddit_link_redispatch", url=safe_url(inner_url)))
+                r_files, r_status, r_short, r_full, r_art = await download_media(
+                    inner_url, unique_folder, target_lang, detect_languages, _depth + 1,
+                )
+                if r_files or r_short or r_full:
+                    return r_files, r_status, r_short, r_full, r_art
+                logger.info(lmsg("dispatcher.reddit_link_card", url=safe_url(inner_url)))
                 return await _reddit_news_card(link, unique_folder, platform_label, started)
 
             rj_files, rj_status, rj_short, rj_full = await download_reddit_json(
