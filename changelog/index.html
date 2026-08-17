@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.20 — Post de link do Reddit sempre re-despacha o link externo (notícia inclusa)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1795,6 +1806,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.20 — Post de link do Reddit sempre re-despacha o link externo (notícia inclusa)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2057,6 +2079,14 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa">v1.2.20 — Post de link do Reddit sempre re-despacha o link externo (notícia inclusa)<a class="headerlink" href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔗 <strong>Ajuste do comportamento do v1.2.19:</strong> agora <strong>todo</strong> link externo de um post do Reddit é baixado <strong>como se o próprio link tivesse sido enviado</strong> — não só os "alvos conhecidos". Antes, link de notícia virava um card só com thumbnail + título; agora ele re-despacha <code>download_media</code> no link da notícia, que passa pelo fluxo normal (yt-dlp → scraper/extração de artigo). Resultado prático: um post-link pra uma matéria vem com a <strong>imagem do artigo + título + corpo da notícia</strong> (via Scraper Deep Search / trafilatura), igual a mandar o link da notícia direto pro bot.</li>
+<li>🖼️ <strong>Card de thumbnail (thumb + título + link) virou fallback:</strong> só é usado se o re-despacho não trouxer <strong>nada</strong> (sem arquivos e sem legenda), garantindo que o usuário nunca fique sem resposta.</li>
+<li>Removido o <code>_is_known_media_target</code> (a distinção alvo-conhecido-vs-notícia não é mais necessária).</li>
+</ul>
+<p><strong>Validado ponta a ponta:</strong> post <code>r/Maromba/...fisiculturista...</code> → resolve pra <code>folha.uol.com.br</code> → yt-dlp "Unsupported URL" → scraper retorna a imagem do artigo + o corpo da matéria como legenda.</p>
 <h2 id="v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido">v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido<a class="headerlink" href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2405,7 +2435,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 16:44:21 UTC"><span class="timeago" datetime="2026-08-17T16:44:21+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 16:44:21 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 16:59:40 UTC"><span class="timeago" datetime="2026-08-17T16:59:40+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 16:59:40 UTC">2026-08-17</span>
   </span>
 
     
