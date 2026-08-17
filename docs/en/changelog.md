@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.21 — Optional proxy for TikTok (TIKTOK_PROXY)
+
+**Major changes:**
+
+- 🌐 **New `TIKTOK_PROXY` config** — routes **only** TikTok's yt-dlp requests through a proxy (TikTok blocks server/VPN IPs with a WAF). Applied in `_apply_format_selection` only when `platform.tiktok` and the env is set; impersonation (chrome) and logged-in cookies stay the same. Accepts `http://` and `socks5://`. Inert when empty — no behavior change without configuring. Typical use: a gluetun container with `HTTPPROXY=on` → `TIKTOK_PROXY=http://127.0.0.1:8888`.
+
+**Added:**
+
+- `TIKTOK_PROXY` constant in `config.py`; wiring in `downloaders/_ytdlp.py`
+- Docs in `.env_example`/`.en`
+- 3 tests in `tests/test_ytdlp_format_selection.py` (proxy set for TikTok only when configured; ignored when empty; ignored for other platforms)
+
+**Note:** TikTok blocks many VPN IP ranges (ProtonVPN included). Setting the proxy doesn't guarantee a bypass — you may need to switch the VPN exit country until you find an accepted IP.
+
 ## v1.2.20 — A Reddit link post always re-dispatches the external link (news included)
 
 **Major changes:**
