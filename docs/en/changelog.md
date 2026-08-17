@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.20 — A Reddit link post always re-dispatches the external link (news included)
+
+**Major changes:**
+
+- 🔗 **Adjusts the v1.2.19 behavior:** now **every** external link from a Reddit post is downloaded **as if the link itself had been sent** — not just "known targets". Previously a news link became a card with just thumbnail + title; now it re-dispatches `download_media` on the news link, which goes through the normal flow (yt-dlp → scraper/article extraction). Practical result: a link post to an article comes with the **article image + title + news body** (via Scraper Deep Search / trafilatura), same as sending the news link directly to the bot.
+- 🖼️ **The thumbnail card (thumb + title + link) is now a fallback:** used only if the re-dispatch returns **nothing** (no files and no caption), so the user is never left without a reply.
+- Removed `_is_known_media_target` (the known-target-vs-news distinction is no longer needed).
+
+**Validated end-to-end:** post `r/Maromba/...fisiculturista...` → resolves to `folha.uol.com.br` → yt-dlp "Unsupported URL" → scraper returns the article image + the news body as caption.
+
 ## v1.2.19 — Reddit link posts: news card or re-dispatch of a known target
 
 **Major changes:**

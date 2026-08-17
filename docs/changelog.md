@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.20 — Post de link do Reddit sempre re-despacha o link externo (notícia inclusa)
+
+**Major changes:**
+
+- 🔗 **Ajuste do comportamento do v1.2.19:** agora **todo** link externo de um post do Reddit é baixado **como se o próprio link tivesse sido enviado** — não só os "alvos conhecidos". Antes, link de notícia virava um card só com thumbnail + título; agora ele re-despacha `download_media` no link da notícia, que passa pelo fluxo normal (yt-dlp → scraper/extração de artigo). Resultado prático: um post-link pra uma matéria vem com a **imagem do artigo + título + corpo da notícia** (via Scraper Deep Search / trafilatura), igual a mandar o link da notícia direto pro bot.
+- 🖼️ **Card de thumbnail (thumb + título + link) virou fallback:** só é usado se o re-despacho não trouxer **nada** (sem arquivos e sem legenda), garantindo que o usuário nunca fique sem resposta.
+- Removido o `_is_known_media_target` (a distinção alvo-conhecido-vs-notícia não é mais necessária).
+
+**Validado ponta a ponta:** post `r/Maromba/...fisiculturista...` → resolve pra `folha.uol.com.br` → yt-dlp "Unsupported URL" → scraper retorna a imagem do artigo + o corpo da matéria como legenda.
+
 ## v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido
 
 **Major changes:**
