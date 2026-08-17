@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1219-reddit-link-posts-news-card-or-re-dispatch-of-a-known-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.19 — Reddit link posts: news card or re-dispatch of a known target
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1786,6 +1797,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1219-reddit-link-posts-news-card-or-re-dispatch-of-a-known-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.19 — Reddit link posts: news card or re-dispatch of a known target
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2037,6 +2059,22 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1219-reddit-link-posts-news-card-or-re-dispatch-of-a-known-target">v1.2.19 — Reddit link posts: news card or re-dispatch of a known target<a class="headerlink" href="#v1219-reddit-link-posts-news-card-or-re-dispatch-of-a-known-target" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔗 <strong>A Reddit post that is just an external link is now handled by its destination, not by a stray thumbnail.</strong> Previously a link post (e.g. a news article) fell into <code>download_reddit_json</code>, which downloaded the preview image and sent it with the Reddit title/link. Now the dispatcher, before downloading, resolves the post's external link (<code>resolve_reddit_external_link</code>, using the same Reddit JSON — reused so it isn't fetched twice) and decides:</li>
+<li><strong>Known mediaraven target</strong> (YouTube, Instagram, TikTok, X, Facebook, Threads, Kwai): <strong>re-dispatches</strong> <code>download_media</code> on the inner link — downloads the media as if that link had been sent directly (with a depth guard against loops).</li>
+<li><strong>News / generic site link</strong>: sends a <strong>card</strong> with the post's <strong>thumbnail</strong> + <strong>title</strong> + <strong>link to the news</strong> (not the Reddit link). The caption is included by default (treated as an article).</li>
+<li>Reddit-native media (images, galleries, videos, self-posts) follows exactly the previous flow — only external links change behavior.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>Pure helper <code>reddit_external_link(post_data)</code> in <code>downloaders/reddit_common.py</code> (classifies external link vs native media)</li>
+<li><code>resolve_reddit_external_link(url)</code> in <code>downloaders/reddit_json.py</code> (returns <code>(link, post_data)</code>, reusing the fetch); <code>download_reddit_json</code> accepts pre-fetched <code>post_data</code></li>
+<li><code>_is_known_media_target(url)</code> and <code>_reddit_news_card(...)</code> in the dispatcher; <code>download_media</code> gained a <code>_depth</code> recursion guard</li>
+<li><code>downloader_status.reddit_link_card</code> message (PT/EN) and 3 dispatcher log keys</li>
+<li>10 tests (8 for <code>reddit_external_link</code> in <code>tests/test_reddit_common.py</code>, 2 integration: known-target re-dispatch and news card)</li>
+</ul>
 <h2 id="v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation">v1.2.18 — TikTok: yt-dlp updated + logged-in cookies first with impersonation<a class="headerlink" href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" title="Permanent link">&para;</a></h2>
 <p><strong>Context:</strong> TikTok started blocking the server's IP with a WAF/captcha. yt-dlp 2026.6.9 didn't even attempt TikTok's new challenge (deterministic "Unexpected response from webpage request" failure), and the scraper fallback only grabbed a 2s preview (not the real video). An IP block can't be fully solved in code, but a logged-in session maximizes the odds.</p>
 <p><strong>Major changes:</strong></p>
@@ -2369,7 +2407,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 14:54:06 UTC"><span class="timeago" datetime="2026-08-17T14:54:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 14:54:06 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 16:44:21 UTC"><span class="timeago" datetime="2026-08-17T16:44:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 16:44:21 UTC">2026-08-17</span>
   </span>
 
     

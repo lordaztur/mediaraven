@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1218-tiktok-yt-dlp-atualizado-cookies-logados-primeiro-com-impersonation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1784,6 +1795,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1218-tiktok-yt-dlp-atualizado-cookies-logados-primeiro-com-impersonation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2035,6 +2057,22 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido">v1.2.19 — Posts de link do Reddit: card de notícia ou re-despacho do alvo conhecido<a class="headerlink" href="#v1219-posts-de-link-do-reddit-card-de-noticia-ou-re-despacho-do-alvo-conhecido" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔗 <strong>Post do Reddit que é só um link externo agora é tratado pelo destino, não pela thumbnail solta.</strong> Antes, um post-link (ex: notícia) caía no <code>download_reddit_json</code> que baixava a imagem de preview e enviava com o título/link do Reddit. Agora o dispatcher, antes de baixar, resolve o link externo do post (<code>resolve_reddit_external_link</code>, via o mesmo JSON do Reddit — reaproveitado pra não buscar duas vezes) e decide:</li>
+<li><strong>Alvo conhecido do mediaraven</strong> (YouTube, Instagram, TikTok, X, Facebook, Threads, Kwai): <strong>re-despacha</strong> <code>download_media</code> no link interno — baixa a mídia como se aquele link tivesse sido enviado direto (com guarda de profundidade contra loop).</li>
+<li><strong>Link de notícia / site genérico</strong>: envia um <strong>card</strong> com a <strong>thumbnail</strong> do post + <strong>título</strong> + <strong>link pra notícia</strong> (não o link do Reddit). A legenda vem incluída por padrão (tratado como artigo).</li>
+<li>Mídia nativa do Reddit (imagens, galerias, vídeos, self-posts) segue exatamente o fluxo de antes — só links externos mudam de comportamento.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Helper puro <code>reddit_external_link(post_data)</code> em <code>downloaders/reddit_common.py</code> (classifica link externo vs mídia nativa)</li>
+<li><code>resolve_reddit_external_link(url)</code> em <code>downloaders/reddit_json.py</code> (retorna <code>(link, post_data)</code>, reaproveitando o fetch); <code>download_reddit_json</code> aceita <code>post_data</code> pré-buscado</li>
+<li><code>_is_known_media_target(url)</code> e <code>_reddit_news_card(...)</code> no dispatcher; <code>download_media</code> ganhou guarda de recursão <code>_depth</code></li>
+<li>Mensagem <code>downloader_status.reddit_link_card</code> (PT/EN) e 3 chaves de log do dispatcher</li>
+<li>10 testes (8 de <code>reddit_external_link</code> em <code>tests/test_reddit_common.py</code>, 2 de integração: re-despacho de alvo conhecido e card de notícia)</li>
+</ul>
 <h2 id="v1218-tiktok-yt-dlp-atualizado-cookies-logados-primeiro-com-impersonation">v1.2.18 — TikTok: yt-dlp atualizado + cookies logados primeiro com impersonation<a class="headerlink" href="#v1218-tiktok-yt-dlp-atualizado-cookies-logados-primeiro-com-impersonation" title="Permanent link">&para;</a></h2>
 <p><strong>Contexto:</strong> o TikTok passou a bloquear o IP do servidor com WAF/captcha. O yt-dlp 2026.6.9 nem tentava o novo desafio do TikTok (falha determinística "Unexpected response from webpage request"), e o fallback do scraper só pegava um preview de 2s (não o vídeo real). Bloqueio de IP não se resolve 100% por código, mas dá pra maximizar a chance com uma sessão logada.</p>
 <p><strong>Major changes:</strong></p>
@@ -2367,7 +2405,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 14:54:06 UTC"><span class="timeago" datetime="2026-08-17T14:54:06+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 14:54:06 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 16:44:21 UTC"><span class="timeago" datetime="2026-08-17T16:44:21+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 16:44:21 UTC">2026-08-17</span>
   </span>
 
     
