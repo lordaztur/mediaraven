@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1221-proxy-opcional-para-o-tiktok-tiktok_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.21 — Proxy opcional para o TikTok (TIKTOK_PROXY)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1806,6 +1817,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1221-proxy-opcional-para-o-tiktok-tiktok_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.21 — Proxy opcional para o TikTok (TIKTOK_PROXY)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2079,6 +2101,18 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1221-proxy-opcional-para-o-tiktok-tiktok_proxy">v1.2.21 — Proxy opcional para o TikTok (TIKTOK_PROXY)<a class="headerlink" href="#v1221-proxy-opcional-para-o-tiktok-tiktok_proxy" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🌐 <strong>Nova config <code>TIKTOK_PROXY</code></strong> — roteia <strong>só</strong> as requisições do TikTok no yt-dlp por um proxy (o TikTok bloqueia IPs de servidor/VPN com WAF). Aplicado em <code>_apply_format_selection</code> apenas quando <code>platform.tiktok</code> e a env está setada; impersonation (chrome) e cookies logados continuam iguais. Aceita <code>http://</code> e <code>socks5://</code>. Inerte quando vazio — nenhuma mudança de comportamento sem configurar. Uso típico: um container gluetun com <code>HTTPPROXY=on</code> → <code>TIKTOK_PROXY=http://127.0.0.1:8888</code>.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Constante <code>TIKTOK_PROXY</code> em <code>config.py</code>; wiring em <code>downloaders/_ytdlp.py</code></li>
+<li>Doc no <code>.env_example</code>/<code>.en</code></li>
+<li>3 testes em <code>tests/test_ytdlp_format_selection.py</code> (proxy setado só pro TikTok quando configurado; ignorado quando vazio; ignorado em outras plataformas)</li>
+</ul>
+<p><strong>Nota:</strong> o TikTok bloqueia muitas faixas de IP de VPN (inclusive ProtonVPN). Setar o proxy não garante o bypass — pode ser preciso trocar o país de saída do VPN até achar um IP aceito.</p>
 <h2 id="v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa">v1.2.20 — Post de link do Reddit sempre re-despacha o link externo (notícia inclusa)<a class="headerlink" href="#v1220-post-de-link-do-reddit-sempre-re-despacha-o-link-externo-noticia-inclusa" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2435,7 +2469,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 16:59:40 UTC"><span class="timeago" datetime="2026-08-17T16:59:40+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 16:59:40 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="17 de agosto de 2026 17:09:44 UTC"><span class="timeago" datetime="2026-08-17T17:09:44+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="17 de agosto de 2026 17:09:44 UTC">2026-08-17</span>
   </span>
 
     

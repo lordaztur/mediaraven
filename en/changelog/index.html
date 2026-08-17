@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1221-optional-proxy-for-tiktok-tiktok_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.21 — Optional proxy for TikTok (TIKTOK_PROXY)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1220-a-reddit-link-post-always-re-dispatches-the-external-link-news-included" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1808,6 +1819,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1221-optional-proxy-for-tiktok-tiktok_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.21 — Optional proxy for TikTok (TIKTOK_PROXY)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1220-a-reddit-link-post-always-re-dispatches-the-external-link-news-included" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2081,6 +2103,18 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1221-optional-proxy-for-tiktok-tiktok_proxy">v1.2.21 — Optional proxy for TikTok (TIKTOK_PROXY)<a class="headerlink" href="#v1221-optional-proxy-for-tiktok-tiktok_proxy" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🌐 <strong>New <code>TIKTOK_PROXY</code> config</strong> — routes <strong>only</strong> TikTok's yt-dlp requests through a proxy (TikTok blocks server/VPN IPs with a WAF). Applied in <code>_apply_format_selection</code> only when <code>platform.tiktok</code> and the env is set; impersonation (chrome) and logged-in cookies stay the same. Accepts <code>http://</code> and <code>socks5://</code>. Inert when empty — no behavior change without configuring. Typical use: a gluetun container with <code>HTTPPROXY=on</code> → <code>TIKTOK_PROXY=http://127.0.0.1:8888</code>.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li><code>TIKTOK_PROXY</code> constant in <code>config.py</code>; wiring in <code>downloaders/_ytdlp.py</code></li>
+<li>Docs in <code>.env_example</code>/<code>.en</code></li>
+<li>3 tests in <code>tests/test_ytdlp_format_selection.py</code> (proxy set for TikTok only when configured; ignored when empty; ignored for other platforms)</li>
+</ul>
+<p><strong>Note:</strong> TikTok blocks many VPN IP ranges (ProtonVPN included). Setting the proxy doesn't guarantee a bypass — you may need to switch the VPN exit country until you find an accepted IP.</p>
 <h2 id="v1220-a-reddit-link-post-always-re-dispatches-the-external-link-news-included">v1.2.20 — A Reddit link post always re-dispatches the external link (news included)<a class="headerlink" href="#v1220-a-reddit-link-post-always-re-dispatches-the-external-link-news-included" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2437,7 +2471,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 16:59:40 UTC"><span class="timeago" datetime="2026-08-17T16:59:40+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 16:59:40 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 17:09:44 UTC"><span class="timeago" datetime="2026-08-17T17:09:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 17:09:44 UTC">2026-08-17</span>
   </span>
 
     
