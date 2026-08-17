@@ -263,6 +263,33 @@ def test_apply_format_selection_tiktok_sets_impersonate():
     assert 'impersonate' in opts
 
 
+def test_apply_format_selection_tiktok_sets_proxy_when_configured():
+    cfg_vals = {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720,
+                'TIKTOK_PROXY': 'http://127.0.0.1:8888'}
+    opts = {}
+    with patch.object(_ytdlp, 'cfg', lambda k: cfg_vals.get(k)):
+        _ytdlp._apply_format_selection(opts, Platform(tiktok=True), None, use_impersonate=True)
+    assert opts.get('proxy') == 'http://127.0.0.1:8888'
+
+
+def test_apply_format_selection_tiktok_no_proxy_when_empty():
+    cfg_vals = {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720,
+                'TIKTOK_PROXY': ''}
+    opts = {}
+    with patch.object(_ytdlp, 'cfg', lambda k: cfg_vals.get(k)):
+        _ytdlp._apply_format_selection(opts, Platform(tiktok=True), None, use_impersonate=True)
+    assert 'proxy' not in opts
+
+
+def test_apply_format_selection_non_tiktok_ignores_proxy():
+    cfg_vals = {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720,
+                'TIKTOK_PROXY': 'http://127.0.0.1:8888'}
+    opts = {}
+    with patch.object(_ytdlp, 'cfg', lambda k: cfg_vals.get(k)):
+        _ytdlp._apply_format_selection(opts, Platform(youtube=True), None, use_impersonate=True)
+    assert 'proxy' not in opts
+
+
 def test_classify_ytdlp_errors_private():
     err = ["ERROR: [youtube] xyz: Private video. Sign in if you've been granted access"]
     assert _ytdlp._classify_ytdlp_errors(err) == 'private'

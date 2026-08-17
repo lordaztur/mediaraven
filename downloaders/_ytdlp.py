@@ -139,6 +139,11 @@ def _apply_format_selection(
     elif not use_impersonate:
         opts.pop('impersonate', None)
 
+    if platform.tiktok:
+        tiktok_proxy = cfg("TIKTOK_PROXY")
+        if tiktok_proxy:
+            opts['proxy'] = tiktok_proxy
+
 
 class _ErrorCapturingLogger:
     def __init__(self) -> None:
