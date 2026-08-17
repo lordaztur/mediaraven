@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.18 — TikTok: yt-dlp updated + logged-in cookies first with impersonation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1217-threads-share-links-download-again" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1775,6 +1786,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.18 — TikTok: yt-dlp updated + logged-in cookies first with impersonation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1217-threads-share-links-download-again" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2015,6 +2037,18 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation">v1.2.18 — TikTok: yt-dlp updated + logged-in cookies first with impersonation<a class="headerlink" href="#v1218-tiktok-yt-dlp-updated-logged-in-cookies-first-with-impersonation" title="Permanent link">&para;</a></h2>
+<p><strong>Context:</strong> TikTok started blocking the server's IP with a WAF/captcha. yt-dlp 2026.6.9 didn't even attempt TikTok's new challenge (deterministic "Unexpected response from webpage request" failure), and the scraper fallback only grabbed a 2s preview (not the real video). An IP block can't be fully solved in code, but a logged-in session maximizes the odds.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>⬆️ <strong>yt-dlp <code>2026.6.9</code> → <code>2026.7.4</code>.</strong> The new version solves TikTok's WAF challenge (native-Python proof-of-work) — 2026.6.9 lacked that support and always failed.</li>
+<li>🍪 <strong>TikTok is now a recognized platform and prioritizes the logged-in session.</strong> Added <code>tiktok</code> to <code>Platform</code>/<code>_PLATFORM_HOSTS</code> (<code>tiktok.com</code>, <code>vt.tiktok.com</code>, <code>vm.tiktok.com</code>). For TikTok, <code>_attempt_order</code> tries <strong><code>with_cookie</code> first</strong> (before <code>no_cookie</code>), and <code>_apply_format_selection</code> applies <strong>impersonation (curl_cffi chrome)</strong> — a logged-in session + browser fingerprint is the best combo to get past the WAF. Only 2 attempts (both impersonated, cookie-first) to avoid tripping rate limits.</li>
+</ul>
+<p><strong>⚠️ Required action:</strong> for this to work you must be <strong>logged into TikTok in the Firefox profile</strong> the bot uses (<code>FIREFOX_PROFILE_PATH</code>). The bot injects those cookies; without a valid logged-in session the WAF keeps blocking.</p>
+<p><strong>Added:</strong></p>
+<ul>
+<li>7 tests in <code>tests/test_ytdlp_format_selection.py</code> (TikTok host detection, cookie-first <code>_attempt_order</code>, impersonation applied)</li>
+</ul>
 <h2 id="v1217-threads-share-links-download-again">v1.2.17 — Threads <code>/share/</code> links download again<a class="headerlink" href="#v1217-threads-share-links-download-again" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2335,7 +2369,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 9, 2026 19:34:57 UTC"><span class="timeago" datetime="2026-08-09T19:34:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 9, 2026 19:34:57 UTC">2026-08-09</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 14:54:06 UTC"><span class="timeago" datetime="2026-08-17T14:54:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 14:54:06 UTC">2026-08-17</span>
   </span>
 
     

@@ -2389,7 +2389,7 @@
 <p><code>SCRAPE_MIN_IMAGE_SIZE</code> muito baixo. Aumente pra 100-200 (se 50 não tá filtrando).</p>
 <h3 id="demora-muito">Demora muito<a class="headerlink" href="#demora-muito" title="Permanent link">&para;</a></h3>
 <p>Cheque os tiers que tão rodando:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>grep<span class="w"> </span><span class="s2">&quot;🕸️\|⚡\|🧩\|🖼️&quot;</span><span class="w"> </span>bot.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>grep<span class="w"> </span><span class="s2">"🕸️\|⚡\|🧩\|🖼️"</span><span class="w"> </span>bot.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
 </span></code></pre></div>
 <p>Se o Playwright tá tomando 30s+, ajuste <code>PW_GOTO_TIMEOUT_MS</code> pra menos. Se gallery-dl tá demorando, ajuste <code>SCRAPE_GALLERY_DL_TIMEOUT_S</code> pra menos ou desligue (<code>SCRAPE_GALLERY_DL_ENABLE=no</code>).</p>
 <h2 id="captions">Captions<a class="headerlink" href="#captions" title="Permanent link">&para;</a></h2>
