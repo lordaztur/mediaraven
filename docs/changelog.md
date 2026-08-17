@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.2.18 — TikTok: yt-dlp atualizado + cookies logados primeiro com impersonation
+
+**Contexto:** o TikTok passou a bloquear o IP do servidor com WAF/captcha. O yt-dlp 2026.6.9 nem tentava o novo desafio do TikTok (falha determinística "Unexpected response from webpage request"), e o fallback do scraper só pegava um preview de 2s (não o vídeo real). Bloqueio de IP não se resolve 100% por código, mas dá pra maximizar a chance com uma sessão logada.
+
+**Major changes:**
+
+- ⬆️ **yt-dlp `2026.6.9` → `2026.7.4`.** A versão nova resolve o desafio WAF do TikTok (proof-of-work em Python nativo) — o 2026.6.9 não tinha esse suporte e falhava sempre.
+- 🍪 **TikTok agora é um platform reconhecido e prioriza a sessão logada.** Adicionado `tiktok` ao `Platform`/`_PLATFORM_HOSTS` (`tiktok.com`, `vt.tiktok.com`, `vm.tiktok.com`). Para TikTok, `_attempt_order` tenta **`with_cookie` primeiro** (antes de `no_cookie`), e `_apply_format_selection` aplica **impersonation (curl_cffi chrome)** — sessão logada + fingerprint de browser é a melhor combinação pra passar pelo WAF. Só 2 tentativas (ambas impersonadas, cookie-first) pra não estourar rate-limit.
+
+**⚠️ Ação necessária:** pra funcionar, é preciso **estar logado no TikTok no perfil do Firefox** que o bot usa (`FIREFOX_PROFILE_PATH`). O bot injeta esses cookies; sem uma sessão logada válida o WAF continua bloqueando.
+
+**Adicionado:**
+
+- 7 testes em `tests/test_ytdlp_format_selection.py` (detecção de host do TikTok, `_attempt_order` cookie-first, impersonation aplicada)
+
 ## v1.2.17 — Links `/share/` do Threads voltam a baixar
 
 **Major changes:**
