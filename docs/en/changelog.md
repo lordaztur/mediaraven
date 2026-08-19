@@ -1,5 +1,40 @@
 # Changelog
 
+## v1.2.24 — YouTube downloads in high quality again (yt-dlp update)
+
+**Major changes:**
+
+- ✅ **YouTube high quality (1080p/1440p) back.** The root cause of the 403 was simply an **outdated yt-dlp**: the latest *stable* (`2026.7.4`, from July) was ~6 weeks behind YouTube's changes, and YouTube fixes land in the **nightlies** first. Updated to the nightly `2026.8.18.122307.dev0`. Confirmed on the full bot pipeline: downloads **1440p** and **1080p**, with no extra dependency or service.
+
+**Added:**
+
+- yt-dlp updated to `2026.8.18.122307.dev0` (nightly) in `requirements.txt`
+
+**Note:** YouTube is a moving target — when it breaks again, the fix comes in a **new nightly** (`pip install -U --pre yt-dlp`), not in stable. Worth checking the nightly before any other investigation.
+
+## v1.2.23 — Reddit: external embedded-video link (YouTube) is re-dispatched again
+
+**Major changes:**
+
+- 🔗 **A Reddit post linking to an external video (YouTube, etc.) is handled by its destination again.** `reddit_external_link` (v1.2.19) excluded posts with `post_hint == 'rich:video'`, assuming that meant a native video — but `rich:video` is exactly an **external embedded video** (YouTube/streamable/…); Reddit's native one is `hosted:video` (v.redd.it). Because of that, a YouTube link post fell into `download_reddit_json` → yt-dlp on the Reddit URL → scraper (page images), instead of re-dispatching to YouTube. Fixed: only `hosted:video`/`is_video` (native) are excluded; `rich:video` goes through the domain check and is re-dispatched as an external link. Confirmed on the reported post (`youtu.be/d0avNDsWslg`).
+
+**Added:**
+
+- Test in `tests/test_reddit_common.py` (external `rich:video` becomes an external link)
+
+## v1.2.22 — YouTube: don't dump DASH fragments when yt-dlp fails
+
+**Context:** when yt-dlp failed on a YouTube link, the dispatcher fell into the generic scraper, which downloaded the **chopped DASH fragments** (dozens of `.mp4`s) and sent them all to chat.
+
+**Major changes:**
+
+- 🚫 **When yt-dlp fails on a YouTube link, the generic scraper is skipped** (`_run_platform_fallbacks` returns early for `platform.youtube`). The scraper never yields a usable YouTube video — only fragments — so it now fails cleanly (with a retry button) instead of dumping 27–53 chopped files.
+
+**Added:**
+
+- Log key `dispatcher.youtube_skip_scraper` (PT/EN)
+- Test in `tests/test_dispatcher_integration.py` (a YouTube yt-dlp failure does not call `scrape_fallback`)
+
 ## v1.2.21 — Optional proxy for TikTok (TIKTOK_PROXY)
 
 **Major changes:**
