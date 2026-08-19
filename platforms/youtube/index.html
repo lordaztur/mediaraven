@@ -851,34 +851,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#po-token-downloads-em-alta-qualidade-dash-v1222" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PO Token / downloads em alta qualidade (DASH) — v1.2.22+
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="PO Token / downloads em alta qualidade (DASH) — v1.2.22+">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#setup-do-provedor-de-po-token-pra-720pdash" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setup do provedor de PO Token (pra 720p+/DASH)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#falhas-comuns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1718,34 +1690,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#po-token-downloads-em-alta-qualidade-dash-v1222" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PO Token / downloads em alta qualidade (DASH) — v1.2.22+
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="PO Token / downloads em alta qualidade (DASH) — v1.2.22+">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#setup-do-provedor-de-po-token-pra-720pdash" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Setup do provedor de PO Token (pra 720p+/DASH)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#falhas-comuns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1859,42 +1803,6 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://deno.land/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
 </span></code></pre></div>
 <p>Sem Deno o bot ainda tenta — só falha em alguns casos específicos.</p>
-<h2 id="po-token-downloads-em-alta-qualidade-dash-v1222">PO Token / downloads em alta qualidade (DASH) — v1.2.22+<a class="headerlink" href="#po-token-downloads-em-alta-qualidade-dash-v1222" title="Permanent link">&para;</a></h2>
-<p>Desde ~ago/2026 o YouTube exige um <strong>PO Token</strong> (Proof-of-Origin) para os formatos
-<strong>DASH</strong> (alta qualidade: 720p/1080p/4K). Sem ele o download desses formatos dá
-<code>HTTP Error 403: Forbidden</code>. Importante: <strong>isso não é o Deno</strong> — o Deno resolve o
-desafio <em>nsig</em> normalmente; o que falta é o PO Token.</p>
-<p>O bot lida com isso em duas camadas:</p>
-<ol>
-<li><strong>Fallback progressivo automático (sempre ligado, sem setup):</strong> se o DASH falhar
-   (403/PO Token), o bot cai para o formato <strong>progressivo (360p)</strong>, que não precisa
-   de PO Token. Assim o vídeo <strong>sempre vem</strong> — só em 360p quando o DASH não passa.</li>
-<li><strong>Provedor de PO Token (opcional, pra ter alta qualidade):</strong> um container que
-   gera os PO Tokens, mais o plugin <code>bgutil-ytdlp-pot-provider</code> (já no
-   <code>requirements.txt</code>).</li>
-</ol>
-<h3 id="setup-do-provedor-de-po-token-pra-720pdash">Setup do provedor de PO Token (pra 720p+/DASH)<a class="headerlink" href="#setup-do-provedor-de-po-token-pra-720pdash" title="Permanent link">&para;</a></h3>
-<p><strong>1. Suba o container do provedor</strong> (isolado, não depende do resto do stack):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--restart<span class="w"> </span>unless-stopped<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--name<span class="w"> </span>bgutil-provider<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">4416</span>:4416<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>brainicism/bgutil-ytdlp-pot-provider
-</span></code></pre></div>
-<p>O plugin do yt-dlp fala com ele em <code>http://127.0.0.1:4416</code> automaticamente.</p>
-<p><strong>2. O plugin já está no <code>requirements.txt</code></strong> (<code>bgutil-ytdlp-pot-provider</code>). Se
-   atualizou o repositório, rode <code>pip install -r requirements.txt</code> no venv.</p>
-<p><strong>3. No <code>.env</code>, use o client que casa com o PO Token:</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>YTDLP_YT_CLIENTS=web_safari
-</span></code></pre></div>
-<p><strong>4. Reinicie o bot.</strong></p>
-<div class="admonition warning">
-<p class="admonition-title">YouTube é alvo móvel</p>
-<p>Mesmo com o provedor, o download DASH pode ser instável (o YouTube muda com
-frequência e pode <em>rate-limitar</em> o IP). Quando o DASH falhar, o fallback
-progressivo (360p) garante que o vídeo venha assim mesmo. Se o DASH voltar a
-quebrar de vez, normalmente um <strong>update do yt-dlp</strong> conserta — é o time do
-yt-dlp que acompanha as mudanças do YouTube.</p>
-</div>
 <h2 id="falhas-comuns">Falhas comuns<a class="headerlink" href="#falhas-comuns" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>"Sign in to confirm you're not a bot"</strong> → cookies do Firefox de uma sessão logada resolvem (<code>FIREFOX_PROFILE_PATH</code>).</li>
@@ -1982,7 +1890,7 @@ yt-dlp que acompanha as mudanças do YouTube.</p>
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="18 de agosto de 2026 22:03:03 UTC"><span class="timeago" datetime="2026-08-18T22:03:03+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="18 de agosto de 2026 22:03:03 UTC">2026-08-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="27 de maio de 2026 00:07:45 UTC"><span class="timeago" datetime="2026-05-27T00:07:45+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="27 de maio de 2026 00:07:45 UTC">2026-05-27</span>
   </span>
 
     

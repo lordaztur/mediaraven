@@ -1519,10 +1519,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
+  <a href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
+        v1.2.24 — YouTube volta a baixar em alta qualidade (atualiza yt-dlp)
       
     </span>
   </a>
@@ -1530,10 +1530,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" class="md-nav__link">
+  <a href="#v1223-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v1.2.23 — YouTube: fallback progressivo (360p) + suporte a PO Token (bgutil)
+        v1.2.23 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
       
     </span>
   </a>
@@ -1850,10 +1850,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
+  <a href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
+        v1.2.24 — YouTube volta a baixar em alta qualidade (atualiza yt-dlp)
       
     </span>
   </a>
@@ -1861,10 +1861,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" class="md-nav__link">
+  <a href="#v1223-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        v1.2.23 — YouTube: fallback progressivo (360p) + suporte a PO Token (bgutil)
+        v1.2.23 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
       
     </span>
   </a>
@@ -2167,7 +2167,17 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado">v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado<a class="headerlink" href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" title="Permanent link">&para;</a></h2>
+<h2 id="v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp">v1.2.24 — YouTube volta a baixar em alta qualidade (atualiza yt-dlp)<a class="headerlink" href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>✅ <strong>YouTube em alta qualidade (1080p/1440p) de volta.</strong> A causa raiz do 403 era simplesmente o <strong>yt-dlp desatualizado</strong>: a última <em>stable</em> (<code>2026.7.4</code>, de julho) estava ~6 semanas atrás das mudanças do YouTube, e os consertos do YouTube saem primeiro nas <strong>nightlies</strong>. Atualizado para a nightly <code>2026.8.18.122307.dev0</code>. Confirmado no pipeline completo do bot: baixa <strong>1440p</strong> e <strong>1080p</strong>, sem nenhuma dependência ou serviço extra.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>yt-dlp atualizado para <code>2026.8.18.122307.dev0</code> (nightly) no <code>requirements.txt</code></li>
+</ul>
+<p><strong>Nota:</strong> o YouTube é alvo móvel — quando quebrar de novo, o conserto vem numa <strong>nightly nova</strong> (<code>pip install -U --pre yt-dlp</code>), não na stable. Vale checar a nightly antes de qualquer outra investigação.</p>
+<h2 id="v1223-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado">v1.2.23 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado<a class="headerlink" href="#v1223-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
 <li>🔗 <strong>Post do Reddit que é link pra vídeo externo (YouTube, etc.) volta a ser tratado pelo destino.</strong> O <code>reddit_external_link</code> (v1.2.19) excluía posts com <code>post_hint == 'rich:video'</code> achando que era vídeo nativo — mas <code>rich:video</code> é justamente <strong>vídeo externo embedado</strong> (YouTube/streamable/…); o nativo do Reddit é <code>hosted:video</code> (v.redd.it). Por causa disso, um post-link pro YouTube caía no <code>download_reddit_json</code> → yt-dlp na URL do Reddit → scraper (imagens da página), em vez de re-despachar pro YouTube. Corrigido: só <code>hosted:video</code>/<code>is_video</code> (nativo) são excluídos; <code>rich:video</code> passa pela checagem de domínio e é re-despachado como link externo. Confirmado no post reportado (<code>youtu.be/d0avNDsWslg</code>).</li>
@@ -2176,23 +2186,8 @@
 <ul>
 <li>Teste em <code>tests/test_reddit_common.py</code> (<code>rich:video</code> externo vira link externo)</li>
 </ul>
-<h2 id="v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil">v1.2.23 — YouTube: fallback progressivo (360p) + suporte a PO Token (bgutil)<a class="headerlink" href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" title="Permanent link">&para;</a></h2>
-<p><strong>Major changes:</strong></p>
-<ul>
-<li>🎞️ <strong>Fallback progressivo automático pro YouTube.</strong> O YouTube passou a exigir <strong>PO Token</strong> nos formatos DASH (720p/1080p/4K); sem ele o download dá 403. Agora, se todas as tentativas DASH falharem num link do YouTube, o <code>_run_ytdlp_with_cookie_fallback</code> faz uma última tentativa com o <strong>formato progressivo (18/22 — geralmente 360p, que não precisa de PO Token)</strong> via client <code>mweb,web</code>. Resultado: o vídeo <strong>sempre vem</strong> — em alta qualidade quando o DASH passa, em 360p quando não. Nunca mais falha total nem despeja fragmentos.</li>
-<li>🔑 <strong>Suporte a provedor de PO Token (bgutil) pra recuperar a alta qualidade.</strong> Plugin <code>bgutil-ytdlp-pot-provider</code> adicionado ao <code>requirements.txt</code>. Com um container provedor rodando (<code>brainicism/bgutil-ytdlp-pot-provider</code> na porta 4416) + <code>YTDLP_YT_CLIENTS=web_safari</code>, o yt-dlp gera o PO Token e baixa DASH em alta qualidade. <strong>Setup documentado</strong> em <code>docs/platforms/youtube.md</code> (o container é opcional — sem ele, cai no fallback 360p).</li>
-</ul>
-<p><strong>Adicionado:</strong></p>
-<ul>
-<li><code>_youtube_progressive_fallback</code> em <code>downloaders/_ytdlp.py</code></li>
-<li><code>bgutil-ytdlp-pot-provider==1.3.1</code> no <code>requirements.txt</code></li>
-<li>Chaves de log <code>_ytdlp.youtube_progressive_fallback</code> / <code>youtube_progressive_erro</code> (PT/EN)</li>
-<li>Seção "PO Token / downloads em alta qualidade" em <code>docs/platforms/youtube.md</code> (PT/EN)</li>
-<li>2 testes em <code>tests/test_ytdlp_format_selection.py</code> (fallback progressivo usado no YouTube; não usado em outras plataformas)</li>
-</ul>
-<p><strong>Nota honesta:</strong> o download DASH em alta qualidade depende do provedor de PO Token e é instável (YouTube é alvo móvel); o fallback 360p garante que sempre venha algo. Quando o DASH quebra de vez, normalmente um update do yt-dlp resolve.</p>
 <h2 id="v1222-youtube-nao-despejar-fragmentos-dash-quando-o-yt-dlp-falha">v1.2.22 — YouTube: não despejar fragmentos DASH quando o yt-dlp falha<a class="headerlink" href="#v1222-youtube-nao-despejar-fragmentos-dash-quando-o-yt-dlp-falha" title="Permanent link">&para;</a></h2>
-<p><strong>Contexto:</strong> o YouTube passou a exigir <strong>PO Token</strong> (Proof-of-Origin) nos downloads DASH. O deno resolve o desafio nsig normalmente, mas sem o PO token o download dá <code>HTTP Error 403: Forbidden</code>. Aí o dispatcher caía no scraper genérico, que baixava os <strong>fragmentos DASH picotados</strong> (dezenas de <code>.mp4</code>) e mandava tudo pro chat.</p>
+<p><strong>Contexto:</strong> quando o yt-dlp falhava num link do YouTube, o dispatcher caía no scraper genérico, que baixava os <strong>fragmentos DASH picotados</strong> (dezenas de <code>.mp4</code>) e mandava tudo pro chat.</p>
 <p><strong>Major changes:</strong></p>
 <ul>
 <li>🚫 <strong>Quando o yt-dlp falha num link do YouTube, o scraper genérico é pulado</strong> (<code>_run_platform_fallbacks</code> retorna cedo pra <code>platform.youtube</code>). O scraper nunca produz um vídeo útil pro YouTube — só fragmentos — então agora falha limpo (com botão de retry) em vez de despejar 27–53 arquivos picotados.</li>
@@ -2202,7 +2197,6 @@
 <li>Chave de log <code>dispatcher.youtube_skip_scraper</code> (PT/EN)</li>
 <li>Teste em <code>tests/test_dispatcher_integration.py</code> (falha do yt-dlp no YouTube não chama <code>scrape_fallback</code>)</li>
 </ul>
-<p><strong>Nota:</strong> isso corrige o <em>sintoma</em> (o lixo de fragmentos). A causa real (PO Token) precisa de um provedor <code>bgutil</code> rodando — em avaliação separada.</p>
 <h2 id="v1221-proxy-opcional-para-o-tiktok-tiktok_proxy">v1.2.21 — Proxy opcional para o TikTok (TIKTOK_PROXY)<a class="headerlink" href="#v1221-proxy-opcional-para-o-tiktok-tiktok_proxy" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2571,7 +2565,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="19 de agosto de 2026 20:16:41 UTC"><span class="timeago" datetime="2026-08-19T20:16:41+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="19 de agosto de 2026 20:16:41 UTC">2026-08-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="19 de agosto de 2026 20:37:50 UTC"><span class="timeago" datetime="2026-08-19T20:37:50+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="19 de agosto de 2026 20:37:50 UTC">2026-08-19</span>
   </span>
 
     
