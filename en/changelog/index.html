@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1224-reddit-external-embedded-video-link-youtube-is-re-dispatched-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.24 — Reddit: external embedded-video link (YouTube) is re-dispatched again
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1223-youtube-progressive-fallback-360p-po-token-support-bgutil" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1841,6 +1852,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1224-reddit-external-embedded-video-link-youtube-is-re-dispatched-again" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.24 — Reddit: external embedded-video link (YouTube) is re-dispatched again
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1223-youtube-progressive-fallback-360p-po-token-support-bgutil" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2147,6 +2169,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1224-reddit-external-embedded-video-link-youtube-is-re-dispatched-again">v1.2.24 — Reddit: external embedded-video link (YouTube) is re-dispatched again<a class="headerlink" href="#v1224-reddit-external-embedded-video-link-youtube-is-re-dispatched-again" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔗 <strong>A Reddit post linking to an external video (YouTube, etc.) is handled by its destination again.</strong> <code>reddit_external_link</code> (v1.2.19) excluded posts with <code>post_hint == 'rich:video'</code>, assuming that meant a native video — but <code>rich:video</code> is exactly an <strong>external embedded video</strong> (YouTube/streamable/…); Reddit's native one is <code>hosted:video</code> (v.redd.it). Because of that, a YouTube link post fell into <code>download_reddit_json</code> → yt-dlp on the Reddit URL → scraper (page images), instead of re-dispatching to YouTube. Fixed: only <code>hosted:video</code>/<code>is_video</code> (native) are excluded; <code>rich:video</code> goes through the domain check and is re-dispatched as an external link. Confirmed on the reported post (<code>youtu.be/d0avNDsWslg</code>).</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>Test in <code>tests/test_reddit_common.py</code> (external <code>rich:video</code> becomes an external link)</li>
+</ul>
 <h2 id="v1223-youtube-progressive-fallback-360p-po-token-support-bgutil">v1.2.23 — YouTube: progressive fallback (360p) + PO Token support (bgutil)<a class="headerlink" href="#v1223-youtube-progressive-fallback-360p-po-token-support-bgutil" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2542,7 +2573,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 18, 2026 22:03:03 UTC"><span class="timeago" datetime="2026-08-18T22:03:03+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 18, 2026 22:03:03 UTC">2026-08-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 19, 2026 20:16:41 UTC"><span class="timeago" datetime="2026-08-19T20:16:41+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 19, 2026 20:16:41 UTC">2026-08-19</span>
   </span>
 
     

@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1839,6 +1850,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2145,6 +2167,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado">v1.2.24 — Reddit: link externo de vídeo embedado (YouTube) volta a ser re-despachado<a class="headerlink" href="#v1224-reddit-link-externo-de-video-embedado-youtube-volta-a-ser-re-despachado" title="Permanent link">&para;</a></h2>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔗 <strong>Post do Reddit que é link pra vídeo externo (YouTube, etc.) volta a ser tratado pelo destino.</strong> O <code>reddit_external_link</code> (v1.2.19) excluía posts com <code>post_hint == 'rich:video'</code> achando que era vídeo nativo — mas <code>rich:video</code> é justamente <strong>vídeo externo embedado</strong> (YouTube/streamable/…); o nativo do Reddit é <code>hosted:video</code> (v.redd.it). Por causa disso, um post-link pro YouTube caía no <code>download_reddit_json</code> → yt-dlp na URL do Reddit → scraper (imagens da página), em vez de re-despachar pro YouTube. Corrigido: só <code>hosted:video</code>/<code>is_video</code> (nativo) são excluídos; <code>rich:video</code> passa pela checagem de domínio e é re-despachado como link externo. Confirmado no post reportado (<code>youtu.be/d0avNDsWslg</code>).</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>Teste em <code>tests/test_reddit_common.py</code> (<code>rich:video</code> externo vira link externo)</li>
+</ul>
 <h2 id="v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil">v1.2.23 — YouTube: fallback progressivo (360p) + suporte a PO Token (bgutil)<a class="headerlink" href="#v1223-youtube-fallback-progressivo-360p-suporte-a-po-token-bgutil" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2540,7 +2571,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="18 de agosto de 2026 22:03:03 UTC"><span class="timeago" datetime="2026-08-18T22:03:03+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="18 de agosto de 2026 22:03:03 UTC">2026-08-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="19 de agosto de 2026 20:16:41 UTC"><span class="timeago" datetime="2026-08-19T20:16:41+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="19 de agosto de 2026 20:16:41 UTC">2026-08-19</span>
   </span>
 
     
