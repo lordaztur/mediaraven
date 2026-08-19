@@ -44,6 +44,15 @@ def test_reddit_external_link_none_for_video():
     assert reddit_external_link(_news_post(post_hint="hosted:video")) is None
 
 
+def test_reddit_external_link_rich_video_is_external():
+    """rich:video = vídeo externo embedado (YouTube etc.) -> deve virar link externo."""
+    out = reddit_external_link(_news_post(
+        post_hint="rich:video", domain="youtu.be",
+        url_overridden_by_dest="https://youtu.be/d0avNDsWslg", url="https://youtu.be/d0avNDsWslg",
+    ))
+    assert out["external_url"] == "https://youtu.be/d0avNDsWslg"
+
+
 def test_reddit_external_link_none_for_gallery():
     assert reddit_external_link(_news_post(media_metadata={"a": {}})) is None
 

@@ -48,7 +48,7 @@ def reddit_external_link(post_data: dict) -> Optional[dict]:
         return None
     if post_data.get('is_self'):
         return None
-    if post_data.get('is_video') or post_data.get('post_hint') in ('hosted:video', 'rich:video'):
+    if post_data.get('is_video') or post_data.get('post_hint') == 'hosted:video':
         return None
     if 'media_metadata' in post_data:
         return None
