@@ -89,6 +89,10 @@ async def _run_platform_fallbacks(
         if reddit_pw_files:
             return await _finalize_success(reddit_pw_files, reddit_pw_status, reddit_pw_short, reddit_pw_full, url)
 
+    if platform.youtube:
+        logger.info(lmsg("dispatcher.youtube_skip_scraper", url=safe_url(url)))
+        return None
+
     scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article = await scrape_fallback(url, unique_folder)
     if scrape_files:
         return scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article

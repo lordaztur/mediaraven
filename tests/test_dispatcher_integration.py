@@ -79,6 +79,23 @@ async def test_download_media_falls_back_to_scraper(tmp_folder):
 
 
 @pytest.mark.asyncio
+async def test_youtube_ytdlp_failure_skips_scraper(tmp_folder):
+    """YouTube: se o yt-dlp falha, NÃO roda o scraper (evita despejar fragmentos DASH)."""
+    scrape_mock = AsyncMock(return_value=([os.path.join(tmp_folder, "frag.mp4")], "SCRAPE", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, None))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "_detect_youtube_languages", new=AsyncMock(return_value=None)), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://youtu.be/abc123", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    assert scrape_mock.await_count == 0
+
+
+@pytest.mark.asyncio
 async def test_download_media_scraper_returns_article_caption(tmp_folder):
     scraped_file = os.path.join(tmp_folder, "article_cover.jpg")
     article_short = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " * 6
