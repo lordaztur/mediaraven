@@ -315,24 +315,33 @@ async def async_ffprobe_codecs(filepath: str, timeout: int = 30) -> tuple[Option
 
 
 async def async_ensure_telegram_video(filepath: str, timeout: int = 600) -> Optional[str]:
-    if is_telegram_compatible_video_ext(filepath):
-        return filepath
+    ext_ok = is_telegram_compatible_video_ext(filepath)
 
     if not state.FFMPEG_PATH:
+        if ext_ok:
+            return filepath
         logger.warning(lmsg("utils.video_convert_no_ffmpeg", filepath=filepath))
         return None
 
-    out_path = os.path.splitext(filepath)[0] + '.tg.mp4'
     vcodec, acodec = await async_ffprobe_codecs(filepath)
+    if vcodec is None:
+        return filepath if ext_ok else None
 
-    if vcodec in _TG_COMPATIBLE_VCODECS:
+    v_ok = vcodec in _TG_COMPATIBLE_VCODECS
+    a_ok = (acodec == '') or (acodec in _TG_COMPATIBLE_ACODECS)
+    if ext_ok and v_ok and a_ok:
+        return filepath
+
+    out_path = os.path.splitext(filepath)[0] + '.tg.mp4'
+
+    if v_ok:
         v_args = ['-c:v', 'copy']
     else:
         v_args = ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p']
 
     if acodec == '':
         a_args = ['-an']
-    elif acodec in _TG_COMPATIBLE_ACODECS:
+    elif a_ok:
         a_args = ['-c:a', 'copy']
     else:
         a_args = ['-c:a', 'aac', '-b:a', '192k']
@@ -451,7 +460,7 @@ async def async_merge_audio_image(
     process = None
     ffmpeg_bin = state.FFMPEG_PATH or 'ffmpeg'
     try:
-        cmd = [ffmpeg_bin, '-y', '-loop', '1', '-framerate', '1', '-i', image_path]
+        cmd = [ffmpeg_bin, '-y', '-loop', '1', '-framerate', '30', '-i', image_path]
 
         if start_time is not None:
             cmd.extend(['-ss', str(start_time)])
@@ -464,9 +473,11 @@ async def async_merge_audio_image(
 
         cmd.extend([
             '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
+            '-r', '30',
             '-c:a', 'aac', '-b:a', '192k',
             '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
             '-pix_fmt', 'yuv420p', '-shortest',
+            '-movflags', '+faststart',
             output_path
         ])
 

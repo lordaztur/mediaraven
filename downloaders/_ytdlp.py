@@ -30,6 +30,7 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
         'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
         'remote_components': ['ejs:github'],
         'extractor_args': {'youtube': [f'player_client={cfg("YTDLP_YT_CLIENTS")}']},
+        'format_sort': ['vcodec:h264', 'acodec:aac'],
     }
     if state.DENO_PATH:
         opts['js_runtimes'] = {'deno': {'path': state.DENO_PATH}}
