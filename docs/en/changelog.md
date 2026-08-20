@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.27 — Codec check now runs for ALL videos (closes the .mp4 gap)
+
+v1.2.25's `async_ensure_telegram_video` started checking the codec, but the `_ensure_video` wrapper (in `telegram_io.py`) **returned early by extension** before calling it — so an `.mp4` with **AV1/VP9/HEVC** (common on TikTok/IG via instagrapi, scraper, etc.) still went out incompatible. v1.2.25's codec check was effectively ignored for `.mp4`.
+
+**Major changes:**
+
+- 🔧 **`_ensure_video` now delegates straight to `async_ensure_telegram_video`** (no extension short-circuit). Now **every** sent video — single or album, from any platform — goes through `ffprobe`: if it's already H.264+AAC, it's sent as-is; if it's AV1/VP9/HEVC, it's re-encoded to H.264/AAC with faststart. This closes the gap and makes the v1.2.25 fix actually apply.
+
+**Added:**
+
+- Updated test in `tests/test_telegram_io_timeouts.py` (`.mp4` also goes through the codec check)
+
 ## v1.2.26 — Fix regression: IG photo+music came back as just the photo
 
 The `-framerate 30` from v1.2.25 made the ffmpeg merge **hit the 60s timeout** (30× more frames; on a large image + loaded machine it went over 60s), so the merge failed and the bot sent **just the photo**. Adjusted:
