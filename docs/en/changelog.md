@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.25 — "Incompatible / needs external player" videos on Telegram
+
+Telegram only plays **H.264 + AAC** inline. Videos that didn't match came through marked as incompatible. Three fronts:
+
+**Major changes:**
+
+- 🎬 **Instagram photo+music (ffmpeg merge) is compatible now.** The merge used **`-framerate 1`** (a 1 fps video, which Telegram's player rejects) and **had no `-movflags +faststart`** (no inline streaming). Fixed to **30 fps + faststart** (`-tune stillimage` keeps the file the same size).
+- 🔎 **`async_ensure_telegram_video` now checks the codec before deciding**, not just the extension. Previously any `.mp4` passed straight through — so an `.mp4` with **AV1/VP9/HEVC** (common on YouTube/TikTok/FB) went to chat incompatible. Now it runs `ffprobe`: if it's already H.264+AAC, it's sent as-is (no re-encode); otherwise it's re-encoded to H.264/AAC with faststart.
+- 🎯 **yt-dlp now prefers H.264/AAC** (`format_sort: ['vcodec:h264', 'acodec:aac']`). So most downloads already come compatible, avoiding the re-encode (faster). Confirmed: YouTube that picked `av01 @ 1440p` now picks `avc1 @ 1080p` (compatible). When only AV1/HEVC exists, the re-encode above guarantees compatibility.
+
+**Added:**
+
+- 4 tests in `tests/test_video_convert.py` (`.mp4` H.264 passes through; `.mp4` AV1 and HEVC get re-encoded; merge uses 30 fps + faststart)
+
 ## v1.2.24 — YouTube downloads in high quality again (yt-dlp update)
 
 **Major changes:**
