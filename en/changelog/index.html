@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1227-codec-check-now-runs-for-all-videos-closes-the-mp4-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.27 — Codec check now runs for ALL videos (closes the .mp4 gap)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1226-fix-regression-ig-photomusic-came-back-as-just-the-photo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1874,6 +1885,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1227-codec-check-now-runs-for-all-videos-closes-the-mp4-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.27 — Codec check now runs for ALL videos (closes the .mp4 gap)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1226-fix-regression-ig-photomusic-came-back-as-just-the-photo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2213,6 +2235,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1227-codec-check-now-runs-for-all-videos-closes-the-mp4-gap">v1.2.27 — Codec check now runs for ALL videos (closes the .mp4 gap)<a class="headerlink" href="#v1227-codec-check-now-runs-for-all-videos-closes-the-mp4-gap" title="Permanent link">&para;</a></h2>
+<p>v1.2.25's <code>async_ensure_telegram_video</code> started checking the codec, but the <code>_ensure_video</code> wrapper (in <code>telegram_io.py</code>) <strong>returned early by extension</strong> before calling it — so an <code>.mp4</code> with <strong>AV1/VP9/HEVC</strong> (common on TikTok/IG via instagrapi, scraper, etc.) still went out incompatible. v1.2.25's codec check was effectively ignored for <code>.mp4</code>.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🔧 <strong><code>_ensure_video</code> now delegates straight to <code>async_ensure_telegram_video</code></strong> (no extension short-circuit). Now <strong>every</strong> sent video — single or album, from any platform — goes through <code>ffprobe</code>: if it's already H.264+AAC, it's sent as-is; if it's AV1/VP9/HEVC, it's re-encoded to H.264/AAC with faststart. This closes the gap and makes the v1.2.25 fix actually apply.</li>
+</ul>
+<p><strong>Added:</strong></p>
+<ul>
+<li>Updated test in <code>tests/test_telegram_io_timeouts.py</code> (<code>.mp4</code> also goes through the codec check)</li>
+</ul>
 <h2 id="v1226-fix-regression-ig-photomusic-came-back-as-just-the-photo">v1.2.26 — Fix regression: IG photo+music came back as just the photo<a class="headerlink" href="#v1226-fix-regression-ig-photomusic-came-back-as-just-the-photo" title="Permanent link">&para;</a></h2>
 <p>The <code>-framerate 30</code> from v1.2.25 made the ffmpeg merge <strong>hit the 60s timeout</strong> (30× more frames; on a large image + loaded machine it went over 60s), so the merge failed and the bot sent <strong>just the photo</strong>. Adjusted:</p>
 <ul>
@@ -2628,7 +2660,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 20, 2026 13:52:43 UTC"><span class="timeago" datetime="2026-08-20T13:52:43+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 20, 2026 13:52:43 UTC">2026-08-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 20, 2026 13:56:23 UTC"><span class="timeago" datetime="2026-08-20T13:56:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 20, 2026 13:56:23 UTC">2026-08-20</span>
   </span>
 
     
