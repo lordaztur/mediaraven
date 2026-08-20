@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.29 — Foto+música: capa a resolução em 1280 (1930px estourava o decoder do celular)
+
+**Causa raiz (probe do vídeo real):** o vídeo mesclado estava **tecnicamente perfeito** — H.264 Constrained Baseline, yuv420p, faststart, AAC — mas com resolução **1448×1930** (resolução original da foto do IG). Os **1930px de altura ultrapassam o limite dos decoders H.264 de hardware da maioria dos celulares (~1920)**, então o app não conseguia decodificar → **"unable to play, use external player"**. Não era codec nem metadados; era **resolução**.
+
+**Major changes:**
+
+- 📉 **Merge foto+música capa o lado maior em 1280px** (`scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease`, sem upscale, dimensões pares). Ex: 1448×1930 → 960×1280 — decodifica em qualquer aparelho. É o próprio limite "inline" que o Telegram usa; pra um clipe de foto+música a diferença é imperceptível.
+
 ## v1.2.28 — Passa width/height/duration no envio de vídeo (Bot API local não auto-detecta)
 
 **Pesquisa:** o bot usa o **Bot API local** (`LOCAL_API_HOST`). Diferente da API na nuvem, o servidor local **não auto-detecta os metadados do vídeo** — `width`, `height` e `duration` precisam ser passados explicitamente no `sendVideo`/`InputMediaVideo`. Sem eles, o cliente do Telegram às vezes não consegue montar o player e mostra **"App was unable to play this video. Try external player?"** — mesmo com o codec certo (H.264/AAC/yuv420p/faststart). Era o caso da foto+música do IG e de outros vídeos.

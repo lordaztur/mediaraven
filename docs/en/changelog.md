@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)
+
+**Root cause (probing the real video):** the merged video was **technically perfect** — H.264 Constrained Baseline, yuv420p, faststart, AAC — but at **1448×1930** (the IG photo's native resolution). The **1930px height exceeds most phones' hardware H.264 decoder limit (~1920)**, so the app couldn't decode it → **"unable to play, use external player"**. It wasn't the codec or metadata; it was **resolution**.
+
+**Major changes:**
+
+- 📉 **The photo+music merge now caps the longest side at 1280px** (`scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease`, no upscale, even dimensions). E.g. 1448×1930 → 960×1280 — decodes on any device. It's the same "inline" cap Telegram itself uses; for a photo+music clip the difference is imperceptible.
+
 ## v1.2.28 — Pass width/height/duration when sending video (local Bot API doesn't auto-detect)
 
 **Research:** the bot uses the **local Bot API server** (`LOCAL_API_HOST`). Unlike the cloud API, the local server **doesn't auto-detect video metadata** — `width`, `height` and `duration` must be passed explicitly on `sendVideo`/`InputMediaVideo`. Without them, the Telegram client sometimes can't build the player and shows **"App was unable to play this video. Try external player?"** — even with the right codec (H.264/AAC/yuv420p/faststart). This hit the IG photo+music and other videos.
