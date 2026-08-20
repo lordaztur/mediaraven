@@ -460,7 +460,7 @@ async def async_merge_audio_image(
     process = None
     ffmpeg_bin = state.FFMPEG_PATH or 'ffmpeg'
     try:
-        cmd = [ffmpeg_bin, '-y', '-loop', '1', '-framerate', '30', '-i', image_path]
+        cmd = [ffmpeg_bin, '-y', '-loop', '1', '-framerate', '15', '-i', image_path]
 
         if start_time is not None:
             cmd.extend(['-ss', str(start_time)])
@@ -473,7 +473,7 @@ async def async_merge_audio_image(
 
         cmd.extend([
             '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
-            '-r', '30',
+            '-r', '15',
             '-c:a', 'aac', '-b:a', '192k',
             '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
             '-pix_fmt', 'yuv420p', '-shortest',
@@ -485,7 +485,7 @@ async def async_merge_audio_image(
             *cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE
         )
 
-        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60)
+        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=180)
 
         if process.returncode != 0:
             err_msg = stderr.decode('utf-8', errors='ignore')

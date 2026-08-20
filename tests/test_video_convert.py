@@ -144,7 +144,7 @@ async def test_ensure_video_mp4_hevc_gets_reencoded(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_merge_audio_image_uses_30fps_and_faststart(tmp_path):
+async def test_merge_audio_image_uses_normal_fps_and_faststart(tmp_path):
     captured: list = []
 
     async def fake_exec(*args, **kwargs):
@@ -156,8 +156,9 @@ async def test_merge_audio_image_uses_30fps_and_faststart(tmp_path):
         ok = await utils.async_merge_audio_image("/img.jpg", "/aud.m4a", "/out.mp4", duration=10.0)
 
     assert ok is True
-    assert captured[captured.index("-framerate") + 1] == "30"
-    assert captured[captured.index("-r") + 1] == "30"
+    fps = captured[captured.index("-framerate") + 1]
+    assert fps == "15" and int(fps) > 1
+    assert captured[captured.index("-r") + 1] == "15"
     assert captured[captured.index("-movflags") + 1] == "+faststart"
 
 
