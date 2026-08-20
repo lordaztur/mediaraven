@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.26 — Corrige regressão: foto+música do IG voltava só a foto
+
+O `-framerate 30` do v1.2.25 fazia o merge ffmpeg **estourar o timeout de 60s** (encoda 30x mais frames; numa imagem grande + máquina carregada passava de 60s), então o merge falhava e o bot mandava **só a foto**. Ajustado:
+
+- 🎬 **Merge foto+música: 30 fps → 15 fps** (metade dos frames, ~20s numa imagem 1440×1800; ainda um framerate normal e compatível com o Telegram) e **timeout 60s → 180s** (folga pra máquina sob carga). Mantém H.264 + AAC + faststart. Validado ponta a ponta no post reportado: volta "Vídeo com Música" (h264 15fps + aac + faststart) em ~38s.
+
 ## v1.2.25 — Vídeos "incompatíveis / precisa de player externo" no Telegram
 
 O Telegram só toca **H.264 + AAC** inline. Vídeos que não batiam com isso vinham marcados como incompatíveis. Três frentes:
