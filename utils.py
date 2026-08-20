@@ -314,6 +314,59 @@ async def async_ffprobe_codecs(filepath: str, timeout: int = 30) -> tuple[Option
         return None, None
 
 
+async def async_ffprobe_video_meta(filepath: str, timeout: int = 30) -> tuple[Optional[int], Optional[int], Optional[int]]:
+    """Retorna (width, height, duration_seg) do 1º stream de vídeo — o Bot API local
+    NÃO auto-detecta esses metadados, e sem eles o cliente do Telegram às vezes não
+    monta o player ('não foi possível reproduzir, use player externo')."""
+    ffprobe_bin = state.FFPROBE_PATH
+    if not ffprobe_bin:
+        return None, None, None
+    process = None
+    try:
+        cmd = [
+            ffprobe_bin, '-v', 'error',
+            '-select_streams', 'v:0',
+            '-show_entries', 'stream=width,height:format=duration',
+            '-of', 'default=nw=1',
+            filepath,
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, _ = await asyncio.wait_for(process.communicate(), timeout=timeout)
+        if process.returncode != 0:
+            return None, None, None
+        width = height = duration = None
+        for line in stdout.decode('utf-8', errors='ignore').splitlines():
+            if '=' not in line:
+                continue
+            k, v = line.split('=', 1)
+            k, v = k.strip(), v.strip()
+            if not v or v == 'N/A':
+                continue
+            try:
+                if k == 'width':
+                    width = int(float(v))
+                elif k == 'height':
+                    height = int(float(v))
+                elif k == 'duration':
+                    duration = int(float(v))
+            except ValueError:
+                continue
+        return width, height, duration
+    except asyncio.TimeoutError:
+        if process:
+            try:
+                process.kill()
+                await process.wait()
+            except Exception:
+                pass
+        return None, None, None
+    except Exception as e:
+        logger.warning(lmsg("utils.ffprobe_erro", e=e))
+        return None, None, None
+
+
 async def async_ensure_telegram_video(filepath: str, timeout: int = 600) -> Optional[str]:
     ext_ok = is_telegram_compatible_video_ext(filepath)
 

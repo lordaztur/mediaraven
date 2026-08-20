@@ -14,7 +14,7 @@ from config import (
     VIDEO_EXTS,
 )
 from messages import lmsg
-from utils import async_ensure_telegram_video, async_gif_to_mp4
+from utils import async_ensure_telegram_video, async_ffprobe_video_meta, async_gif_to_mp4
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,18 @@ async def _gif_to_mp4(gif_path: str) -> Optional[str]:
 async def _ensure_video(f_path: str) -> str:
     converted = await async_ensure_telegram_video(f_path, timeout=cfg("VIDEO_CONVERT_TIMEOUT"))
     return converted or f_path
+
+
+async def _video_meta_kwargs(video_path: str) -> dict:
+    width, height, duration = await async_ffprobe_video_meta(video_path)
+    meta: dict = {}
+    if width:
+        meta['width'] = width
+    if height:
+        meta['height'] = height
+    if duration:
+        meta['duration'] = duration
+    return meta
 
 
 async def send_downloaded_media(
@@ -72,7 +84,10 @@ async def send_downloaded_media(
                     await context.bot.send_animation(chat_id=chat_id, animation=anim_path, **anim_kwargs)
                 elif filename_lower.endswith(VIDEO_EXTS):
                     video_path = await _ensure_video(f_path)
-                    await context.bot.send_video(chat_id=chat_id, video=video_path, supports_streaming=True, **upload_kwargs)
+                    vid_kwargs = dict(upload_kwargs)
+                    for k, v in (await _video_meta_kwargs(video_path)).items():
+                        vid_kwargs.setdefault(k, v)
+                    await context.bot.send_video(chat_id=chat_id, video=video_path, supports_streaming=True, **vid_kwargs)
                 else:
                     await context.bot.send_document(chat_id=chat_id, document=f_path, **upload_kwargs)
                 break
@@ -98,8 +113,13 @@ async def send_downloaded_media(
                 if filename_lower.endswith(IMAGE_EXTS):
                     media_group.append(InputMediaPhoto(media=f_path, parse_mode='HTML', caption=item_caption))
                 elif filename_lower.endswith(VIDEO_EXTS) or filename_lower.endswith(ANIMATION_EXTS):
-                    video_path = await _ensure_video(f_path) if filename_lower.endswith(VIDEO_EXTS) else f_path
-                    media_group.append(InputMediaVideo(media=video_path, parse_mode='HTML', caption=item_caption))
+                    is_video = filename_lower.endswith(VIDEO_EXTS)
+                    video_path = await _ensure_video(f_path) if is_video else f_path
+                    vid_meta = await _video_meta_kwargs(video_path) if is_video else {}
+                    media_group.append(InputMediaVideo(
+                        media=video_path, parse_mode='HTML', caption=item_caption,
+                        supports_streaming=True, **vid_meta,
+                    ))
 
             if media_group:
                 for attempt in range(5):
