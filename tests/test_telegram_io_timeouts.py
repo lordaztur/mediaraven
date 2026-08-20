@@ -213,7 +213,8 @@ async def test_video_webm_falls_back_to_original_when_convert_fails(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_video_mp4_skips_conversion(tmp_path):
+async def test_video_mp4_still_goes_through_codec_check(tmp_path):
+    """.mp4 também passa pela checagem de codec (pode ter AV1/HEVC); não é curto-circuitado pela extensão."""
     f = tmp_path / "clip.mp4"
     f.write_bytes(b"x")
     called = {"count": 0}
@@ -233,7 +234,7 @@ async def test_video_mp4_skips_conversion(tmp_path):
             upload_kwargs={},
         )
 
-    assert called["count"] == 0
+    assert called["count"] == 1
     kwargs = ctx.bot.send_video.await_args.kwargs
     assert kwargs["video"] == str(f)
 

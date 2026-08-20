@@ -14,7 +14,7 @@ from config import (
     VIDEO_EXTS,
 )
 from messages import lmsg
-from utils import async_ensure_telegram_video, async_gif_to_mp4, is_telegram_compatible_video_ext
+from utils import async_ensure_telegram_video, async_gif_to_mp4
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,6 @@ async def _gif_to_mp4(gif_path: str) -> Optional[str]:
 
 
 async def _ensure_video(f_path: str) -> str:
-    if is_telegram_compatible_video_ext(f_path):
-        return f_path
     converted = await async_ensure_telegram_video(f_path, timeout=cfg("VIDEO_CONVERT_TIMEOUT"))
     return converted or f_path
 
