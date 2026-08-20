@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1225-videos-incompativeis-precisa-de-player-externo-no-telegram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.25 — Vídeos "incompatíveis / precisa de player externo" no Telegram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1850,6 +1861,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1225-videos-incompativeis-precisa-de-player-externo-no-telegram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.25 — Vídeos "incompatíveis / precisa de player externo" no Telegram
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2167,6 +2189,18 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1225-videos-incompativeis-precisa-de-player-externo-no-telegram">v1.2.25 — Vídeos "incompatíveis / precisa de player externo" no Telegram<a class="headerlink" href="#v1225-videos-incompativeis-precisa-de-player-externo-no-telegram" title="Permanent link">&para;</a></h2>
+<p>O Telegram só toca <strong>H.264 + AAC</strong> inline. Vídeos que não batiam com isso vinham marcados como incompatíveis. Três frentes:</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🎬 <strong>Foto+música do Instagram (merge ffmpeg) agora é compatível.</strong> O merge usava <strong><code>-framerate 1</code></strong> (vídeo a 1 fps, que o player do Telegram rejeita) e <strong>não tinha <code>-movflags +faststart</code></strong> (sem streaming inline). Corrigido pra <strong>30 fps + faststart</strong> (<code>-tune stillimage</code> mantém o arquivo do mesmo tamanho).</li>
+<li>🔎 <strong><code>async_ensure_telegram_video</code> agora checa o codec antes de decidir</strong>, não só a extensão. Antes, qualquer <code>.mp4</code> passava direto — então um <code>.mp4</code> com <strong>AV1/VP9/HEVC</strong> (comum em YouTube/TikTok/FB) ia incompatível pro chat. Agora faz <code>ffprobe</code>: se já for H.264+AAC, envia como está (sem re-encode); se não, re-encoda pra H.264/AAC com faststart.</li>
+<li>🎯 <strong>yt-dlp passa a preferir H.264/AAC</strong> (<code>format_sort: ['vcodec:h264', 'acodec:aac']</code>). Assim a maioria dos downloads já vem compatível e evita o re-encode (mais rápido). Confirmado: YouTube que pegava <code>av01 @ 1440p</code> agora pega <code>avc1 @ 1080p</code> (compatível). Quando só existe AV1/HEVC, o re-encode acima garante a compatibilidade.</li>
+</ul>
+<p><strong>Adicionado:</strong></p>
+<ul>
+<li>4 testes em <code>tests/test_video_convert.py</code> (<code>.mp4</code> H.264 passa direto; <code>.mp4</code> AV1 e HEVC re-encodam; merge usa 30 fps + faststart)</li>
+</ul>
 <h2 id="v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp">v1.2.24 — YouTube volta a baixar em alta qualidade (atualiza yt-dlp)<a class="headerlink" href="#v1224-youtube-volta-a-baixar-em-alta-qualidade-atualiza-yt-dlp" title="Permanent link">&para;</a></h2>
 <p><strong>Major changes:</strong></p>
 <ul>
@@ -2565,7 +2599,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="19 de agosto de 2026 20:37:50 UTC"><span class="timeago" datetime="2026-08-19T20:37:50+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="19 de agosto de 2026 20:37:50 UTC">2026-08-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="20 de agosto de 2026 13:41:00 UTC"><span class="timeago" datetime="2026-08-20T13:41:00+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="20 de agosto de 2026 13:41:00 UTC">2026-08-20</span>
   </span>
 
     
