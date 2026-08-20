@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.28 — Pass width/height/duration when sending video (local Bot API doesn't auto-detect)
+
+**Research:** the bot uses the **local Bot API server** (`LOCAL_API_HOST`). Unlike the cloud API, the local server **doesn't auto-detect video metadata** — `width`, `height` and `duration` must be passed explicitly on `sendVideo`/`InputMediaVideo`. Without them, the Telegram client sometimes can't build the player and shows **"App was unable to play this video. Try external player?"** — even with the right codec (H.264/AAC/yuv420p/faststart). This hit the IG photo+music and other videos.
+
+**Major changes:**
+
+- 📐 **`send_video` and `InputMediaVideo` now get `width`, `height`, `duration` (via `ffprobe`) + `supports_streaming`.** Applies to every sent video — single and album. New `async_ffprobe_video_meta` helper in `utils.py`.
+
+**Added:**
+
+- `async_ffprobe_video_meta` in `utils.py`; `_video_meta_kwargs` in `telegram_io.py`
+
 ## v1.2.27 — Codec check now runs for ALL videos (closes the .mp4 gap)
 
 v1.2.25's `async_ensure_telegram_video` started checking the codec, but the `_ensure_video` wrapper (in `telegram_io.py`) **returned early by extension** before calling it — so an `.mp4` with **AV1/VP9/HEVC** (common on TikTok/IG via instagrapi, scraper, etc.) still went out incompatible. v1.2.25's codec check was effectively ignored for `.mp4`.
