@@ -528,7 +528,7 @@ async def async_merge_audio_image(
             '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
             '-r', '15',
             '-c:a', 'aac', '-b:a', '192k',
-            '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+            '-vf', "scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
             '-pix_fmt', 'yuv420p', '-shortest',
             '-movflags', '+faststart',
             output_path
