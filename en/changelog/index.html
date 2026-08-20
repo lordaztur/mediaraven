@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1228-pass-widthheightduration-when-sending-video-local-bot-api-doesnt-auto-detect" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1896,6 +1907,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1228-pass-widthheightduration-when-sending-video-local-bot-api-doesnt-auto-detect" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2257,6 +2279,12 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder">v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)<a class="headerlink" href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" title="Permanent link">&para;</a></h2>
+<p><strong>Root cause (probing the real video):</strong> the merged video was <strong>technically perfect</strong> — H.264 Constrained Baseline, yuv420p, faststart, AAC — but at <strong>1448×1930</strong> (the IG photo's native resolution). The <strong>1930px height exceeds most phones' hardware H.264 decoder limit (~1920)</strong>, so the app couldn't decode it → <strong>"unable to play, use external player"</strong>. It wasn't the codec or metadata; it was <strong>resolution</strong>.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📉 <strong>The photo+music merge now caps the longest side at 1280px</strong> (<code>scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease</code>, no upscale, even dimensions). E.g. 1448×1930 → 960×1280 — decodes on any device. It's the same "inline" cap Telegram itself uses; for a photo+music clip the difference is imperceptible.</li>
+</ul>
 <h2 id="v1228-pass-widthheightduration-when-sending-video-local-bot-api-doesnt-auto-detect">v1.2.28 — Pass width/height/duration when sending video (local Bot API doesn't auto-detect)<a class="headerlink" href="#v1228-pass-widthheightduration-when-sending-video-local-bot-api-doesnt-auto-detect" title="Permanent link">&para;</a></h2>
 <p><strong>Research:</strong> the bot uses the <strong>local Bot API server</strong> (<code>LOCAL_API_HOST</code>). Unlike the cloud API, the local server <strong>doesn't auto-detect video metadata</strong> — <code>width</code>, <code>height</code> and <code>duration</code> must be passed explicitly on <code>sendVideo</code>/<code>InputMediaVideo</code>. Without them, the Telegram client sometimes can't build the player and shows <strong>"App was unable to play this video. Try external player?"</strong> — even with the right codec (H.264/AAC/yuv420p/faststart). This hit the IG photo+music and other videos.</p>
 <p><strong>Major changes:</strong></p>
@@ -2692,7 +2720,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 20, 2026 14:03:46 UTC"><span class="timeago" datetime="2026-08-20T14:03:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 20, 2026 14:03:46 UTC">2026-08-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 20, 2026 14:11:13 UTC"><span class="timeago" datetime="2026-08-20T14:11:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 20, 2026 14:11:13 UTC">2026-08-20</span>
   </span>
 
     

@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1229-fotomusica-capa-a-resolucao-em-1280-1930px-estourava-o-decoder-do-celular" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.29 — Foto+música: capa a resolução em 1280 (1930px estourava o decoder do celular)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1228-passa-widthheightduration-no-envio-de-video-bot-api-local-nao-auto-detecta" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1894,6 +1905,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1229-fotomusica-capa-a-resolucao-em-1280-1930px-estourava-o-decoder-do-celular" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.29 — Foto+música: capa a resolução em 1280 (1930px estourava o decoder do celular)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1228-passa-widthheightduration-no-envio-de-video-bot-api-local-nao-auto-detecta" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2255,6 +2277,12 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1229-fotomusica-capa-a-resolucao-em-1280-1930px-estourava-o-decoder-do-celular">v1.2.29 — Foto+música: capa a resolução em 1280 (1930px estourava o decoder do celular)<a class="headerlink" href="#v1229-fotomusica-capa-a-resolucao-em-1280-1930px-estourava-o-decoder-do-celular" title="Permanent link">&para;</a></h2>
+<p><strong>Causa raiz (probe do vídeo real):</strong> o vídeo mesclado estava <strong>tecnicamente perfeito</strong> — H.264 Constrained Baseline, yuv420p, faststart, AAC — mas com resolução <strong>1448×1930</strong> (resolução original da foto do IG). Os <strong>1930px de altura ultrapassam o limite dos decoders H.264 de hardware da maioria dos celulares (~1920)</strong>, então o app não conseguia decodificar → <strong>"unable to play, use external player"</strong>. Não era codec nem metadados; era <strong>resolução</strong>.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📉 <strong>Merge foto+música capa o lado maior em 1280px</strong> (<code>scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease</code>, sem upscale, dimensões pares). Ex: 1448×1930 → 960×1280 — decodifica em qualquer aparelho. É o próprio limite "inline" que o Telegram usa; pra um clipe de foto+música a diferença é imperceptível.</li>
+</ul>
 <h2 id="v1228-passa-widthheightduration-no-envio-de-video-bot-api-local-nao-auto-detecta">v1.2.28 — Passa width/height/duration no envio de vídeo (Bot API local não auto-detecta)<a class="headerlink" href="#v1228-passa-widthheightduration-no-envio-de-video-bot-api-local-nao-auto-detecta" title="Permanent link">&para;</a></h2>
 <p><strong>Pesquisa:</strong> o bot usa o <strong>Bot API local</strong> (<code>LOCAL_API_HOST</code>). Diferente da API na nuvem, o servidor local <strong>não auto-detecta os metadados do vídeo</strong> — <code>width</code>, <code>height</code> e <code>duration</code> precisam ser passados explicitamente no <code>sendVideo</code>/<code>InputMediaVideo</code>. Sem eles, o cliente do Telegram às vezes não consegue montar o player e mostra <strong>"App was unable to play this video. Try external player?"</strong> — mesmo com o codec certo (H.264/AAC/yuv420p/faststart). Era o caso da foto+música do IG e de outros vídeos.</p>
 <p><strong>Major changes:</strong></p>
@@ -2690,7 +2718,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="20 de agosto de 2026 14:03:46 UTC"><span class="timeago" datetime="2026-08-20T14:03:46+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="20 de agosto de 2026 14:03:46 UTC">2026-08-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="20 de agosto de 2026 14:11:13 UTC"><span class="timeago" datetime="2026-08-20T14:11:13+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="20 de agosto de 2026 14:11:13 UTC">2026-08-20</span>
   </span>
 
     
