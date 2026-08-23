@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.30 — YouTube froze the bot: impersonation now required (TLS anti-bot) + `default` client
+
+**Root cause (hang stack trace):** every YouTube link stopped downloading and **froze the bot**. The trace showed yt-dlp stuck in `networking/_requests.py:_send` while downloading the initial webpage — YouTube began **tarpitting connections whose TLS fingerprint isn't a browser's**. yt-dlp's `requests`/urllib3 backend hung forever (not even `socket_timeout` cut it), while plain `curl` and `curl_cffi` (impersonation) fetched the page in ~1s. It wasn't the yt-dlp version or deno — it was **TLS anti-bot**.
+
+**Major changes:**
+
+- 🕵️ **Impersonation (curl_cffi/chrome) now in `base_opts`** — covers all three YouTube paths (language detection, pre-extract, download), which previously used the `requests` backend and hung. The bot already used impersonation, but its platform list had **left YouTube out**.
+- 📺 **YouTube client: `ios,mweb,web` → `default`** — YouTube's SABR experiment was capping the `ios`/`mweb` clients at **360p** (high-res DASH formats require a PO token). yt-dlp's `default` client set delivers **1080p H.264 + audio** without any PO token/bgutil. Validated end-to-end: Rick Astley downloaded at 1920×1080.
+- ⬆️ **yt-dlp updated to nightly `2026.08.20`** (improves the `default` set).
+
 ## v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)
 
 **Root cause (probing the real video):** the merged video was **technically perfect** — H.264 Constrained Baseline, yuv420p, faststart, AAC — but at **1448×1930** (the IG photo's native resolution). The **1930px height exceeds most phones' hardware H.264 decoder limit (~1920)**, so the app couldn't decode it → **"unable to play, use external player"**. It wasn't the codec or metadata; it was **resolution**.
