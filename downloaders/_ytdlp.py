@@ -31,6 +31,7 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
         'remote_components': ['ejs:github'],
         'extractor_args': {'youtube': [f'player_client={cfg("YTDLP_YT_CLIENTS")}']},
         'format_sort': ['vcodec:h264', 'acodec:aac'],
+        'impersonate': ImpersonateTarget('chrome'),
     }
     if state.DENO_PATH:
         opts['js_runtimes'] = {'deno': {'path': state.DENO_PATH}}
@@ -135,9 +136,7 @@ def _apply_format_selection(
         )
         opts['merge_output_format'] = 'mp4'
 
-    if use_impersonate and (platform.facebook or platform.instagram or platform.reddit or platform.tiktok):
-        opts['impersonate'] = ImpersonateTarget('chrome')
-    elif not use_impersonate:
+    if not use_impersonate:
         opts.pop('impersonate', None)
 
     if platform.tiktok:

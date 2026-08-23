@@ -167,8 +167,9 @@ def test_apply_format_selection_progressive_keeps_max_height():
     assert '[height<=1920]' in opts['format']
 
 
-def test_apply_format_selection_reddit_sets_impersonate_by_default():
-    opts = {}
+def test_apply_format_selection_reddit_keeps_impersonate_by_default():
+    from yt_dlp.networking.impersonate import ImpersonateTarget
+    opts = {'impersonate': ImpersonateTarget('chrome')}
     platform = Platform(reddit=True)
     with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
         _ytdlp._apply_format_selection(opts, platform, None)
@@ -192,13 +193,14 @@ def test_apply_format_selection_pops_existing_impersonate_when_disabled():
     assert 'impersonate' not in opts
 
 
-def test_apply_format_selection_facebook_keeps_impersonate_even_with_use_imp_false():
-    opts = {}
+def test_apply_format_selection_facebook_keeps_or_pops_impersonate():
+    from yt_dlp.networking.impersonate import ImpersonateTarget
     platform = Platform(facebook=True)
+    opts = {'impersonate': ImpersonateTarget('chrome')}
     with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
         _ytdlp._apply_format_selection(opts, platform, None)
     assert 'impersonate' in opts
-    opts2 = {}
+    opts2 = {'impersonate': ImpersonateTarget('chrome')}
     with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
         _ytdlp._apply_format_selection(opts2, platform, None, use_impersonate=False)
     assert 'impersonate' not in opts2
@@ -256,10 +258,22 @@ def test_attempt_order_non_tiktok_keeps_no_cookie_first():
     assert _ytdlp._attempt_order(True, None, None) == ["no_cookie", "with_cookie"]
 
 
-def test_apply_format_selection_tiktok_sets_impersonate():
-    opts = {}
+def test_apply_format_selection_tiktok_keeps_impersonate():
+    from yt_dlp.networking.impersonate import ImpersonateTarget
+    opts = {'impersonate': ImpersonateTarget('chrome')}
     with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
         _ytdlp._apply_format_selection(opts, Platform(tiktok=True), None, use_impersonate=True)
+    assert 'impersonate' in opts
+
+
+def test_build_base_opts_sets_impersonate_for_all_including_youtube():
+    from yt_dlp.networking.impersonate import ImpersonateTarget
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_SOCKET_TIMEOUT': 90, 'YTDLP_YT_CLIENTS': 'default'}.get(k)):
+        base = _ytdlp._build_ytdlp_base_opts('/tmp/x')
+    assert isinstance(base.get('impersonate'), ImpersonateTarget)
+    opts = dict(base)
+    with patch.object(_ytdlp, 'cfg', lambda k: {'YTDLP_MAX_HEIGHT': 1920, 'TELEGRAM_MAX_UPLOAD_MB': 2000, 'YTDLP_HLS_MAX_HEIGHT': 720}.get(k)):
+        _ytdlp._apply_format_selection(opts, Platform(youtube=True), None)
     assert 'impersonate' in opts
 
 
