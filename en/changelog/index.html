@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1230-youtube-froze-the-bot-impersonation-now-required-tls-anti-bot-default-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.30 — YouTube froze the bot: impersonation now required (TLS anti-bot) + default client
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1907,6 +1918,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1230-youtube-froze-the-bot-impersonation-now-required-tls-anti-bot-default-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.30 — YouTube froze the bot: impersonation now required (TLS anti-bot) + default client
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2279,6 +2301,14 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1230-youtube-froze-the-bot-impersonation-now-required-tls-anti-bot-default-client">v1.2.30 — YouTube froze the bot: impersonation now required (TLS anti-bot) + <code>default</code> client<a class="headerlink" href="#v1230-youtube-froze-the-bot-impersonation-now-required-tls-anti-bot-default-client" title="Permanent link">&para;</a></h2>
+<p><strong>Root cause (hang stack trace):</strong> every YouTube link stopped downloading and <strong>froze the bot</strong>. The trace showed yt-dlp stuck in <code>networking/_requests.py:_send</code> while downloading the initial webpage — YouTube began <strong>tarpitting connections whose TLS fingerprint isn't a browser's</strong>. yt-dlp's <code>requests</code>/urllib3 backend hung forever (not even <code>socket_timeout</code> cut it), while plain <code>curl</code> and <code>curl_cffi</code> (impersonation) fetched the page in ~1s. It wasn't the yt-dlp version or deno — it was <strong>TLS anti-bot</strong>.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🕵️ <strong>Impersonation (curl_cffi/chrome) now in <code>base_opts</code></strong> — covers all three YouTube paths (language detection, pre-extract, download), which previously used the <code>requests</code> backend and hung. The bot already used impersonation, but its platform list had <strong>left YouTube out</strong>.</li>
+<li>📺 <strong>YouTube client: <code>ios,mweb,web</code> → <code>default</code></strong> — YouTube's SABR experiment was capping the <code>ios</code>/<code>mweb</code> clients at <strong>360p</strong> (high-res DASH formats require a PO token). yt-dlp's <code>default</code> client set delivers <strong>1080p H.264 + audio</strong> without any PO token/bgutil. Validated end-to-end: Rick Astley downloaded at 1920×1080.</li>
+<li>⬆️ <strong>yt-dlp updated to nightly <code>2026.08.20</code></strong> (improves the <code>default</code> set).</li>
+</ul>
 <h2 id="v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder">v1.2.29 — Photo+music: cap resolution at 1280 (1930px exceeded the phone's decoder)<a class="headerlink" href="#v1229-photomusic-cap-resolution-at-1280-1930px-exceeded-the-phones-decoder" title="Permanent link">&para;</a></h2>
 <p><strong>Root cause (probing the real video):</strong> the merged video was <strong>technically perfect</strong> — H.264 Constrained Baseline, yuv420p, faststart, AAC — but at <strong>1448×1930</strong> (the IG photo's native resolution). The <strong>1930px height exceeds most phones' hardware H.264 decoder limit (~1920)</strong>, so the app couldn't decode it → <strong>"unable to play, use external player"</strong>. It wasn't the codec or metadata; it was <strong>resolution</strong>.</p>
 <p><strong>Major changes:</strong></p>
@@ -2720,7 +2750,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 20, 2026 14:11:13 UTC"><span class="timeago" datetime="2026-08-20T14:11:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 20, 2026 14:11:13 UTC">2026-08-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 23, 2026 03:04:32 UTC"><span class="timeago" datetime="2026-08-23T03:04:32+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 23, 2026 03:04:32 UTC">2026-08-23</span>
   </span>
 
     
