@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.2.31 — Reddit: anonymous session bypasses the JSON API 403 + crosspost support
+
+**Two causes (link `/r/riodejaneiro/.../s/WqKj4dUF3T`):**
+
+1. **Reddit's JSON API started blocking (403 "Blocked") requests without a session cookie.** yt-dlp's `--print-traffic` revealed the trick: it **visits Reddit first** to earn an **anonymous** session (`token_v2`, `loid`, `session_tracker`) and only then requests the `.json` — which returns 200. The bot sent the `.json` with no cookies → 403 → fell back to yt-dlp, which hit the rate limit and retried for **7 minutes** before giving up.
+2. **It was a crosspost** ("a post inside a post") — the media (a 4-image gallery) lives in `crosspost_parent_list`, which the extractor ignored.
+
+**Major changes:**
+
+- 🪪 **Reddit anonymous session bootstrap** — before the `.json`, the bot does a GET on Reddit to obtain guest cookies (`_ensure_reddit_session`), sends `over18=1`, and on 403/429 re-bootstraps and retries once. Restores the **native extraction** (Native API/Images), no yt-dlp delegation.
+- 🔁 **Crosspost support** — when a post has `crosspost_parent_list`, media is pulled from the **original** post (gallery, single image, or preview). A video original still goes to yt-dlp.
+- ✅ Validated end-to-end: the link downloaded all **4 gallery images** via the Native API.
+
 ## v1.2.30 — YouTube froze the bot: impersonation now required (TLS anti-bot) + `default` client
 
 **Root cause (hang stack trace):** every YouTube link stopped downloading and **froze the bot**. The trace showed yt-dlp stuck in `networking/_requests.py:_send` while downloading the initial webpage — YouTube began **tarpitting connections whose TLS fingerprint isn't a browser's**. yt-dlp's `requests`/urllib3 backend hung forever (not even `socket_timeout` cut it), while plain `curl` and `curl_cffi` (impersonation) fetched the page in ~1s. It wasn't the yt-dlp version or deno — it was **TLS anti-bot**.
