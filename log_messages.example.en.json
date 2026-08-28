@@ -118,7 +118,10 @@
   "reddit_json": {
     "iniciando_extra_o_via": "👽 Starting JSON extraction for Reddit: {arg0}",
     "usando_x_cookies": "🍪 Using {arg0} Firefox cookies for the Scraper/API.",
+    "sessao_anonima_ok": "🪪 Reddit anonymous session started (guest cookies for the JSON API).",
+    "sessao_anonima_falhou": "⚠️ Failed to start Reddit anonymous session: {e}",
     "post_v_deo": "👽 Post is video — delegating to yt-dlp (which handles DASH merge).",
+    "crosspost_detectado": "🔁 Crosspost detected — extracting media from the original post.",
     "erro_ao_ler": "⚠️ Error reading Reddit JSON (aiohttp): {e}",
     "erro_ao_processar": "⚠️ Error processing Reddit image: {e}"
   },

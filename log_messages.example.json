@@ -118,7 +118,10 @@
   "reddit_json": {
     "iniciando_extra_o_via": "👽 Iniciando extração via JSON para Reddit: {arg0}",
     "usando_x_cookies": "🍪 Usando {arg0} cookies do Firefox para o Scraper/API.",
+    "sessao_anonima_ok": "🪪 Sessão anônima do Reddit iniciada (cookies de guest para a API JSON).",
+    "sessao_anonima_falhou": "⚠️ Falha ao iniciar sessão anônima do Reddit: {e}",
     "post_v_deo": "👽 Post é vídeo — delegando pro yt-dlp (que faz merge DASH).",
+    "crosspost_detectado": "🔁 Crosspost detectado — extraindo mídia do post original.",
     "erro_ao_ler": "⚠️ Erro ao ler JSON do Reddit (aiohttp): {e}",
     "erro_ao_processar": "⚠️ Erro ao processar imagem do Reddit: {e}"
   },

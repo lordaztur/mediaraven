@@ -1,6 +1,8 @@
 import logging
 import os
 
+import aiohttp
+
 import state
 from config import cfg
 from cookies import get_aiohttp_cookies_for_url
@@ -10,6 +12,9 @@ from utils import async_download_file, normalize_image, safe_url
 from .reddit_common import build_reddit_caption, clean_reddit_media_url, looks_like_image, reddit_external_link
 
 logger = logging.getLogger(__name__)
+
+_REDDIT_GUEST_BOOTSTRAP_URL = "https://old.reddit.com/"
+_reddit_session_ready = False
 
 
 def _reddit_json_headers() -> dict:
@@ -25,16 +30,44 @@ def _reddit_json_headers() -> dict:
     }
 
 
+async def _ensure_reddit_session(force: bool = False) -> None:
+    global _reddit_session_ready
+    if _reddit_session_ready and not force:
+        return
+    try:
+        async with state.AIOHTTP_SESSION.get(
+            _REDDIT_GUEST_BOOTSTRAP_URL, headers=_reddit_json_headers(),
+            allow_redirects=True, timeout=15,
+        ) as resp:
+            await resp.read()
+        _reddit_session_ready = True
+        logger.info(lmsg("reddit_json.sessao_anonima_ok"))
+    except Exception as e:
+        logger.debug(lmsg("reddit_json.sessao_anonima_falhou", e=e))
+
+
 async def _fetch_reddit_post_data(url: str) -> dict:
-    cookies_dict = get_aiohttp_cookies_for_url(url)
+    await _ensure_reddit_session()
+    cookies_dict = dict(get_aiohttp_cookies_for_url(url) or {})
+    cookies_dict.setdefault('over18', '1')
     if cookies_dict:
         logger.info(lmsg("reddit_json.usando_x_cookies", arg0=len(cookies_dict)))
     clean_url = url.split('?')[0].rstrip('/')
     json_url = f"{clean_url}.json?raw_json=1"
-    async with state.AIOHTTP_SESSION.get(json_url, headers=_reddit_json_headers(), cookies=cookies_dict, timeout=15) as resp:
-        resp.raise_for_status()
-        data = await resp.json()
-    return data[0]['data']['children'][0]['data']
+
+    async def _get() -> dict:
+        async with state.AIOHTTP_SESSION.get(json_url, headers=_reddit_json_headers(), cookies=cookies_dict, timeout=15) as resp:
+            resp.raise_for_status()
+            data = await resp.json()
+        return data[0]['data']['children'][0]['data']
+
+    try:
+        return await _get()
+    except aiohttp.ClientResponseError as e:
+        if e.status in (403, 429):
+            await _ensure_reddit_session(force=True)
+            return await _get()
+        raise
 
 
 async def resolve_reddit_external_link(url: str) -> tuple["dict | None", "dict | None"]:
@@ -67,33 +100,41 @@ async def download_reddit_json(
         title = post_data.get('title', '') or ''
         selftext = post_data.get('selftext', '') or ''
 
-        if post_data.get('is_video') or post_data.get('post_hint') in ('hosted:video', 'rich:video'):
+        media_src = post_data
+        crosspost_parents = post_data.get('crosspost_parent_list') or []
+        if crosspost_parents:
+            media_src = crosspost_parents[-1]
+            logger.info(lmsg("reddit_json.crosspost_detectado"))
+            if not selftext:
+                selftext = media_src.get('selftext', '') or ''
+
+        if media_src.get('is_video') or media_src.get('post_hint') in ('hosted:video', 'rich:video'):
             logger.info(lmsg("reddit_json.post_v_deo"))
             return [], msg("downloader_status.reddit_json_fail"), "", ""
 
-        if 'media_metadata' in post_data:
-            gallery_items = post_data.get('gallery_data', {}).get('items', [])
+        if 'media_metadata' in media_src:
+            gallery_items = media_src.get('gallery_data', {}).get('items', [])
             if gallery_items:
                 for item in gallery_items:
                     media_id = item['media_id']
-                    media_info = post_data['media_metadata'].get(media_id, {})
+                    media_info = media_src['media_metadata'].get(media_id, {})
                     if media_info.get('status') == 'valid':
                         img_url = media_info.get('s', {}).get('u') or media_info.get('s', {}).get('gif')
                         clean_u = clean_reddit_media_url(img_url)
                         if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
             else:
-                for media_id, media_info in post_data['media_metadata'].items():
+                for media_id, media_info in media_src['media_metadata'].items():
                     if media_info.get('status') == 'valid':
                         img_url = media_info.get('s', {}).get('u') or media_info.get('s', {}).get('gif')
                         clean_u = clean_reddit_media_url(img_url)
                         if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
 
-        elif 'url' in post_data and looks_like_image(post_data['url']):
-            clean_u = clean_reddit_media_url(post_data['url'])
+        elif 'url' in media_src and looks_like_image(media_src['url']):
+            clean_u = clean_reddit_media_url(media_src['url'])
             if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
 
-        elif 'preview' in post_data and 'images' in post_data['preview']:
-            img_url = post_data['preview']['images'][0]['source']['url']
+        elif 'preview' in media_src and 'images' in media_src['preview']:
+            img_url = media_src['preview']['images'][0]['source']['url']
             clean_u = clean_reddit_media_url(img_url)
             if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
 
