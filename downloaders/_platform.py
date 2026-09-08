@@ -33,19 +33,33 @@ _PLATFORM_HOSTS = {
 
 
 def _host_matches(host: str, suffixes: tuple[str, ...]) -> bool:
-    for suffix in suffixes:
-        if host == suffix or host.endswith('.' + suffix):
-            return True
-    return False
+    return any(host == s or host.endswith('.' + s) for s in suffixes)
 
 
-def _detect_platform(url: str) -> Platform:
+def _bare_host(url: str) -> str:
+    """netloc em minúsculas, sem 'www.'. String vazia se a URL for inválida."""
     try:
         host = (urlparse(url).netloc or '').lower()
     except Exception:
-        host = ''
-    if host.startswith('www.'):
-        host = host[4:]
+        return ''
+    return host[4:] if host.startswith('www.') else host
+
+
+async def _resolve_redirect(url: str, fail_key: str) -> str:
+    """GET seguindo redirects; devolve a URL final (ou a original, em erro)."""
+    try:
+        async with state.AIOHTTP_SESSION.get(
+            url, headers={'User-Agent': AIOHTTP_UA_DEFAULT},
+            allow_redirects=True, timeout=15,
+        ) as resp:
+            return str(resp.url)
+    except Exception as e:
+        logger.warning(lmsg(fail_key, e=e))
+        return url
+
+
+def _detect_platform(url: str) -> Platform:
+    host = _bare_host(url)
     return Platform(
         threads=_host_matches(host, _PLATFORM_HOSTS['threads']),
         instagram=_host_matches(host, _PLATFORM_HOSTS['instagram']),
@@ -60,17 +74,11 @@ def _detect_platform(url: str) -> Platform:
 async def _resolve_short_reddit_url(url: str) -> str:
     if not _detect_platform(url).reddit or "/s/" not in url:
         return url
-    try:
-        logger.info(lmsg("_platform.resolvendo_link_encurtado", arg0=safe_url(url)))
-        headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
-        async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
-            new_url = str(resp.url)
-        if new_url != url:
-            logger.info(lmsg("_platform.link_resolvido_x", arg0=safe_url(new_url)))
-        return new_url
-    except Exception as e:
-        logger.warning(lmsg("_platform.falha_ao_resolver", e=e))
-        return url
+    logger.info(lmsg("_platform.resolvendo_link_encurtado", arg0=safe_url(url)))
+    new_url = await _resolve_redirect(url, "_platform.falha_ao_resolver")
+    if new_url != url:
+        logger.info(lmsg("_platform.link_resolvido_x", arg0=safe_url(new_url)))
+    return new_url
 
 
 _KWAI_HOSTS = (
@@ -83,49 +91,30 @@ _KWAI_HOSTS = (
 def _is_kwai_host(host: str) -> bool:
     if host.startswith('www.'):
         host = host[4:]
-    return any(host == h or host.endswith('.' + h) for h in _KWAI_HOSTS)
+    return _host_matches(host, _KWAI_HOSTS)
 
 
 async def _resolve_kwai_url(url: str) -> str:
-    parsed = urlparse(url)
-    host = (parsed.netloc or '').lower()
-    if not _is_kwai_host(host):
+    if not _is_kwai_host(_bare_host(url)):
         return url
-    new_url = url
-    try:
-        logger.info(lmsg("_platform.resolvendo_kwai", arg0=safe_url(url)))
-        headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
-        async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
-            new_url = str(resp.url)
-    except Exception as e:
-        logger.warning(lmsg("_platform.falha_ao_resolver_kwai", e=e))
-    final_parsed = urlparse(new_url)
-    cleaned = urlunparse(final_parsed._replace(query="", fragment=""))
+    logger.info(lmsg("_platform.resolvendo_kwai", arg0=safe_url(url)))
+    new_url = await _resolve_redirect(url, "_platform.falha_ao_resolver_kwai")
+    cleaned = urlunparse(urlparse(new_url)._replace(query="", fragment=""))
     if cleaned != url:
         logger.info(lmsg("_platform.kwai_resolvido", arg0=safe_url(cleaned)))
     return cleaned
 
 
 async def _resolve_facebook_share_url(url: str) -> str:
-    parsed = urlparse(url)
-    host = (parsed.netloc or '').lower()
-    if host.startswith('www.'):
-        host = host[4:]
-    if not (host == 'facebook.com' or host.endswith('.facebook.com')):
+    if not _host_matches(_bare_host(url), ('facebook.com',)):
         return url
-    if '/share/' not in parsed.path:
+    if '/share/' not in urlparse(url).path:
         return url
-    try:
-        logger.info(lmsg("_platform.resolvendo_share_url", arg0=safe_url(url)))
-        headers = {'User-Agent': AIOHTTP_UA_DEFAULT}
-        async with state.AIOHTTP_SESSION.get(url, headers=headers, allow_redirects=True, timeout=15) as resp:
-            new_url = str(resp.url)
-        if new_url != url:
-            logger.info(lmsg("_platform.link_resolvido_x_2", arg0=safe_url(new_url)))
-        return new_url
-    except Exception as e:
-        logger.warning(lmsg("_platform.falha_ao_resolver_2", e=e))
-        return url
+    logger.info(lmsg("_platform.resolvendo_share_url", arg0=safe_url(url)))
+    new_url = await _resolve_redirect(url, "_platform.falha_ao_resolver_2")
+    if new_url != url:
+        logger.info(lmsg("_platform.link_resolvido_x_2", arg0=safe_url(new_url)))
+    return new_url
 
 
 def _normalize_youtube_url(url: str) -> str:

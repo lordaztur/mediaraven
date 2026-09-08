@@ -2,16 +2,13 @@
 import os
 from pathlib import Path
 
-from downloaders.dispatcher import (
-    Platform,
+from downloaders._caption import _build_caption
+from downloaders._languages import _build_lang_buttons, _parse_lang_from_format
+from downloaders._platform import Platform, _detect_platform, _normalize_youtube_url
+from downloaders._ytdlp import (
     _apply_format_selection,
     _attempt_order,
-    _build_caption,
-    _build_lang_buttons,
-    _detect_platform,
     _list_downloaded_files,
-    _normalize_youtube_url,
-    _parse_lang_from_format,
     _wipe_folder,
 )
 

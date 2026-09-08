@@ -5,12 +5,14 @@ import aiohttp
 from cachetools import TTLCache
 from playwright.async_api import async_playwright
 
+import metrics
 import state
 from config import (
     AIOHTTP_CONN_LIMIT,
     AIOHTTP_CONNECT_TIMEOUT,
     AIOHTTP_READ_TIMEOUT,
     AIOHTTP_TOTAL_TIMEOUT,
+    METRICS_LOG_INTERVAL_MIN,
     PLAYWRIGHT_UA,
     PW_VIEWPORT_HEIGHT,
     PW_VIEWPORT_WIDTH,
@@ -22,11 +24,33 @@ from messages import lmsg
 from cookies import extract_firefox_cookies
 
 from .instagram_login import init_instagrapi_async
-from .metrics_log import periodic_metrics_log
 from .playwright_refresh import periodic_playwright_refresh
 from .startup import startup_cleanup_async
 
 logger = logging.getLogger(__name__)
+
+
+def get_chat_lock(chat_id: int) -> asyncio.Lock:
+    """Retorna o Lock do chat, criando dentro do event loop ativo.
+
+    Armazenado em state.chat_locks (WeakValueDictionary) para que seja coletado
+    pelo GC quando nenhum download estiver segurando o lock — evita leak em
+    bots que conversam com muitos chats distintos.
+    """
+    lock = state.chat_locks.get(chat_id)
+    if lock is None:
+        lock = asyncio.Lock()
+        state.chat_locks[chat_id] = lock
+    return lock
+
+
+async def periodic_metrics_log() -> None:
+    while True:
+        await asyncio.sleep(METRICS_LOG_INTERVAL_MIN * 60)
+        try:
+            logger.info(metrics.format_summary())
+        except Exception as e:
+            logger.debug(lmsg("metrics_log.falha_ao_logar", e=e))
 
 
 async def init_globals(app) -> None:

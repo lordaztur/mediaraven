@@ -76,32 +76,33 @@ def _tweet_ids(obj: dict) -> list[str]:
     return ids
 
 
-def _walk_for_tweet_media(obj, tweet_id: str):
+def _walk_dicts(obj):
+    """Emite todo dict aninhado em obj, em pré-ordem."""
     if isinstance(obj, dict):
-        ext = obj.get("extended_entities")
-        if isinstance(ext, dict):
-            media = ext.get("media")
-            if isinstance(media, list) and media and tweet_id in _tweet_ids(obj):
-                yield media
+        yield obj
         for v in obj.values():
-            yield from _walk_for_tweet_media(v, tweet_id)
+            yield from _walk_dicts(v)
     elif isinstance(obj, list):
         for v in obj:
-            yield from _walk_for_tweet_media(v, tweet_id)
+            yield from _walk_dicts(v)
+
+
+def _walk_for_tweet_media(obj, tweet_id: str):
+    for node in _walk_dicts(obj):
+        ext = node.get("extended_entities")
+        if isinstance(ext, dict):
+            media = ext.get("media")
+            if isinstance(media, list) and media and tweet_id in _tweet_ids(node):
+                yield media
 
 
 def _walk_for_tweet_obj(obj, tweet_id: str):
-    if isinstance(obj, dict):
-        if tweet_id in _tweet_ids(obj):
-            yield obj
-        legacy = obj.get("legacy")
+    for node in _walk_dicts(obj):
+        if tweet_id in _tweet_ids(node):
+            yield node
+        legacy = node.get("legacy")
         if isinstance(legacy, dict) and tweet_id in _tweet_ids(legacy):
             yield legacy
-        for v in obj.values():
-            yield from _walk_for_tweet_obj(v, tweet_id)
-    elif isinstance(obj, list):
-        for v in obj:
-            yield from _walk_for_tweet_obj(v, tweet_id)
 
 
 def _find_in_initial_state(data: dict, tweet_id: str) -> Optional[dict]:

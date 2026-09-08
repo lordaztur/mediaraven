@@ -33,30 +33,25 @@ def _csv_strings(raw: str) -> list[str]:
     return [p.strip() for p in raw.split(",") if p.strip()]
 
 
-def _env_int(name: str, default: int) -> int:
+def _env_num(name: str, default, cast):
     raw = os.getenv(name, "")
     if not raw:
         return default
     try:
-        return int(raw)
+        return cast(raw)
     except ValueError:
         _boot_logger.warning(
-            f"⚠️ Env var {name}={raw!r} não é inteiro; usando default {default}."
+            f"⚠️ Env var {name}={raw!r} não é {cast.__name__}; usando default {default}."
         )
         return default
+
+
+def _env_int(name: str, default: int) -> int:
+    return _env_num(name, default, int)
 
 
 def _env_float(name: str, default: float) -> float:
-    raw = os.getenv(name, "")
-    if not raw:
-        return default
-    try:
-        return float(raw)
-    except ValueError:
-        _boot_logger.warning(
-            f"⚠️ Env var {name}={raw!r} não é float; usando default {default}."
-        )
-        return default
+    return _env_num(name, default, float)
 
 
 def _env_str(name: str, default: str) -> str:

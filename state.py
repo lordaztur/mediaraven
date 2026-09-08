@@ -37,10 +37,6 @@ def ig_pending_dec() -> int:
         return ig_pending_count
 
 
-def ig_pending_size() -> int:
-    with ig_pending_lock:
-        return ig_pending_count
-
 
 background_tasks = set()
 

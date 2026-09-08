@@ -1,6 +1,5 @@
 """Orquestrador de download. Os helpers específicos vivem em submódulos
-(_platform, _ytdlp, _languages, _caption) e são re-exportados aqui para que
-testes possam patchar via `downloaders.dispatcher.<nome>`.
+(_platform, _ytdlp, _languages, _caption).
 """
 import logging
 import os
@@ -15,11 +14,7 @@ from utils import async_download_file, normalize_image, safe_url
 from messages import lmsg, msg
 
 from ._caption import _build_caption
-from ._languages import (
-    _build_lang_buttons,
-    _detect_youtube_languages,
-    _parse_lang_from_format,
-)
+from ._languages import _detect_youtube_languages
 from ._platform import (
     Platform,
     _detect_platform,
@@ -30,12 +25,9 @@ from ._platform import (
 )
 from ._ytdlp import (
     _apply_format_selection,
-    _attempt_order,
     _build_ytdlp_base_opts,
-    _list_downloaded_files,
     _run_ytdlp_with_cookie_fallback,
     _wipe_folder,
-    _yt_dlp_extract,
 )
 
 from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_owner_mismatch
@@ -50,28 +42,6 @@ from .x import download_x
 logger = logging.getLogger(__name__)
 
 _IG_AUTH_RETRY_REASONS = {"sign_in_required", "age_restricted", "unavailable"}
-
-
-__all__ = [
-    "download_media",
-    "Platform",
-    "_detect_platform",
-    "_normalize_youtube_url",
-    "_resolve_facebook_share_url",
-    "_resolve_kwai_url",
-    "_resolve_short_reddit_url",
-    "_apply_format_selection",
-    "_attempt_order",
-    "_build_ytdlp_base_opts",
-    "_list_downloaded_files",
-    "_run_ytdlp_with_cookie_fallback",
-    "_wipe_folder",
-    "_yt_dlp_extract",
-    "_build_caption",
-    "_build_lang_buttons",
-    "_detect_youtube_languages",
-    "_parse_lang_from_format",
-]
 
 
 async def _run_platform_fallbacks(

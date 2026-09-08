@@ -2,8 +2,9 @@ import asyncio
 import logging
 import os
 from typing import Optional
-from urllib.parse import quote, urlparse
+from urllib.parse import quote
 
+import yt_dlp
 from curl_cffi import requests as curl_requests
 
 import state
@@ -18,6 +19,8 @@ from utils import (
 )
 
 from ._caption import _build_caption
+from ._platform import _bare_host, _host_matches
+from ._ytdlp import _build_format_selector, _list_downloaded_files
 from ._scrape_helpers import (
     MediaTuple,
     classify_media_url,
@@ -35,7 +38,6 @@ from ._scrape_helpers import (
 logger = logging.getLogger(__name__)
 
 
-_FACEBOOK_HOSTS = ('facebook.com', 'fb.com', 'fb.watch')
 _PINTEREST_HOSTS = ('pinterest.com', 'pin.it', 'pinterest.co.uk')
 _PAYWALL_PATTERNS = (
     'sign in to continue', 'log in to continue', 'subscribe to read',
@@ -44,24 +46,8 @@ _PAYWALL_PATTERNS = (
 )
 
 
-def _is_facebook(url: str) -> bool:
-    try:
-        host = (urlparse(url).netloc or '').lower()
-    except Exception:
-        return False
-    if host.startswith('www.'):
-        host = host[4:]
-    return any(host == h or host.endswith('.' + h) for h in _FACEBOOK_HOSTS)
-
-
 def _is_pinterest(url: str) -> bool:
-    try:
-        host = (urlparse(url).netloc or '').lower()
-    except Exception:
-        return False
-    if host.startswith('www.'):
-        host = host[4:]
-    return any(host == h or host.endswith('.' + h) for h in _PINTEREST_HOSTS)
+    return _host_matches(_bare_host(url), _PINTEREST_HOSTS)
 
 
 _GOOGLEBOT_UA = (
@@ -316,8 +302,6 @@ async def _download_all(
 
 async def _ytdlp_generic(url: str, folder: str) -> list[str]:
     """yt-dlp em modo genérico forçado. Cobre iframe/JSON-LD/HLS de saída."""
-    import yt_dlp
-
     opts = {
         'outtmpl': os.path.join(folder, 'generic_%(autonumber)s.%(ext)s'),
         'restrictfilenames': True,
@@ -327,10 +311,9 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
         'noplaylist': True,
         'force_generic_extractor': True,
         'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
-        'format': (
-            f'bestvideo[height<={cfg("YTDLP_MAX_HEIGHT")}][filesize_approx<{max(50, cfg("TELEGRAM_MAX_UPLOAD_MB") - 100)}M]+bestaudio/'
-            f'best[height<={cfg("YTDLP_MAX_HEIGHT")}][filesize_approx<{cfg("TELEGRAM_MAX_UPLOAD_MB")}M]/'
-            f'best[filesize_approx<{cfg("TELEGRAM_MAX_UPLOAD_MB")}M]/best'
+        'format': _build_format_selector(
+            cfg("YTDLP_MAX_HEIGHT"), cfg("TELEGRAM_MAX_UPLOAD_MB"), "",
+            target_lang=None, youtube=False,
         ),
         'merge_output_format': 'mp4',
     }
@@ -350,14 +333,7 @@ async def _ytdlp_generic(url: str, folder: str) -> list[str]:
         logger.debug(lmsg("fallback.yt_dlp_generic_2", e=e))
         return []
 
-    if not os.path.exists(folder):
-        return []
-    return sorted(
-        os.path.join(folder, f)
-        for f in os.listdir(folder)
-        if os.path.isfile(os.path.join(folder, f))
-        and not f.endswith(('.part', '.ytdl', '.temp'))
-    )
+    return sorted(_list_downloaded_files(folder))
 
 
 _GALLERY_DL_LOCK = asyncio.Lock()
@@ -476,9 +452,7 @@ async def take_page_screenshot(folder: str, url: str) -> Optional[str]:
     return None
 
 
-def _build_status(
-    files: list[str], status_key: str, count_override: Optional[int] = None,
-) -> str:
+def _build_status(files: list[str], status_key: str) -> str:
     has_video = any(f.endswith('.mp4') for f in files)
     if has_video and len(files) > 1:
         label = msg("media_type_labels.scraper_video_mixed")
@@ -486,7 +460,7 @@ def _build_status(
         label = msg("media_type_labels.scraper_video")
     else:
         label = msg("media_type_labels.scraper_images")
-    return msg(status_key, media_type=label, count=count_override or len(files))
+    return msg(status_key, media_type=label, count=len(files))
 
 
 async def fetch_article_caption(url: str, html: Optional[str] = None) -> tuple[str, str]:

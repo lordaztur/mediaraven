@@ -113,21 +113,19 @@ async def download_reddit_json(
             return [], msg("downloader_status.reddit_json_fail"), "", ""
 
         if 'media_metadata' in media_src:
+            metadata = media_src['media_metadata']
             gallery_items = media_src.get('gallery_data', {}).get('items', [])
             if gallery_items:
-                for item in gallery_items:
-                    media_id = item['media_id']
-                    media_info = media_src['media_metadata'].get(media_id, {})
-                    if media_info.get('status') == 'valid':
-                        img_url = media_info.get('s', {}).get('u') or media_info.get('s', {}).get('gif')
-                        clean_u = clean_reddit_media_url(img_url)
-                        if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
+                infos = [metadata.get(item['media_id'], {}) for item in gallery_items]
             else:
-                for media_id, media_info in media_src['media_metadata'].items():
-                    if media_info.get('status') == 'valid':
-                        img_url = media_info.get('s', {}).get('u') or media_info.get('s', {}).get('gif')
-                        clean_u = clean_reddit_media_url(img_url)
-                        if clean_u and clean_u not in media_urls: media_urls.append(clean_u)
+                infos = list(metadata.values())
+            for media_info in infos:
+                if media_info.get('status') != 'valid':
+                    continue
+                src = media_info.get('s', {})
+                clean_u = clean_reddit_media_url(src.get('u') or src.get('gif'))
+                if clean_u and clean_u not in media_urls:
+                    media_urls.append(clean_u)
 
         elif 'url' in media_src and looks_like_image(media_src['url']):
             clean_u = clean_reddit_media_url(media_src['url'])

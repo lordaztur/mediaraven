@@ -28,61 +28,33 @@ from utils import chunk_html_text, cycle_status_message, is_ignored_domain, safe
 logger = logging.getLogger(__name__)
 
 
-async def _resolve_future_callback(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-    store_key: str,
-    expired_msg: str,
-    wrong_user_msg: str,
-) -> None:
+# prefixo do callback_data: (store_key, nome nos alerts, nome nos buttons, chave do prompt)
+_PROMPT_KINDS = {
+    'dl': ('dl_futures', 'dl', 'download', 'link_detected'),
+    'lang': ('lang_futures', 'lang', '', 'language_detected'),
+    'cap': ('caption_futures', 'caption', 'caption', 'caption_found'),
+    'scrn': ('screenshot_futures', 'screenshot', 'screenshot', 'screenshot_offer'),
+}
+
+
+async def future_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    _, req_key, value = query.data.split('|')
+    prefix, req_key, value = query.data.split('|')
+    store_key, alert = _PROMPT_KINDS[prefix][:2]
 
     data = context.bot_data.get(store_key, {}).get(req_key)
     if not data:
-        await query.answer(expired_msg, show_alert=True)
+        await query.answer(msg(f"callback_alerts.{alert}_expired"), show_alert=True)
         return
 
     if query.from_user.id != data['user_id']:
-        await query.answer(wrong_user_msg, show_alert=True)
+        await query.answer(msg(f"callback_alerts.{alert}_wrong_user"), show_alert=True)
         return
 
     future = data['future']
     if not future.done():
         future.set_result(value)
     await query.answer()
-
-
-async def download_confirm_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await _resolve_future_callback(
-        update, context, 'dl_futures',
-        msg("callback_alerts.dl_expired"),
-        msg("callback_alerts.dl_wrong_user"),
-    )
-
-
-async def lang_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await _resolve_future_callback(
-        update, context, 'lang_futures',
-        msg("callback_alerts.lang_expired"),
-        msg("callback_alerts.lang_wrong_user"),
-    )
-
-
-async def caption_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await _resolve_future_callback(
-        update, context, 'caption_futures',
-        msg("callback_alerts.caption_expired"),
-        msg("callback_alerts.caption_wrong_user"),
-    )
-
-
-async def screenshot_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await _resolve_future_callback(
-        update, context, 'screenshot_futures',
-        msg("callback_alerts.screenshot_expired"),
-        msg("callback_alerts.screenshot_wrong_user"),
-    )
 
 
 async def retry_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -115,7 +87,6 @@ async def _ask_via_future(
     context: ContextTypes.DEFAULT_TYPE,
     store_key: str,
     req_key: str,
-    markup: InlineKeyboardMarkup,
     user_id: Optional[int],
     timeout: float,
     default: str,
@@ -138,30 +109,34 @@ def _yes_no_markup(prefix: str, req_key: str, yes_label: str, no_label: str) -> 
     ]])
 
 
-async def _ask_download_confirmation(
+async def _ask_yes_no(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: int,
+    prefix: str,
     message_id: int,
+    idx: int,
     suffix: str,
     user_id: Optional[int],
-    idx: int,
+    timeout: float,
+    default: str,
+    status_msg: Any = None,
+    chat_id: Optional[int] = None,
 ) -> tuple[str, Any]:
-    req_key = f"dl_{message_id}_{idx}"
+    """Pergunta sim/não. Sem status_msg, envia mensagem nova em chat_id."""
+    store_key, _, labels, prompt_key = _PROMPT_KINDS[prefix]
+    req_key = f"{prefix}_{message_id}_{idx}"
     markup = _yes_no_markup(
-        "dl", req_key,
-        msg("buttons.download_yes"), msg("buttons.download_no"),
+        prefix, req_key, msg(f"buttons.{labels}_yes"), msg(f"buttons.{labels}_no"),
     )
-    status_msg = await context.bot.send_message(
-        chat_id,
-        msg("prompts.link_detected", suffix=suffix),
-        parse_mode='HTML',
-        reply_markup=markup,
-        reply_to_message_id=message_id,
-        disable_web_page_preview=True,
-    )
+    text = msg(f"prompts.{prompt_key}", suffix=suffix)
+    if status_msg is None:
+        status_msg = await context.bot.send_message(
+            chat_id, text, parse_mode='HTML', reply_markup=markup,
+            reply_to_message_id=message_id, disable_web_page_preview=True,
+        )
+    else:
+        await status_msg.edit_text(text, parse_mode='HTML', reply_markup=markup)
     choice = await _ask_via_future(
-        context, 'dl_futures', req_key, markup, user_id,
-        timeout=cfg("ASK_DL_TIMEOUT"), default=cfg("ASK_DL_DEFAULT"),
+        context, store_key, req_key, user_id, timeout=timeout, default=default,
     )
     return choice, status_msg
 
@@ -188,65 +163,9 @@ async def _ask_language_choice(
         reply_markup=markup,
     )
     return await _ask_via_future(
-        context, 'lang_futures', req_key, markup, user_id,
+        context, 'lang_futures', req_key, user_id,
         timeout=cfg("ASK_LANG_TIMEOUT"), default='original',
     )
-
-
-async def _ask_caption_inclusion(
-    context: ContextTypes.DEFAULT_TYPE,
-    status_msg: Any,
-    message_id: int,
-    suffix: str,
-    user_id: Optional[int],
-    idx: int,
-    timeout: Optional[float] = None,
-    default: Optional[str] = None,
-) -> bool:
-    if timeout is None:
-        timeout = cfg("ASK_CAPTION_TIMEOUT")
-    if default is None:
-        default = cfg("ASK_CAPTION_DEFAULT")
-    req_key = f"cap_{message_id}_{idx}"
-    markup = _yes_no_markup(
-        "cap", req_key,
-        msg("buttons.caption_yes"), msg("buttons.caption_no"),
-    )
-    await status_msg.edit_text(
-        msg("prompts.caption_found", suffix=suffix),
-        parse_mode='HTML',
-        reply_markup=markup,
-    )
-    choice = await _ask_via_future(
-        context, 'caption_futures', req_key, markup, user_id,
-        timeout=timeout, default=default,
-    )
-    return choice == 'yes'
-
-
-async def _ask_screenshot_offer(
-    context: ContextTypes.DEFAULT_TYPE,
-    status_msg: Any,
-    message_id: int,
-    suffix: str,
-    user_id: Optional[int],
-    idx: int,
-) -> bool:
-    req_key = f"scrn_{message_id}_{idx}"
-    markup = _yes_no_markup(
-        "scrn", req_key,
-        msg("buttons.screenshot_yes"), msg("buttons.screenshot_no"),
-    )
-    await status_msg.edit_text(
-        msg("prompts.screenshot_offer", suffix=suffix),
-        parse_mode='HTML',
-        reply_markup=markup,
-    )
-    choice = await _ask_via_future(
-        context, 'screenshot_futures', req_key, markup, user_id,
-        timeout=cfg("ASK_SCREENSHOT_TIMEOUT"), default=cfg("ASK_SCREENSHOT_DEFAULT"),
-    )
-    return choice == 'yes'
 
 
 async def _try_screenshot_offer(
@@ -263,7 +182,12 @@ async def _try_screenshot_offer(
     if is_retry or cfg("SCRAPE_SCREENSHOT_FALLBACK") != "yes" or unique_folder is None:
         return []
     try:
-        wants = await _ask_screenshot_offer(context, status_msg, message_id, suffix, user_id, idx)
+        choice, _ = await _ask_yes_no(
+            context, 'scrn', message_id, idx, suffix, user_id,
+            timeout=cfg("ASK_SCREENSHOT_TIMEOUT"), default=cfg("ASK_SCREENSHOT_DEFAULT"),
+            status_msg=status_msg,
+        )
+        wants = choice == 'yes'
     except Exception as e:
         logger.debug(lmsg("handlers.falha_no_prompt", e=e))
         return []
@@ -326,8 +250,10 @@ async def _initial_status_message(
             reply_to_message_id=message_id,
         )
 
-    choice, status_msg = await _ask_download_confirmation(
-        context, chat_id, message_id, suffix, user_id, idx
+    choice, status_msg = await _ask_yes_no(
+        context, 'dl', message_id, idx, suffix, user_id,
+        timeout=cfg("ASK_DL_TIMEOUT"), default=cfg("ASK_DL_DEFAULT"),
+        chat_id=chat_id,
     )
     if choice == 'no':
         await _safe_edit(status_msg, msg("status.download_ignored", suffix=suffix))
@@ -402,10 +328,11 @@ async def _send_files_and_cleanup_status(
         timeout = cfg("ASK_ARTICLE_TIMEOUT") if is_article else cfg("ASK_CAPTION_TIMEOUT")
         default = cfg("ASK_ARTICLE_DEFAULT") if is_article else cfg("ASK_CAPTION_DEFAULT")
         if should_show_prompt("caption", chat_id, user_id or 0):
-            include_text = await _ask_caption_inclusion(
-                context, status_msg, message_id, suffix, user_id, idx,
-                timeout=timeout, default=default,
+            choice, _ = await _ask_yes_no(
+                context, 'cap', message_id, idx, suffix, user_id,
+                timeout=timeout, default=default, status_msg=status_msg,
             )
+            include_text = choice == 'yes'
         elif default == 'yes':
             include_text = True
 

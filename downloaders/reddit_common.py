@@ -1,9 +1,9 @@
 import html
 import re
 from typing import Optional
-from urllib.parse import urlparse
 
 from ._caption import _build_caption
+from ._platform import _bare_host, _host_matches
 
 
 _REDDIT_MEDIA_HOSTS = ('i.redd.it', 'preview.redd.it')
@@ -61,10 +61,7 @@ def reddit_external_link(post_data: dict) -> Optional[dict]:
     if domain.startswith('self.'):
         return None
 
-    host = (urlparse(dest).netloc or '').lower()
-    if host.startswith('www.'):
-        host = host[4:]
-    if any(host == h or host.endswith('.' + h) for h in _REDDIT_NATIVE_HOSTS):
+    if _host_matches(_bare_host(dest), _REDDIT_NATIVE_HOSTS):
         return None
     if looks_like_image(dest):
         return None

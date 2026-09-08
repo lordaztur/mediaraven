@@ -50,7 +50,7 @@ Alguns logs precisam ficar hardcoded porque rodam ANTES do `messages.py` poder s
 
 - `messages.py` mesmo (1 log)
 - `config.py` `_boot_logger` (3 logs)
-- `lifecycle/metrics_log.py` (1 log que chama `metrics.format_summary()`)
+- `lifecycle/services.py` (1 log que chama `metrics.format_summary()`)
 
 Esses ~5 logs continuam em português hardcoded.
 

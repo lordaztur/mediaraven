@@ -4,7 +4,7 @@ import metrics
 
 def setup_function():
     # Reset do estado global entre testes.
-    metrics._metrics.platforms.clear()
+    metrics._platforms.clear()
 
 
 def test_record_success_increments():

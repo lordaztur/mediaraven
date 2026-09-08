@@ -293,7 +293,6 @@ async def _run_ytdlp_with_cookie_fallback(
     has_firefox_cookie: bool,
     target_lang: Optional[str],
     platform: Optional[Platform] = None,
-    pre_info: Optional[dict] = None,
 ) -> tuple[list[str], dict[str, Any], Optional[str]]:
     loop = asyncio.get_running_loop()
     info_dict: dict[str, Any] = {}
@@ -312,7 +311,7 @@ async def _run_ytdlp_with_cookie_fallback(
             current_opts['cookiesfrombrowser'] = ('firefox', FIREFOX_PROFILE_PATH, None, None)
 
         if platform is not None:
-            info_for_select = pre_info or (None if platform.reddit else await _pre_extract(base_opts, url, mode))
+            info_for_select = None if platform.reddit else await _pre_extract(base_opts, url, mode)
             live_reason = _live_reason(info_for_select)
             if live_reason:
                 logger.info(lmsg("_ytdlp.live_detectada", reason=live_reason))
