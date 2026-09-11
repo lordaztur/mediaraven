@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.32 — Instagrapi downloads straight from the CDN (a 1s timeout was killing reels) + codebase trim
+
+**Root cause (reel `/reel/Dc6NTWNhZKu/`):** the bot replied "Video requires login", but the Instagrapi account **did have access** — it resolved the reel through the private API and only broke while downloading the file from the CDN: `ReadTimeout (read timeout=1)`. instagrapi's `video_download`/`album_download` download with the library's `request_timeout`, **1s by default**, and that same value is also the **pause before every API call** — raising it to 15s would add 30–45s to every reel. Since Instagrapi is the fallback, the failure fell through to yt-dlp's reason (`sign_in_required`) and the message was misleading.
+
+**Major changes:**
+
+- 📥 **Instagrapi only resolves, the bot downloads** — `media_info` still comes from the authenticated private API; files are fetched straight from the URLs (`video_url` / `thumbnail_url` / album `resources`) via `requests`, with `DOWNLOAD_TIMEOUT_SECONDS` per read. Videos and albums **no longer fetch `media_info` twice**, and the API's anti-ban pause stays at 1s.
+- 📦 `requests` becomes a direct dependency (it was already installed through instagrapi).
+- ♻️ **Codebase trim (no behavior change):** 6 ffmpeg/ffprobe wrappers became one `_run_proc`; the 4 Telegram callbacks and 3 yes/no prompts became one handler and one function; 3 redirect resolvers became one; `lifecycle/chat_lock.py` and `lifecycle/metrics_log.py` moved into `services.py`; `requirements.txt` went from a `pip freeze` (76 pins) to the direct dependencies; dead code removed. −343 lines.
+- ✅ Validated: 412 tests; a real CDN download (1080×1920 video) in 0.1s from the server that used to time out; tests cover photo, video, and album.
+
 ## v1.2.31 — Reddit: anonymous session bypasses the JSON API 403 + crosspost support
 
 **Two causes (link `/r/riodejaneiro/.../s/WqKj4dUF3T`):**
