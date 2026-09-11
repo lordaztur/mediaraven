@@ -1,8 +1,10 @@
 import asyncio
 import logging
 import os
+from urllib.parse import urlparse
 
 import aiofiles
+import requests
 
 import state
 from config import cfg
@@ -16,6 +18,16 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
     logger.info(lmsg("instagram.iniciando_instagrapi_para", arg0=safe_url(url)))
     if not os.path.exists(unique_folder):
         os.makedirs(unique_folder)
+
+    timeout = cfg("DOWNLOAD_TIMEOUT_SECONDS")
+
+    def fetch(media_url: str, path: str) -> str:
+        with requests.get(media_url, stream=True, timeout=timeout) as r:
+            r.raise_for_status()
+            with open(path, 'wb') as f:
+                for chunk in r.iter_content(64 * 1024):
+                    f.write(chunk)
+        return path
 
     def perform_instagrapi():
         if not state.IG_CLIENT:
@@ -69,14 +81,15 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
                 except Exception as e:
                     logger.warning(lmsg("instagram.erro_ao_buscar", e=e))
 
+            resources = media_info.resources if media_info.media_type == 8 else [media_info]
             paths = []
-            if media_info.media_type == 1:
-                paths.append(str(state.IG_CLIENT.photo_download_by_url(
-                    str(media_info.thumbnail_url), folder=unique_folder)))
-            elif media_info.media_type == 2:
-                paths.append(str(state.IG_CLIENT.video_download(media_pk, folder=unique_folder)))
-            elif media_info.media_type == 8:
-                paths.extend([str(p) for p in state.IG_CLIENT.album_download(media_pk, folder=unique_folder)])
+            for i, res in enumerate(resources):
+                media_url = res.video_url if res.media_type == 2 else res.thumbnail_url
+                if not media_url:
+                    continue
+                media_url = str(media_url)
+                ext = os.path.splitext(urlparse(media_url).path)[1] or ('.mp4' if res.media_type == 2 else '.jpg')
+                paths.append(fetch(media_url, os.path.join(unique_folder, f"ig_{i}{ext}")))
 
             caption_text = getattr(media_info, 'caption_text', "") or ""
             return paths, audio_url, duration_sec, start_time_sec, media_info.media_type, caption_text, is_single_photo
