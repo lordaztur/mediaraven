@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.32 — Instagrapi baixa direto do CDN (timeout de 1s derrubava reels) + enxugamento do código
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1231-reddit-sessao-anonima-fura-o-403-da-api-json-suporte-a-crosspost" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1927,6 +1938,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.32 — Instagrapi baixa direto do CDN (timeout de 1s derrubava reels) + enxugamento do código
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1231-reddit-sessao-anonima-fura-o-403-da-api-json-suporte-a-crosspost" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2321,6 +2343,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo">v1.2.32 — Instagrapi baixa direto do CDN (timeout de 1s derrubava reels) + enxugamento do código<a class="headerlink" href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" title="Permanent link">&para;</a></h2>
+<p><strong>Causa (reel <code>/reel/Dc6NTWNhZKu/</code>):</strong> o bot respondia "Vídeo exige login", mas a conta do Instagrapi <strong>tinha acesso</strong> — ele resolvia o reel pela API privada e quebrava só ao baixar o arquivo do CDN: <code>ReadTimeout (read timeout=1)</code>. O <code>video_download</code>/<code>album_download</code> do instagrapi baixam com o <code>request_timeout</code> da lib, <strong>1s por padrão</strong>, e esse mesmo valor é a <strong>pausa antes de cada chamada da API</strong> — subir pra 15s adicionaria 30–45s a cada reel. Como o Instagrapi é o fallback, a falha caía no motivo do yt-dlp (<code>sign_in_required</code>) e a mensagem ficava enganosa.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>📥 <strong>Instagrapi só resolve, o bot baixa</strong> — o <code>media_info</code> continua vindo da API privada autenticada; os arquivos saem direto das URLs (<code>video_url</code> / <code>thumbnail_url</code> / <code>resources</code> do álbum) via <code>requests</code>, com <code>DOWNLOAD_TIMEOUT_SECONDS</code> por leitura. Vídeo e álbum <strong>não buscam mais o <code>media_info</code> duas vezes</strong>, e a pausa anti-ban da API segue em 1s.</li>
+<li>📦 <code>requests</code> vira dependência direta (já vinha instalado pelo instagrapi).</li>
+<li>♻️ <strong>Enxugamento do código (sem mudança de comportamento):</strong> 6 wrappers de ffmpeg/ffprobe viraram um <code>_run_proc</code>; os 4 callbacks e 3 prompts sim/não do Telegram viraram um handler e uma função; 3 resolvedores de redirect viraram um; <code>lifecycle/chat_lock.py</code> e <code>lifecycle/metrics_log.py</code> foram para <code>services.py</code>; <code>requirements.txt</code> passou de <code>pip freeze</code> (76 pinos) para as dependências diretas; código morto removido. −343 linhas.</li>
+<li>✅ Validado: 412 testes; download real do CDN (vídeo 1080×1920) em 0,1s pelo servidor que estourava o timeout; teste cobre foto, vídeo e álbum.</li>
+</ul>
 <h2 id="v1231-reddit-sessao-anonima-fura-o-403-da-api-json-suporte-a-crosspost">v1.2.31 — Reddit: sessão anônima fura o 403 da API JSON + suporte a crosspost<a class="headerlink" href="#v1231-reddit-sessao-anonima-fura-o-403-da-api-json-suporte-a-crosspost" title="Permanent link">&para;</a></h2>
 <p><strong>Duas causas (link <code>/r/riodejaneiro/.../s/WqKj4dUF3T</code>):</strong></p>
 <ol>
@@ -2782,7 +2813,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="28 de agosto de 2026 11:57:16 UTC"><span class="timeago" datetime="2026-08-28T11:57:16+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="28 de agosto de 2026 11:57:16 UTC">2026-08-28</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="11 de setembro de 2026 13:47:53 UTC"><span class="timeago" datetime="2026-09-11T13:47:53+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="11 de setembro de 2026 13:47:53 UTC">2026-09-11</span>
   </span>
 
     
