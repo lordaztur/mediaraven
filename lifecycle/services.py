@@ -73,6 +73,9 @@ async def init_globals(app) -> None:
     state.PW_CONTEXT = await state.PW_BROWSER.new_context(
         user_agent=PLAYWRIGHT_UA,
         viewport={'width': PW_VIEWPORT_WIDTH, 'height': PW_VIEWPORT_HEIGHT},
+        # Logado, o x.com registra um service worker que prende o renderer
+        # (~300-500 MB) vivo depois do page.close() até o próximo refresh.
+        service_workers="block",
     )
 
     state.FIREFOX_COOKIES_CACHE = extract_firefox_cookies()

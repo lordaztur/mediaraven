@@ -70,6 +70,7 @@ async def periodic_playwright_refresh() -> None:
             new_context = await state.PW_BROWSER.new_context(
                 user_agent=PLAYWRIGHT_UA,
                 viewport={'width': PW_VIEWPORT_WIDTH, 'height': PW_VIEWPORT_HEIGHT},
+                service_workers="block",  # ver init_globals em services.py
             )
 
             state.FIREFOX_COOKIES_CACHE = extract_firefox_cookies()
