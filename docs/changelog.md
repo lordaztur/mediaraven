@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.33 — YTDLP_YT_CLIENTS volta a valer + idade restrita via PO Token + proxy no processo inteiro
+
+**Causa (vídeo com restrição de idade, conta logada e verificada):** o bot respondia "🔞 Vídeo com restrição de idade". Eram dois problemas empilhados:
+
+1. **O `YTDLP_YT_CLIENTS` nunca chegava ao yt-dlp.** O `extractor_args` era montado no formato da linha de comando (`{'youtube': ['player_client=...']}`), que a API do yt-dlp **ignora em silêncio** — rodava sempre o `default`. Passava despercebido porque `default` é o padrão.
+2. **O YouTube mudou em set/2026:** com conta comum, vídeo com restrição de idade só sai pelo client `mweb` **com PO Token**; os `web*` passam da checagem mas ficam sem formatos (SABR).
+
+**Major changes:**
+
+- 🐛 **`extractor_args` no formato da API** (`{'youtube': {'player_client': [...]}}`) — o `YTDLP_YT_CLIENTS` passa a valer de fato.
+- 🔑 **Suporte a PO Token** — `bgutil-ytdlp-pot-provider==2.0.1` entra nas dependências; com o servidor `bgutil` rodando e `YTDLP_YT_CLIENTS=default,mweb`, vídeo com restrição de idade baixa. Passo a passo em [YouTube → Idade restrita](platforms/youtube.md#idade-restrita-po-token-bgutil). Sem o servidor nada muda.
+- 🌐 **Proxy do processo inteiro** — o `aiohttp` passa a respeitar `HTTPS_PROXY`/`NO_PROXY` (`trust_env`) e o Chromium do Playwright abre com o proxy (ele ignora a variável). yt-dlp, gallery-dl, instagrapi e curl_cffi já respeitavam. Sem as variáveis, nada muda.
+- 🧹 **Playwright bloqueia service workers** — o `sw.js` do x.com logado prendia um renderer de ~300–500 MB vivo depois do `page.close()`.
+- ⬆️ **instagrapi `2.16.0` → `3.0.20`** — a 2.16 se apresentava com versão de app que o Instagram passou a recusar em login novo (*"Your version of Instagram is out of date"*).
+- 📌 **yt-dlp pinado no nightly `2026.09.27.232945`.**
+- ✅ Validado: 412 testes; vídeo com restrição de idade baixado pelas próprias funções do bot (`default,mweb` + bgutil 2.0.1) e vídeo comum em 4K.
+
 ## v1.2.32 — Instagrapi baixa direto do CDN (timeout de 1s derrubava reels) + enxugamento do código
 
 **Causa (reel `/reel/Dc6NTWNhZKu/`):** o bot respondia "Vídeo exige login", mas a conta do Instagrapi **tinha acesso** — ele resolvia o reel pela API privada e quebrava só ao baixar o arquivo do CDN: `ReadTimeout (read timeout=1)`. O `video_download`/`album_download` do instagrapi baixam com o `request_timeout` da lib, **1s por padrão**, e esse mesmo valor é a **pausa antes de cada chamada da API** — subir pra 15s adicionaria 30–45s a cada reel. Como o Instagrapi é o fallback, a falha caía no motivo do yt-dlp (`sign_in_required`) e a mensagem ficava enganosa.
