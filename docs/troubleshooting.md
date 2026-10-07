@@ -85,7 +85,7 @@ Confira que o perfil tem cookies recentes (você abriu o YouTube no Firefox rece
 
 ### YouTube: vídeo de idade restrita
 
-Mesma solução: cookies de conta logada e maior de idade.
+Cookies de conta logada e maior de idade **e** PO Token pro client `mweb` — ver [YouTube → Idade restrita](platforms/youtube.md#idade-restrita-po-token-bgutil).
 
 ### YouTube: vídeo privado / removido / geo-bloqueado
 

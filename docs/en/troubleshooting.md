@@ -85,7 +85,7 @@ Make sure the profile has recent cookies (you opened YouTube in Firefox recently
 
 ### YouTube: age-restricted video
 
-Same solution: cookies from a logged-in adult account.
+Cookies from a logged-in adult account **and** a PO Token for the `mweb` client — see [YouTube → Age-restricted](platforms/youtube.md#age-restricted-po-token-bgutil).
 
 ### YouTube: private / removed / geo-blocked video
 

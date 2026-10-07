@@ -16,7 +16,7 @@ All customizable per chat/user via [`customization.json`](../customization/keys.
 |---|---|---|
 | `YTDLP_MAX_HEIGHT` | `1920` | Max video height. 480/720/1080/1920/2160/4320. |
 | `YTDLP_SOCKET_TIMEOUT` | `90` | yt-dlp socket timeout (seconds). |
-| `YTDLP_YT_CLIENTS` | `"ios,mweb,web"` | CSV of extractor clients (order matters). |
+| `YTDLP_YT_CLIENTS` | `"default"` | CSV of extractor clients. `default,mweb` + [PO Token](#age-restricted-po-token-bgutil) downloads age-restricted videos. |
 | `ASK_LANG_TIMEOUT` | `10.0` | Time (s) to pick dubbing language. |
 | `PROMPT_LANG_ENABLED` | `true` | If `false`, skips prompt and downloads original language. |
 
@@ -61,8 +61,25 @@ Without Deno the bot still tries — only fails in some specific cases.
 ## Common failures
 
 - **"Sign in to confirm you're not a bot"** → cookies from a logged-in Firefox session solve it (`FIREFOX_PROFILE_PATH`).
-- **Age-restricted video** → same thing, needs cookies from a logged-in adult session.
+- **Age-restricted video** → cookies from a logged-in adult session **and**, since Sep/2026, a PO Token — see below.
 - **Live stream** → not supported (yt-dlp could, but bot doesn't handle it).
+
+## Age-restricted: PO Token (bgutil)
+
+Since Sep/2026 YouTube only serves age-restricted video formats — even to a logged-in, age-verified account — to the `mweb` client **with a PO Token**. The `web*` clients pass the age check but get no formats (SABR); `default` fails with *"Sorry, this content is age-restricted"*. (Premium accounts are the exception and pass with `default`.)
+
+1. Run the PO Token server, **same version** as the plugin in `requirements.txt` (`bgutil-ytdlp-pot-provider`):
+
+    ```bash
+    docker run -d --name bgutil-pot --restart unless-stopped --network host \
+      brainicism/bgutil-ytdlp-pot-provider:2.0.1
+    ```
+
+    `--network host` only matters if the bot uses a proxy on `127.0.0.1` — the plugin forwards yt-dlp's proxy to the server.
+
+2. In `customization.json`: `"YTDLP_YT_CLIENTS": "default,mweb"`. `default` still handles regular videos; `mweb` comes in with the token.
+
+> ⚠️ `customization.json` (or, without it, `customization.example.json`) takes precedence over `.env` — `YTDLP_YT_CLIENTS` in `.env` has no effect while the example defines the key.
 
 ## Unrecoverable error detection (v1.2.9+)
 

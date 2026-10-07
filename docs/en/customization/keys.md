@@ -25,7 +25,7 @@
 |---|---|---|---|---|
 | `YTDLP_MAX_HEIGHT` | `1920` | Max video height (480/720/1080/1920/2160/4320) | 144 | — |
 | `YTDLP_SOCKET_TIMEOUT` | `90` | yt-dlp socket timeout (seconds) | 30 | 600 |
-| `YTDLP_YT_CLIENTS` | `"ios,mweb,web"` | CSV of extractor clients (order matters) | — | — |
+| `YTDLP_YT_CLIENTS` | `"default"` | CSV of extractor clients (`default,mweb` + PO Token for age-restricted) | — | — |
 
 ## Generic scraper
 

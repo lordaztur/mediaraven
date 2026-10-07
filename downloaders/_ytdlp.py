@@ -29,7 +29,8 @@ def _build_ytdlp_base_opts(unique_folder: str) -> dict[str, Any]:
         'geo_bypass': True,
         'socket_timeout': cfg("YTDLP_SOCKET_TIMEOUT"),
         'remote_components': ['ejs:github'],
-        'extractor_args': {'youtube': [f'player_client={cfg("YTDLP_YT_CLIENTS")}']},
+        # Pela API o yt-dlp quer {chave: [valores]}; a forma "player_client=a,b" é só da linha de comando e aqui era ignorada.
+        'extractor_args': {'youtube': {'player_client': [c.strip() for c in str(cfg("YTDLP_YT_CLIENTS")).split(',') if c.strip()]}},
         'format_sort': ['vcodec:h264', 'acodec:aac'],
         'impersonate': ImpersonateTarget('chrome'),
     }

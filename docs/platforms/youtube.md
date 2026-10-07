@@ -16,7 +16,7 @@ Todas customizáveis por chat/user via [`customization.json`](../customization/k
 |---|---|---|
 | `YTDLP_MAX_HEIGHT` | `1920` | Altura máxima do vídeo. 480/720/1080/1920/2160/4320. |
 | `YTDLP_SOCKET_TIMEOUT` | `90` | Timeout socket do yt-dlp (segundos). |
-| `YTDLP_YT_CLIENTS` | `"ios,mweb,web"` | CSV de clients do extractor (ordem importa). |
+| `YTDLP_YT_CLIENTS` | `"default"` | CSV de clients do extractor. `default,mweb` + [PO Token](#idade-restrita-po-token-bgutil) baixa vídeo com restrição de idade. |
 | `ASK_LANG_TIMEOUT` | `10.0` | Tempo (s) pra escolher dublagem. |
 | `PROMPT_LANG_ENABLED` | `true` | Se `false`, pula prompt e baixa idioma original. |
 
@@ -61,8 +61,25 @@ Sem Deno o bot ainda tenta — só falha em alguns casos específicos.
 ## Falhas comuns
 
 - **"Sign in to confirm you're not a bot"** → cookies do Firefox de uma sessão logada resolvem (`FIREFOX_PROFILE_PATH`).
-- **Vídeo idade-restrita** → mesma coisa, precisa cookies de sessão logada.
+- **Vídeo idade-restrita** → cookies de sessão logada **e**, desde set/2026, PO Token — ver abaixo.
 - **Live stream** → não suportado (yt-dlp poderia, mas bot não trata).
+
+## Idade restrita: PO Token (bgutil)
+
+Desde set/2026 o YouTube só entrega os formatos de vídeo com restrição de idade — mesmo com conta logada e verificada — ao client `mweb` **com PO Token**. Os clients `web*` passam da checagem de idade mas ficam sem formatos (SABR); o `default` cai em *"Sorry, this content is age-restricted"*. (Conta Premium é exceção e passa no `default`.)
+
+1. Suba o servidor de PO Token, **mesma versão** do plugin do `requirements.txt` (`bgutil-ytdlp-pot-provider`):
+
+    ```bash
+    docker run -d --name bgutil-pot --restart unless-stopped --network host \
+      brainicism/bgutil-ytdlp-pot-provider:2.0.1
+    ```
+
+    `--network host` só importa se o bot usa proxy em `127.0.0.1` — o plugin repassa o proxy do yt-dlp ao servidor.
+
+2. No `customization.json`: `"YTDLP_YT_CLIENTS": "default,mweb"`. O `default` segue cuidando dos vídeos comuns; o `mweb` entra com o token.
+
+> ⚠️ O `customization.json` (ou, sem ele, o `customization.example.json`) tem precedência sobre o `.env` — `YTDLP_YT_CLIENTS` no `.env` não vale enquanto o exemplo define a chave.
 
 ## Detecção de erros não recuperáveis (v1.2.9+)
 

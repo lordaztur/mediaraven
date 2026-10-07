@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import aiohttp
 from cachetools import TTLCache
@@ -64,12 +65,19 @@ async def init_globals(app) -> None:
     )
     state.AIOHTTP_SESSION = aiohttp.ClientSession(
         connector=connector, timeout=default_timeout,
+        # HTTPS_PROXY/NO_PROXY do ambiente; sem eles nada muda.
+        trust_env=True,
     )
     logger.info(lmsg("services.sess_o_aiohttp_global", AIOHTTP_TOTAL_TIMEOUT=AIOHTTP_TOTAL_TIMEOUT))
 
     logger.info(lmsg("services.iniciando_playwright_navegador"))
     state.PW_MANAGER = await async_playwright().start()
-    state.PW_BROWSER = await state.PW_MANAGER.chromium.launch(headless=True)
+    # O Chromium ignora HTTPS_PROXY do ambiente; precisa vir no launch.
+    proxy = os.environ.get("HTTPS_PROXY")
+    state.PW_BROWSER = await state.PW_MANAGER.chromium.launch(
+        headless=True,
+        proxy={"server": proxy, "bypass": os.environ.get("NO_PROXY", "")} if proxy else None,
+    )
     state.PW_CONTEXT = await state.PW_BROWSER.new_context(
         user_agent=PLAYWRIGHT_UA,
         viewport={'width': PW_VIEWPORT_WIDTH, 'height': PW_VIEWPORT_HEIGHT},
