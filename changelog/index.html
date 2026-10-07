@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1233-ytdlp_yt_clients-volta-a-valer-idade-restrita-via-po-token-proxy-no-processo-inteiro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.33 — YTDLP_YT_CLIENTS volta a valer + idade restrita via PO Token + proxy no processo inteiro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1938,6 +1949,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1233-ytdlp_yt_clients-volta-a-valer-idade-restrita-via-po-token-proxy-no-processo-inteiro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.33 — YTDLP_YT_CLIENTS volta a valer + idade restrita via PO Token + proxy no processo inteiro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2343,6 +2365,22 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1233-ytdlp_yt_clients-volta-a-valer-idade-restrita-via-po-token-proxy-no-processo-inteiro">v1.2.33 — YTDLP_YT_CLIENTS volta a valer + idade restrita via PO Token + proxy no processo inteiro<a class="headerlink" href="#v1233-ytdlp_yt_clients-volta-a-valer-idade-restrita-via-po-token-proxy-no-processo-inteiro" title="Permanent link">&para;</a></h2>
+<p><strong>Causa (vídeo com restrição de idade, conta logada e verificada):</strong> o bot respondia "🔞 Vídeo com restrição de idade". Eram dois problemas empilhados:</p>
+<ol>
+<li><strong>O <code>YTDLP_YT_CLIENTS</code> nunca chegava ao yt-dlp.</strong> O <code>extractor_args</code> era montado no formato da linha de comando (<code>{'youtube': ['player_client=...']}</code>), que a API do yt-dlp <strong>ignora em silêncio</strong> — rodava sempre o <code>default</code>. Passava despercebido porque <code>default</code> é o padrão.</li>
+<li><strong>O YouTube mudou em set/2026:</strong> com conta comum, vídeo com restrição de idade só sai pelo client <code>mweb</code> <strong>com PO Token</strong>; os <code>web*</code> passam da checagem mas ficam sem formatos (SABR).</li>
+</ol>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🐛 <strong><code>extractor_args</code> no formato da API</strong> (<code>{'youtube': {'player_client': [...]}}</code>) — o <code>YTDLP_YT_CLIENTS</code> passa a valer de fato.</li>
+<li>🔑 <strong>Suporte a PO Token</strong> — <code>bgutil-ytdlp-pot-provider==2.0.1</code> entra nas dependências; com o servidor <code>bgutil</code> rodando e <code>YTDLP_YT_CLIENTS=default,mweb</code>, vídeo com restrição de idade baixa. Passo a passo em <a href="../platforms/youtube/#idade-restrita-po-token-bgutil">YouTube → Idade restrita</a>. Sem o servidor nada muda.</li>
+<li>🌐 <strong>Proxy do processo inteiro</strong> — o <code>aiohttp</code> passa a respeitar <code>HTTPS_PROXY</code>/<code>NO_PROXY</code> (<code>trust_env</code>) e o Chromium do Playwright abre com o proxy (ele ignora a variável). yt-dlp, gallery-dl, instagrapi e curl_cffi já respeitavam. Sem as variáveis, nada muda.</li>
+<li>🧹 <strong>Playwright bloqueia service workers</strong> — o <code>sw.js</code> do x.com logado prendia um renderer de ~300–500 MB vivo depois do <code>page.close()</code>.</li>
+<li>⬆️ <strong>instagrapi <code>2.16.0</code> → <code>3.0.20</code></strong> — a 2.16 se apresentava com versão de app que o Instagram passou a recusar em login novo (<em>"Your version of Instagram is out of date"</em>).</li>
+<li>📌 <strong>yt-dlp pinado no nightly <code>2026.09.27.232945</code>.</strong></li>
+<li>✅ Validado: 412 testes; vídeo com restrição de idade baixado pelas próprias funções do bot (<code>default,mweb</code> + bgutil 2.0.1) e vídeo comum em 4K.</li>
+</ul>
 <h2 id="v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo">v1.2.32 — Instagrapi baixa direto do CDN (timeout de 1s derrubava reels) + enxugamento do código<a class="headerlink" href="#v1232-instagrapi-baixa-direto-do-cdn-timeout-de-1s-derrubava-reels-enxugamento-do-codigo" title="Permanent link">&para;</a></h2>
 <p><strong>Causa (reel <code>/reel/Dc6NTWNhZKu/</code>):</strong> o bot respondia "Vídeo exige login", mas a conta do Instagrapi <strong>tinha acesso</strong> — ele resolvia o reel pela API privada e quebrava só ao baixar o arquivo do CDN: <code>ReadTimeout (read timeout=1)</code>. O <code>video_download</code>/<code>album_download</code> do instagrapi baixam com o <code>request_timeout</code> da lib, <strong>1s por padrão</strong>, e esse mesmo valor é a <strong>pausa antes de cada chamada da API</strong> — subir pra 15s adicionaria 30–45s a cada reel. Como o Instagrapi é o fallback, a falha caía no motivo do yt-dlp (<code>sign_in_required</code>) e a mensagem ficava enganosa.</p>
 <p><strong>Major changes:</strong></p>
@@ -2813,7 +2851,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="11 de setembro de 2026 13:47:53 UTC"><span class="timeago" datetime="2026-09-11T13:47:53+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="11 de setembro de 2026 13:47:53 UTC">2026-09-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="7 de outubro de 2026 02:31:08 UTC"><span class="timeago" datetime="2026-10-07T02:31:08+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="7 de outubro de 2026 02:31:08 UTC">2026-10-07</span>
   </span>
 
     

@@ -862,6 +862,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#idade-restrita-po-token-bgutil" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idade restrita: PO Token (bgutil)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deteccao-de-erros-nao-recuperaveis-v129" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1701,6 +1712,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#idade-restrita-po-token-bgutil" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Idade restrita: PO Token (bgutil)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#deteccao-de-erros-nao-recuperaveis-v129" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1763,8 +1785,8 @@
 </tr>
 <tr>
 <td><code>YTDLP_YT_CLIENTS</code></td>
-<td><code>"ios,mweb,web"</code></td>
-<td>CSV de clients do extractor (ordem importa).</td>
+<td><code>"default"</code></td>
+<td>CSV de clients do extractor. <code>default,mweb</code> + <a href="#idade-restrita-po-token-bgutil">PO Token</a> baixa vídeo com restrição de idade.</td>
 </tr>
 <tr>
 <td><code>ASK_LANG_TIMEOUT</code></td>
@@ -1806,9 +1828,26 @@
 <h2 id="falhas-comuns">Falhas comuns<a class="headerlink" href="#falhas-comuns" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>"Sign in to confirm you're not a bot"</strong> → cookies do Firefox de uma sessão logada resolvem (<code>FIREFOX_PROFILE_PATH</code>).</li>
-<li><strong>Vídeo idade-restrita</strong> → mesma coisa, precisa cookies de sessão logada.</li>
+<li><strong>Vídeo idade-restrita</strong> → cookies de sessão logada <strong>e</strong>, desde set/2026, PO Token — ver abaixo.</li>
 <li><strong>Live stream</strong> → não suportado (yt-dlp poderia, mas bot não trata).</li>
 </ul>
+<h2 id="idade-restrita-po-token-bgutil">Idade restrita: PO Token (bgutil)<a class="headerlink" href="#idade-restrita-po-token-bgutil" title="Permanent link">&para;</a></h2>
+<p>Desde set/2026 o YouTube só entrega os formatos de vídeo com restrição de idade — mesmo com conta logada e verificada — ao client <code>mweb</code> <strong>com PO Token</strong>. Os clients <code>web*</code> passam da checagem de idade mas ficam sem formatos (SABR); o <code>default</code> cai em <em>"Sorry, this content is age-restricted"</em>. (Conta Premium é exceção e passa no <code>default</code>.)</p>
+<ol>
+<li>
+<p>Suba o servidor de PO Token, <strong>mesma versão</strong> do plugin do <code>requirements.txt</code> (<code>bgutil-ytdlp-pot-provider</code>):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>bgutil-pot<span class="w"> </span>--restart<span class="w"> </span>unless-stopped<span class="w"> </span>--network<span class="w"> </span>host<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>brainicism/bgutil-ytdlp-pot-provider:2.0.1
+</span></code></pre></div>
+<p><code>--network host</code> só importa se o bot usa proxy em <code>127.0.0.1</code> — o plugin repassa o proxy do yt-dlp ao servidor.</p>
+</li>
+<li>
+<p>No <code>customization.json</code>: <code>"YTDLP_YT_CLIENTS": "default,mweb"</code>. O <code>default</code> segue cuidando dos vídeos comuns; o <code>mweb</code> entra com o token.</p>
+</li>
+</ol>
+<blockquote>
+<p>⚠️ O <code>customization.json</code> (ou, sem ele, o <code>customization.example.json</code>) tem precedência sobre o <code>.env</code> — <code>YTDLP_YT_CLIENTS</code> no <code>.env</code> não vale enquanto o exemplo define a chave.</p>
+</blockquote>
 <h2 id="deteccao-de-erros-nao-recuperaveis-v129">Detecção de erros não recuperáveis (v1.2.9+)<a class="headerlink" href="#deteccao-de-erros-nao-recuperaveis-v129" title="Permanent link">&para;</a></h2>
 <p>Quando o yt-dlp falha com um erro irrecuperável (vídeo privado, removido, geo-bloqueado, etc.), o bot <strong>não cai mais pro scraper genérico</strong> (que pegaria o logo do YouTube/Google da página de erro como se fosse a mídia). Em vez disso, retorna mensagem clara:</p>
 <table>
@@ -1890,7 +1929,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="27 de maio de 2026 00:07:45 UTC"><span class="timeago" datetime="2026-05-27T00:07:45+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="27 de maio de 2026 00:07:45 UTC">2026-05-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="7 de outubro de 2026 02:31:08 UTC"><span class="timeago" datetime="2026-10-07T02:31:08+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="7 de outubro de 2026 02:31:08 UTC">2026-10-07</span>
   </span>
 
     
