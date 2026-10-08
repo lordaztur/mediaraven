@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.34 — Login-required Instagram: gallery-dl with the Firefox session when Instagrapi can't log in
+
+**Root cause:** since Oct 2, 2026, Instagrapi's fresh password login gets **HTTP 429** on credential submission (CAA flow) — a general problem with no fix yet ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)). Without an Instagrapi session, a post yt-dlp flagged as "login required" had nowhere left to go: the bot deliberately skips every other path (so it won't send the error page logo).
+
+**Major changes:**
+
+- 🖼️ **gallery-dl runs after Instagrapi** on Instagram authentication errors (`sign_in_required`, `age_restricted`, `unavailable`). It uses the **web session** from the Firefox cookies (`FIREFOX_PROFILE_PATH`), not the app API — so it keeps working while Instagrapi's login is down. Honors `SCRAPE_GALLERY_DL_ENABLE`.
+- ⬆️ **gallery-dl `1.32.0` → `1.32.15`.**
+- ⚠️ **Don't feed the browser `sessionid` to Instagrapi** (`login_by_sessionid`): Instagram rejects web sessions on the app API and may **log the browser session out** too — the very session gallery-dl relies on.
+- ✅ Validated: 413 tests (new: gallery-dl resolves the post after Instagrapi fails); real post downloaded through the bot's `_gallery_dl_run` with the Firefox session.
+
 ## v1.2.33 — YTDLP_YT_CLIENTS takes effect again + age-restricted via PO Token + process-wide proxy
 
 **Root cause (age-restricted video, logged-in and age-verified account):** the bot replied "🔞 Age-restricted". Two stacked problems:
