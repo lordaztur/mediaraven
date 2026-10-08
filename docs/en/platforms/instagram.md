@@ -1,6 +1,6 @@
 # Instagram
 
-Instagram has **two dedicated paths**, in order:
+Instagram has **three dedicated paths**, in order:
 
 ## 1. IG Embed (no login)
 
@@ -25,6 +25,13 @@ When the embed can't handle it, tries with the logged-in account via `IG_USER`/`
 
 !!! warning "Use a throwaway account"
     Instagram bans accounts that appear doing mass downloads. Use a secondary account created just for this. Session is persisted in `ig_session.json` (auto perms 600).
+
+## 3. gallery-dl (Firefox session)
+
+When yt-dlp says the post **requires login** and Instagrapi can't resolve it either, the bot tries `gallery-dl` with the **web session** from the Firefox cookies (`FIREFOX_PROFILE_PATH`). It doesn't depend on the app API — it keeps working while Instagrapi's login is down (since Oct/2026 fresh logins get 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)).
+
+!!! danger "Don't feed the browser `sessionid` to Instagrapi"
+    `login_by_sessionid` with the Firefox cookie is rejected by the app API and may **log the browser session out** — the same one gallery-dl uses.
 
 ## Relevant configs
 
@@ -57,6 +64,6 @@ Posts where the photo has external music: the IG embed returns the photo, but th
 
 ## Common failures
 
-- **"login_required"** → bot tries Instagrapi. If it fails too, the account was probably blocked — delete `ig_session.json` and force re-login.
+- **"login_required"** → bot tries Instagrapi, then gallery-dl with the Firefox session. If both fail, check that Firefox is still logged in. **Don't** keep forcing Instagrapi re-logins: every attempt spends the account's login budget (429).
 - **"feedback_required"** → IG flagged as suspicious. Use VPN or change UA. Wait a few hours.
 - **Carousel only gets first media** → embed bug with very large carousels; Instagrapi covers it.

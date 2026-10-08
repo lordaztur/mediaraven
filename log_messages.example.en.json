@@ -46,6 +46,7 @@
     "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine activated for YouTube bypass: {arg0}",
     "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks.",
+    "unrecoverable_try_gallery_dl": "🖼️ Instagrapi did not resolve {reason} for {url}; trying gallery-dl with the Firefox session.",
     "unrecoverable_try_instagrapi": "🔑 yt-dlp reported {reason} for {url}; trying authenticated Instagrapi before giving up.",
     "youtube_skip_scraper": "🚫 yt-dlp failed on YouTube; skipping the scraper (avoids dumping chopped DASH fragments): {url}",
     "reddit_link_redispatch": "🔗 Reddit post links to a known target; re-dispatching as if sent directly: {url}",

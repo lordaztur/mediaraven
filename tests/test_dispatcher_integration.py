@@ -350,6 +350,7 @@ async def test_download_media_instagram_sign_in_required_tries_instagrapi(tmp_fo
 @pytest.mark.asyncio
 async def test_download_media_instagram_sign_in_required_gives_up_without_scraper(tmp_folder):
     instagrapi_mock = AsyncMock(return_value=([], "", "", ""))
+    gallery_dl_mock = AsyncMock(return_value=[])
     scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
     with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
                       new=AsyncMock(return_value=([], {}, "sign_in_required"))), \
@@ -357,6 +358,7 @@ async def test_download_media_instagram_sign_in_required_gives_up_without_scrape
          patch.object(dispatcher, "download_instagram_embed",
                       new=AsyncMock(return_value=([], "", "", ""))), \
          patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "_gallery_dl_run", new=gallery_dl_mock), \
          patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
         files, status, short, full, is_article = await dispatcher.download_media(
             "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None
@@ -364,8 +366,37 @@ async def test_download_media_instagram_sign_in_required_gives_up_without_scrape
 
     assert files == []
     assert instagrapi_mock.await_count == 1
+    assert gallery_dl_mock.await_count == 1
     assert scrape_mock.await_count == 0
     assert "login" in status.lower()
+
+
+@pytest.mark.asyncio
+async def test_download_media_instagram_sign_in_required_falls_back_to_gallery_dl(tmp_folder):
+    gdl_file = os.path.join(tmp_folder, "galdl_001.jpg")
+    with open(gdl_file, "wb") as f:
+        f.write(b"x")
+    instagrapi_mock = AsyncMock(return_value=([], "", "", ""))
+    gallery_dl_mock = AsyncMock(return_value=[gdl_file])
+    scrape_mock = AsyncMock(return_value=([], "fail", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback",
+                      new=AsyncMock(return_value=([], {}, "sign_in_required"))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "download_instagram_embed",
+                      new=AsyncMock(return_value=([], "", "", ""))), \
+         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "_gallery_dl_run", new=gallery_dl_mock), \
+         patch.object(dispatcher, "_wipe_folder", new=lambda *_: None), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, status, short, full, is_article = await dispatcher.download_media(
+            "https://www.instagram.com/p/ABC123/", tmp_folder, target_lang=None
+        )
+
+    assert files == [gdl_file]
+    assert "gallery-dl" in status
+    assert instagrapi_mock.await_count == 1
+    assert gallery_dl_mock.await_count == 1
+    assert scrape_mock.await_count == 0
 
 
 @pytest.mark.asyncio

@@ -31,7 +31,7 @@ from ._ytdlp import (
 )
 
 from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_owner_mismatch
-from .fallback import fetch_article_caption, scrape_fallback
+from .fallback import _build_status, _gallery_dl_run, fetch_article_caption, scrape_fallback
 from .instagram import download_instagram_instagrapi
 from .instagram_embed import download_instagram_embed
 from .reddit_json import download_reddit_json, resolve_reddit_external_link
@@ -253,6 +253,16 @@ async def download_media(
                 if ig_files:
                     return await _finalize_success(
                         ig_files, ig_status, ig_short, ig_full, url, platform_label, started,
+                    )
+                _wipe_folder(unique_folder)
+                # gallery-dl usa a sessão WEB (cookies do Firefox), não a API do app: cobre o
+                # post que exige login quando o Instagrapi não loga (429 no login CAA, out/2026).
+                logger.info(lmsg("dispatcher.unrecoverable_try_gallery_dl", reason=unrecoverable_reason, url=safe_url(url)))
+                gdl_files = await _gallery_dl_run(url, unique_folder)
+                if gdl_files:
+                    return await _finalize_success(
+                        gdl_files, _build_status(gdl_files, "downloader_status.scraper_gallerydl"),
+                        "", "", url, platform_label, started,
                     )
                 _wipe_folder(unique_folder)
             logger.info(lmsg("dispatcher.unrecoverable_skip_fallbacks", reason=unrecoverable_reason, url=safe_url(url)))

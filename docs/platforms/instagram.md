@@ -1,6 +1,6 @@
 # Instagram
 
-Instagram tem **dois caminhos** dedicados, em ordem:
+Instagram tem **três caminhos** dedicados, em ordem:
 
 ## 1. IG Embed (sem login)
 
@@ -25,6 +25,13 @@ Quando o embed não dá conta, tenta com a conta logada via `IG_USER`/`IG_PASS` 
 
 !!! warning "Use conta descartável"
     O Instagram bane contas que aparecem fazendo download em massa. Use uma conta secundária criada só pra isso. Sessão é persistida em `ig_session.json` (tem perms 600 automáticas).
+
+## 3. gallery-dl (sessão do Firefox)
+
+Quando o yt-dlp diz que o post **exige login** e o Instagrapi também não resolve, o bot tenta o `gallery-dl` com a **sessão web** dos cookies do Firefox (`FIREFOX_PROFILE_PATH`). Não depende da API do app — segue funcionando quando o login do Instagrapi está fora do ar (desde out/2026 o login novo leva 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)).
+
+!!! danger "Não use o `sessionid` do navegador no Instagrapi"
+    `login_by_sessionid` com o cookie do Firefox é rejeitado pela API do app e pode **deslogar a sessão do navegador** — a mesma que o gallery-dl usa.
 
 ## Configurações relevantes
 
@@ -57,6 +64,6 @@ Posts onde a foto tem música externa: o IG embed retorna a foto, mas a música 
 
 ## Falhas comuns
 
-- **"login_required"** → bot tenta Instagrapi. Se falhar lá também, conta provavelmente foi bloqueada — delete `ig_session.json` e force re-login.
+- **"login_required"** → bot tenta Instagrapi e depois gallery-dl com a sessão do Firefox. Se os dois falharem, confira se o Firefox ainda está logado. **Não** fique forçando re-login do Instagrapi: cada tentativa gasta o limite de login da conta (429).
 - **"feedback_required"** → IG marcou como suspeito. Use VPN ou troque UA. Aguarde algumas horas.
 - **Carrossel pega só primeira mídia** → bug do embed em carrosséis muito grandes; o Instagrapi cobre.
