@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1234-login-required-instagram-gallery-dl-with-the-firefox-session-when-instagrapi-cant-log-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.34 — Login-required Instagram: gallery-dl with the Firefox session when Instagrapi can't log in
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1233-ytdlp_yt_clients-takes-effect-again-age-restricted-via-po-token-process-wide-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1951,6 +1962,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1234-login-required-instagram-gallery-dl-with-the-firefox-session-when-instagrapi-cant-log-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.34 — Login-required Instagram: gallery-dl with the Firefox session when Instagrapi can't log in
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1233-ytdlp_yt_clients-takes-effect-again-age-restricted-via-po-token-process-wide-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2367,6 +2389,15 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1234-login-required-instagram-gallery-dl-with-the-firefox-session-when-instagrapi-cant-log-in">v1.2.34 — Login-required Instagram: gallery-dl with the Firefox session when Instagrapi can't log in<a class="headerlink" href="#v1234-login-required-instagram-gallery-dl-with-the-firefox-session-when-instagrapi-cant-log-in" title="Permanent link">&para;</a></h2>
+<p><strong>Root cause:</strong> since Oct 2, 2026, Instagrapi's fresh password login gets <strong>HTTP 429</strong> on credential submission (CAA flow) — a general problem with no fix yet (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>). Without an Instagrapi session, a post yt-dlp flagged as "login required" had nowhere left to go: the bot deliberately skips every other path (so it won't send the error page logo).</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🖼️ <strong>gallery-dl runs after Instagrapi</strong> on Instagram authentication errors (<code>sign_in_required</code>, <code>age_restricted</code>, <code>unavailable</code>). It uses the <strong>web session</strong> from the Firefox cookies (<code>FIREFOX_PROFILE_PATH</code>), not the app API — so it keeps working while Instagrapi's login is down. Honors <code>SCRAPE_GALLERY_DL_ENABLE</code>.</li>
+<li>⬆️ <strong>gallery-dl <code>1.32.0</code> → <code>1.32.15</code>.</strong></li>
+<li>⚠️ <strong>Don't feed the browser <code>sessionid</code> to Instagrapi</strong> (<code>login_by_sessionid</code>): Instagram rejects web sessions on the app API and may <strong>log the browser session out</strong> too — the very session gallery-dl relies on.</li>
+<li>✅ Validated: 413 tests (new: gallery-dl resolves the post after Instagrapi fails); real post downloaded through the bot's <code>_gallery_dl_run</code> with the Firefox session.</li>
+</ul>
 <h2 id="v1233-ytdlp_yt_clients-takes-effect-again-age-restricted-via-po-token-process-wide-proxy">v1.2.33 — YTDLP_YT_CLIENTS takes effect again + age-restricted via PO Token + process-wide proxy<a class="headerlink" href="#v1233-ytdlp_yt_clients-takes-effect-again-age-restricted-via-po-token-process-wide-proxy" title="Permanent link">&para;</a></h2>
 <p><strong>Root cause (age-restricted video, logged-in and age-verified account):</strong> the bot replied "🔞 Age-restricted". Two stacked problems:</p>
 <ol>
@@ -2853,7 +2884,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 7, 2026 02:31:08 UTC"><span class="timeago" datetime="2026-10-07T02:31:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 7, 2026 02:31:08 UTC">2026-10-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 03:27:19 UTC"><span class="timeago" datetime="2026-10-08T03:27:19+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 03:27:19 UTC">2026-10-08</span>
   </span>
 
     

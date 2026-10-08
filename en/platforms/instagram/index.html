@@ -848,6 +848,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#3-gallery-dl-firefox-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. gallery-dl (Firefox session)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#relevant-configs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1648,6 +1659,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#3-gallery-dl-firefox-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. gallery-dl (Firefox session)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#relevant-configs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1712,7 +1734,7 @@
 
 
 <h1 id="instagram">Instagram<a class="headerlink" href="#instagram" title="Permanent link">&para;</a></h1>
-<p>Instagram has <strong>two dedicated paths</strong>, in order:</p>
+<p>Instagram has <strong>three dedicated paths</strong>, in order:</p>
 <h2 id="1-ig-embed-no-login">1. IG Embed (no login)<a class="headerlink" href="#1-ig-embed-no-login" title="Permanent link">&para;</a></h2>
 <p>URL <code>instagram.com/p/&lt;shortcode&gt;/embed/captioned/</code> returns HTML with embedded <code>contextJSON</code>. Works for:</p>
 <ul>
@@ -1734,6 +1756,12 @@
 <div class="admonition warning">
 <p class="admonition-title">Use a throwaway account</p>
 <p>Instagram bans accounts that appear doing mass downloads. Use a secondary account created just for this. Session is persisted in <code>ig_session.json</code> (auto perms 600).</p>
+</div>
+<h2 id="3-gallery-dl-firefox-session">3. gallery-dl (Firefox session)<a class="headerlink" href="#3-gallery-dl-firefox-session" title="Permanent link">&para;</a></h2>
+<p>When yt-dlp says the post <strong>requires login</strong> and Instagrapi can't resolve it either, the bot tries <code>gallery-dl</code> with the <strong>web session</strong> from the Firefox cookies (<code>FIREFOX_PROFILE_PATH</code>). It doesn't depend on the app API — it keeps working while Instagrapi's login is down (since Oct/2026 fresh logins get 429, <a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>).</p>
+<div class="admonition danger">
+<p class="admonition-title">Don't feed the browser <code>sessionid</code> to Instagrapi</p>
+<p><code>login_by_sessionid</code> with the Firefox cookie is rejected by the app API and may <strong>log the browser session out</strong> — the same one gallery-dl uses.</p>
 </div>
 <h2 id="relevant-configs">Relevant configs<a class="headerlink" href="#relevant-configs" title="Permanent link">&para;</a></h2>
 <table>
@@ -1780,7 +1808,7 @@
 </ol>
 <h2 id="common-failures">Common failures<a class="headerlink" href="#common-failures" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>"login_required"</strong> → bot tries Instagrapi. If it fails too, the account was probably blocked — delete <code>ig_session.json</code> and force re-login.</li>
+<li><strong>"login_required"</strong> → bot tries Instagrapi, then gallery-dl with the Firefox session. If both fail, check that Firefox is still logged in. <strong>Don't</strong> keep forcing Instagrapi re-logins: every attempt spends the account's login budget (429).</li>
 <li><strong>"feedback_required"</strong> → IG flagged as suspicious. Use VPN or change UA. Wait a few hours.</li>
 <li><strong>Carousel only gets first media</strong> → embed bug with very large carousels; Instagrapi covers it.</li>
 </ul>
@@ -1806,7 +1834,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 26, 2026 17:37:00 UTC"><span class="timeago" datetime="2026-04-26T17:37:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 26, 2026 17:37:00 UTC">2026-04-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 03:27:19 UTC"><span class="timeago" datetime="2026-10-08T03:27:19+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 03:27:19 UTC">2026-10-08</span>
   </span>
 
     
