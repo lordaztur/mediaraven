@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.3.0 — Sai o instagrapi: Instagram só pela sessão web do Firefox
+
+**Por quê:** desde 02/10/2026 o login novo do instagrapi por senha leva **HTTP 429** para todo mundo ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), e cada reinício do bot gastava uma tentativa do limite de login da conta. A v1.2.35 já buscava o mesmo JSON pela API web com a sessão do Firefox; o instagrapi virou peso morto.
+
+**Breaking changes:**
+
+- 🗑️ **`IG_USER`, `IG_PASS` e `IG_SESSION_FILE` não existem mais** — pode apagar do `.env`, junto com o `ig_session.json`. A sessão do Instagram agora é a do Firefox (`FIREFOX_PROFILE_PATH`): logue no Instagram por ele.
+- 📦 **`instagrapi` sai das dependências** (e com ele `pydantic`, `pycryptodomex` e `PySocks`).
+
+**Major changes:**
+
+- 🌐 **`downloaders/instagram.py` só pela API web** (`download_instagram_instagrapi` → `download_instagram_api`): o shortcode vira id e o JSON vira o objeto de mídia em ~30 linhas, com a mesma escolha do instagrapi (maior resolução de imagem e de vídeo). Foto + música, carrossel e post que exige login seguem iguais.
+- 📖 **Stories** (`/stories/<usuario>/<id>/`) reconhecidos pela API web.
+- 🛡️ **Chave nova faltando no `messages.json` do usuário cai no texto do `messages.example.json`** em vez de derrubar o download com `KeyError` depois de uma atualização.
+- 🚀 Sem login na partida: reiniciar o bot não faz mais nenhuma tentativa de login no Instagram.
+- ✅ Validado: 421 testes numa venv nova só com o `requirements.txt` (sem nenhum resto do instagrapi); a chamada da API web respeita o `HTTPS_PROXY` (com o proxy desligado ela falha em vez de sair pelo IP do servidor).
+
 ## v1.2.35 — Instagram sem Instagrapi: API web com a sessão do Firefox (foto + música inclusive)
 
 **Causa:** com o login do Instagrapi fora do ar ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), o caminho do Instagram autenticado desistia logo no início ("cliente não está logado"). Post de **foto com música** — que o embed delega de propósito e o yt-dlp não baixa (*"No video formats found"*) — chegava sem som ou pelo scraper genérico.

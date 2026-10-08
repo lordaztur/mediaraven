@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.3.0 — instagrapi removed: Instagram only through the Firefox web session
+
+**Why:** since Oct 2, 2026, instagrapi's fresh password login gets **HTTP 429** for everyone ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), and every bot restart spent one attempt of the account's login budget. v1.2.35 already fetched the same JSON through the web API with the Firefox session; instagrapi became dead weight.
+
+**Breaking changes:**
+
+- 🗑️ **`IG_USER`, `IG_PASS` and `IG_SESSION_FILE` are gone** — remove them from `.env`, along with `ig_session.json`. The Instagram session is now Firefox's (`FIREFOX_PROFILE_PATH`): log in to Instagram there.
+- 📦 **`instagrapi` dropped from dependencies** (and with it `pydantic`, `pycryptodomex` and `PySocks`).
+
+**Major changes:**
+
+- 🌐 **`downloaders/instagram.py` web API only** (`download_instagram_instagrapi` → `download_instagram_api`): shortcode → id and JSON → media object in ~30 lines, with instagrapi's same choice (highest image and video resolution). Photo + music, carousels and login-required posts work the same.
+- 📖 **Stories** (`/stories/<user>/<id>/`) recognized by the web API.
+- 🛡️ **A new key missing from the user's `messages.json` falls back to `messages.example.json`** instead of killing the download with `KeyError` after an update.
+- 🚀 No login at startup: restarting the bot no longer makes any Instagram login attempt.
+- ✅ Validated: 421 tests in a fresh venv built only from `requirements.txt` (no instagrapi leftovers); the web API call honors `HTTPS_PROXY` (with the proxy down it fails instead of egressing through the server IP).
+
 ## v1.2.35 — Instagram without Instagrapi: web API with the Firefox session (photo + music included)
 
 **Root cause:** with Instagrapi's login down ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), the authenticated Instagram path gave up right away ("client is not logged in"). **Photo + music** posts — which the embed deliberately hands off and yt-dlp can't download (*"No video formats found"*) — arrived silent or via the generic scraper.
