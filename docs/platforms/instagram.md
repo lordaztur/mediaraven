@@ -23,6 +23,9 @@ Quando o embed não dá conta, tenta com a conta logada via `IG_USER`/`IG_PASS` 
 - ✅ Stories
 - ✅ Reels que o embed não pegou
 
+!!! tip "Sem login do Instagrapi, a API web cobre"
+    Se o Instagrapi não estiver logado (desde out/2026 o login novo leva 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), o mesmo caminho busca o post pela **API web** (`/api/v1/media/{pk}/info/`) com a sessão do Firefox (`FIREFOX_PROFILE_PATH`). O JSON é o mesmo da API do app, então tudo acima continua valendo — inclusive foto + música no trecho certo. O status aparece como `📸 Instagram Web`.
+
 !!! warning "Use conta descartável"
     O Instagram bane contas que aparecem fazendo download em massa. Use uma conta secundária criada só pra isso. Sessão é persistida em `ig_session.json` (tem perms 600 automáticas).
 

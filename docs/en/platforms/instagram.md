@@ -23,6 +23,9 @@ When the embed can't handle it, tries with the logged-in account via `IG_USER`/`
 - ✅ Stories
 - ✅ Reels the embed didn't catch
 
+!!! tip "No Instagrapi login? The web API covers it"
+    If Instagrapi isn't logged in (since Oct/2026 fresh logins get 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), the same path fetches the post through the **web API** (`/api/v1/media/{pk}/info/`) with the Firefox session (`FIREFOX_PROFILE_PATH`). The JSON is the same as the app API's, so everything above still applies — including photo + music on the right segment. Status shows as `📸 Instagram Web`.
+
 !!! warning "Use a throwaway account"
     Instagram bans accounts that appear doing mass downloads. Use a secondary account created just for this. Session is persisted in `ig_session.json` (auto perms 600).
 

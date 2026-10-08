@@ -5,13 +5,49 @@ from urllib.parse import urlparse
 
 import aiofiles
 import requests
+from curl_cffi import requests as curl_requests
+from instagrapi.extractors import extract_media_v1
+from instagrapi.utils.ids import InstagramIdCodec
 
 import state
 from config import cfg
+from cookies import get_aiohttp_cookies_for_url
 from messages import lmsg, msg
 from utils import async_merge_audio_image, safe_url
 
+from .instagram_embed import _extract_shortcode
+
 logger = logging.getLogger(__name__)
+
+_WEB_APP_ID = "936619743392459"
+
+
+def _web_media_info(url: str, timeout: float):
+    """media/{pk}/info pela API WEB com a sessão do Firefox — mesmo JSON da API do app.
+
+    Cobre o Instagrapi quando ele não loga (429 no login CAA desde out/2026): o
+    resto do fluxo (download, música + ffmpeg) segue igual."""
+    shortcode = _extract_shortcode(url)
+    cookies = get_aiohttp_cookies_for_url("https://www.instagram.com/")
+    if not shortcode or "sessionid" not in cookies:
+        return None
+    media_pk = str(InstagramIdCodec.decode(shortcode[:11]))
+    r = curl_requests.get(
+        f"https://www.instagram.com/api/v1/media/{media_pk}/info/",
+        cookies=cookies, impersonate="chrome", timeout=timeout,
+        headers={
+            "X-IG-App-ID": _WEB_APP_ID,
+            "X-CSRFToken": cookies.get("csrftoken", ""),
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": f"https://www.instagram.com/p/{shortcode}/",
+        },
+    )
+    r.raise_for_status()
+    items = (r.json() or {}).get("items") or []
+    if not items:
+        return None
+    raw = {"items": items}
+    return media_pk, extract_media_v1(items[0]), raw
 
 
 async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
@@ -30,13 +66,18 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
         return path
 
     def perform_instagrapi():
-        if not state.IG_CLIENT:
-            logger.error(lmsg("instagram.cliente_instagrapi_n_o"))
-            return None
-
         try:
-            media_pk = state.IG_CLIENT.media_pk_from_url(url)
-            media_info = state.IG_CLIENT.media_info(media_pk)
+            web_raw = None
+            if state.IG_CLIENT:
+                media_pk = state.IG_CLIENT.media_pk_from_url(url)
+                media_info = state.IG_CLIENT.media_info(media_pk)
+            else:
+                web = _web_media_info(url, timeout)
+                if not web:
+                    logger.error(lmsg("instagram.cliente_instagrapi_n_o"))
+                    return None
+                logger.info(lmsg("instagram.via_web", url=safe_url(url)))
+                media_pk, media_info, web_raw = web
 
             audio_url = None
             start_time_sec = None
@@ -52,7 +93,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
             if is_single_photo:
                 try:
                     logger.info(lmsg("instagram.buscando_udio_e"))
-                    raw_data = state.IG_CLIENT.private_request(f"media/{media_pk}/info/")
+                    raw_data = web_raw if web_raw is not None else state.IG_CLIENT.private_request(f"media/{media_pk}/info/")
 
                     def extract_audio_data(data):
                         nonlocal audio_url, start_time_sec, overlap_duration_sec, track_duration_sec
@@ -92,7 +133,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
                 paths.append(fetch(media_url, os.path.join(unique_folder, f"ig_{i}{ext}")))
 
             caption_text = getattr(media_info, 'caption_text', "") or ""
-            return paths, audio_url, duration_sec, start_time_sec, media_info.media_type, caption_text, is_single_photo
+            return paths, audio_url, duration_sec, start_time_sec, media_info.media_type, caption_text, is_single_photo, web_raw is not None
         except Exception as e:
             logger.error(lmsg("instagram.instagrapi_falhou_x", e=e), exc_info=True)
             return None
@@ -110,7 +151,7 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
     if not result:
         return [], msg("downloader_status.instagrapi_fail"), "", ""
 
-    paths, audio_url, duration_sec, start_time_sec, media_type, caption_text, is_single_photo = result
+    paths, audio_url, duration_sec, start_time_sec, media_type, caption_text, is_single_photo, via_web = result
 
     audio_path = None
     if audio_url:
@@ -165,4 +206,5 @@ async def download_instagram_instagrapi(url: str, unique_folder: str) -> tuple[l
     else:
         caption_short = caption_text
 
-    return paths, msg("downloader_status.instagrapi", media_type=m_type), caption_short, caption_full
+    status_key = "downloader_status.instagram_web" if via_web else "downloader_status.instagrapi"
+    return paths, msg(status_key, media_type=m_type), caption_short, caption_full

@@ -93,6 +93,7 @@
   },
   "instagram": {
     "iniciando_instagrapi_para": "📸 Starting Instagrapi for: {arg0}",
+    "via_web": "🌐 Instagrapi not logged in — fetching the post through the web API with the Firefox session: {url}",
     "cliente_instagrapi_n_o": "❌ Instagrapi client is not logged in.",
     "buscando_udio_e": "🕵️ Looking for audio and metadata...",
     "erro_ao_buscar": "⚠️ Error fetching raw JSON: {e}",

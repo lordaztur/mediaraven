@@ -93,6 +93,7 @@
   },
   "instagram": {
     "iniciando_instagrapi_para": "📸 Iniciando Instagrapi para: {arg0}",
+    "via_web": "🌐 Instagrapi sem login — buscando o post pela API web com a sessão do Firefox: {url}",
     "cliente_instagrapi_n_o": "❌ Cliente Instagrapi não está logado.",
     "buscando_udio_e": "🕵️ Buscando áudio e metadados...",
     "erro_ao_buscar": "⚠️ Erro ao buscar JSON bruto: {e}",

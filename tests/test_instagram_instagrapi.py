@@ -89,3 +89,28 @@ async def test_baixa_urls_do_media_info_direto(tmp_path, monkeypatch, media, exp
     assert [os.path.splitext(p)[1] for p in paths] == [e for _, e in expected]
     assert all(os.path.getsize(p) > 0 for p in paths)
     assert "legenda de teste" in full
+
+
+@pytest.mark.asyncio
+async def test_sem_instagrapi_usa_api_web(tmp_path, monkeypatch):
+    monkeypatch.setattr(state, "IG_CLIENT", None)
+    media = _media(1, thumbnail_url="https://cdn/v/photo_full.jpg")
+    monkeypatch.setattr(instagram, "_web_media_info", lambda url, timeout: ("123", media, {}))
+    monkeypatch.setattr(instagram.requests, "get", lambda url, **kw: _FakeResponse())
+
+    paths, status, _, full = await instagram.download_instagram_instagrapi(
+        "https://www.instagram.com/p/DeMqyRcBI3X/", str(tmp_path)
+    )
+
+    assert [os.path.splitext(p)[1] for p in paths] == [".jpg"]
+    assert "Web" in status
+    assert "legenda de teste" in full
+
+
+def test_api_web_exige_sessao_do_firefox(monkeypatch):
+    monkeypatch.setattr(state, "FIREFOX_COOKIES_CACHE", [{"name": "csrftoken", "value": "x", "domain": ".instagram.com"}])
+    called = []
+    monkeypatch.setattr(instagram.curl_requests, "get", lambda *a, **k: called.append(a))
+
+    assert instagram._web_media_info("https://www.instagram.com/p/DeMqyRcBI3X/", 10) is None
+    assert called == []
