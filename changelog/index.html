@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1235-instagram-sem-instagrapi-api-web-com-a-sessao-do-firefox-foto-musica-inclusive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.35 — Instagram sem Instagrapi: API web com a sessão do Firefox (foto + música inclusive)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1234-instagram-que-exige-login-gallery-dl-com-a-sessao-do-firefox-quando-o-instagrapi-nao-loga" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1960,6 +1971,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v1235-instagram-sem-instagrapi-api-web-com-a-sessao-do-firefox-foto-musica-inclusive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.2.35 — Instagram sem Instagrapi: API web com a sessão do Firefox (foto + música inclusive)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1234-instagram-que-exige-login-gallery-dl-com-a-sessao-do-firefox-quando-o-instagrapi-nao-loga" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2387,6 +2409,14 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v1235-instagram-sem-instagrapi-api-web-com-a-sessao-do-firefox-foto-musica-inclusive">v1.2.35 — Instagram sem Instagrapi: API web com a sessão do Firefox (foto + música inclusive)<a class="headerlink" href="#v1235-instagram-sem-instagrapi-api-web-com-a-sessao-do-firefox-foto-musica-inclusive" title="Permanent link">&para;</a></h2>
+<p><strong>Causa:</strong> com o login do Instagrapi fora do ar (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), o caminho do Instagram autenticado desistia logo no início ("cliente não está logado"). Post de <strong>foto com música</strong> — que o embed delega de propósito e o yt-dlp não baixa (<em>"No video formats found"</em>) — chegava sem som ou pelo scraper genérico.</p>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🌐 <strong><code>media/{pk}/info</code> pela API web</strong> quando o Instagrapi não está logado — com os cookies do Firefox (<code>FIREFOX_PROFILE_PATH</code>). O JSON é o mesmo da API do app: o <code>extract_media_v1</code> do próprio instagrapi monta o <code>media_info</code>, e o resto do fluxo não muda (download pelo CDN, <code>progressive_download_url</code> + <code>audio_asset_start_time_in_ms</code> / <code>overlap_duration_in_ms</code> → ffmpeg). Carrossel, reel e post que exige login entram junto.</li>
+<li>🏷️ Status novo <code>📸 Instagram Web (...)</code> — <strong>quem usa <code>messages.json</code> próprio precisa adicionar <code>downloader_status.instagram_web</code></strong> (chave faltando dá <code>KeyError</code>).</li>
+<li>✅ Validado: 415 testes; post real de foto + música virou <code>.mp4</code> H.264 1088×1104 + AAC com <strong>exatamente 90 s</strong> (o trecho escolhido no post), sem Instagrapi.</li>
+</ul>
 <h2 id="v1234-instagram-que-exige-login-gallery-dl-com-a-sessao-do-firefox-quando-o-instagrapi-nao-loga">v1.2.34 — Instagram que exige login: gallery-dl com a sessão do Firefox quando o Instagrapi não loga<a class="headerlink" href="#v1234-instagram-que-exige-login-gallery-dl-com-a-sessao-do-firefox-quando-o-instagrapi-nao-loga" title="Permanent link">&para;</a></h2>
 <p><strong>Causa:</strong> desde 02/10/2026 o login novo do Instagrapi por senha leva <strong>HTTP 429</strong> no envio das credenciais (fluxo CAA) — problema geral, sem correção ainda (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>). Sem sessão do Instagrapi, um post que o yt-dlp marcava como "exige login" não tinha mais saída: o bot pulava todos os outros caminhos de propósito (pra não mandar o logo da página de erro).</p>
 <p><strong>Major changes:</strong></p>
@@ -2882,7 +2912,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="8 de outubro de 2026 03:27:19 UTC"><span class="timeago" datetime="2026-10-08T03:27:19+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="8 de outubro de 2026 03:27:19 UTC">2026-10-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="8 de outubro de 2026 04:08:20 UTC"><span class="timeago" datetime="2026-10-08T04:08:20+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="8 de outubro de 2026 04:08:20 UTC">2026-10-08</span>
   </span>
 
     
