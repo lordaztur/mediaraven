@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.0 — instagrapi removed: Instagram only through the Firefox web session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1235-instagram-without-instagrapi-web-api-with-the-firefox-session-photo-music-included" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1973,6 +1984,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.0 — instagrapi removed: Instagram only through the Firefox web session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v1235-instagram-without-instagrapi-web-api-with-the-firefox-session-photo-music-included" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2411,6 +2433,21 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v130-instagrapi-removed-instagram-only-through-the-firefox-web-session">v1.3.0 — instagrapi removed: Instagram only through the Firefox web session<a class="headerlink" href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" title="Permanent link">&para;</a></h2>
+<p><strong>Why:</strong> since Oct 2, 2026, instagrapi's fresh password login gets <strong>HTTP 429</strong> for everyone (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), and every bot restart spent one attempt of the account's login budget. v1.2.35 already fetched the same JSON through the web API with the Firefox session; instagrapi became dead weight.</p>
+<p><strong>Breaking changes:</strong></p>
+<ul>
+<li>🗑️ <strong><code>IG_USER</code>, <code>IG_PASS</code> and <code>IG_SESSION_FILE</code> are gone</strong> — remove them from <code>.env</code>, along with <code>ig_session.json</code>. The Instagram session is now Firefox's (<code>FIREFOX_PROFILE_PATH</code>): log in to Instagram there.</li>
+<li>📦 <strong><code>instagrapi</code> dropped from dependencies</strong> (and with it <code>pydantic</code>, <code>pycryptodomex</code> and <code>PySocks</code>).</li>
+</ul>
+<p><strong>Major changes:</strong></p>
+<ul>
+<li>🌐 <strong><code>downloaders/instagram.py</code> web API only</strong> (<code>download_instagram_instagrapi</code> → <code>download_instagram_api</code>): shortcode → id and JSON → media object in ~30 lines, with instagrapi's same choice (highest image and video resolution). Photo + music, carousels and login-required posts work the same.</li>
+<li>📖 <strong>Stories</strong> (<code>/stories/&lt;user&gt;/&lt;id&gt;/</code>) recognized by the web API.</li>
+<li>🛡️ <strong>A new key missing from the user's <code>messages.json</code> falls back to <code>messages.example.json</code></strong> instead of killing the download with <code>KeyError</code> after an update.</li>
+<li>🚀 No login at startup: restarting the bot no longer makes any Instagram login attempt.</li>
+<li>✅ Validated: 421 tests in a fresh venv built only from <code>requirements.txt</code> (no instagrapi leftovers); the web API call honors <code>HTTPS_PROXY</code> (with the proxy down it fails instead of egressing through the server IP).</li>
+</ul>
 <h2 id="v1235-instagram-without-instagrapi-web-api-with-the-firefox-session-photo-music-included">v1.2.35 — Instagram without Instagrapi: web API with the Firefox session (photo + music included)<a class="headerlink" href="#v1235-instagram-without-instagrapi-web-api-with-the-firefox-session-photo-music-included" title="Permanent link">&para;</a></h2>
 <p><strong>Root cause:</strong> with Instagrapi's login down (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), the authenticated Instagram path gave up right away ("client is not logged in"). <strong>Photo + music</strong> posts — which the embed deliberately hands off and yt-dlp can't download (<em>"No video formats found"</em>) — arrived silent or via the generic scraper.</p>
 <p><strong>Major changes:</strong></p>
@@ -2914,7 +2951,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 04:08:20 UTC"><span class="timeago" datetime="2026-10-08T04:08:20+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 04:08:20 UTC">2026-10-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 04:15:57 UTC"><span class="timeago" datetime="2026-10-08T04:15:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 04:15:57 UTC">2026-10-08</span>
   </span>
 
     

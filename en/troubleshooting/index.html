@@ -2351,19 +2351,16 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>choco<span class="w"> </span>install<span class="w"> </span>ffmpeg<span class="w">                 </span><span class="c1"># Windows</span>
 </span></code></pre></div>
 <h3 id="instagram-asks-for-login-challenge">Instagram asks for login / challenge<a class="headerlink" href="#instagram-asks-for-login-challenge" title="Permanent link">&para;</a></h3>
-<p><code>Instagrapi failed</code> in the log. Possible causes:</p>
+<p><code>Instagram web API failed</code> or <code>No Instagram session in Firefox</code> in the log. Possible causes:</p>
 <ul>
+<li>The Instagram session in Firefox dropped (password change, logout, account recovery)</li>
 <li>Account flagged for suspicious activity</li>
-<li>Old session (<code>ig_session.json</code>)</li>
 </ul>
-<p>Solution:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>rm<span class="w"> </span>ig_session.json
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># bot restart — forces re-login with IG_USER/IG_PASS</span>
-</span></code></pre></div>
+<p>Solution: open the Firefox profile at <code>FIREFOX_PROFILE_PATH</code> and log in to Instagram again. The bot reads the cookies from disk — no restart needed.</p>
 <p>If still fails, use VPN or wait a few hours. In persistent cases, switch account — IG blocks accounts that appear doing mass downloads.</p>
 <h3 id="youtube-sign-in-to-confirm-youre-not-a-bot">YouTube: "Sign in to confirm you're not a bot"<a class="headerlink" href="#youtube-sign-in-to-confirm-youre-not-a-bot" title="Permanent link">&para;</a></h3>
 <p>YouTube is detecting as bot. Cookies from a logged-in Firefox account solve it:</p>
-<div class="language-ini highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="na">FIREFOX_PROFILE_PATH</span><span class="o">=</span><span class="s">/path/firefox/profile</span>
+<div class="language-ini highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="na">FIREFOX_PROFILE_PATH</span><span class="o">=</span><span class="s">/path/firefox/profile</span>
 </span></code></pre></div>
 <p>Make sure the profile has recent cookies (you opened YouTube in Firefox recently).</p>
 <h3 id="youtube-age-restricted-video">YouTube: age-restricted video<a class="headerlink" href="#youtube-age-restricted-video" title="Permanent link">&para;</a></h3>
@@ -2391,7 +2388,7 @@
 <p><code>SCRAPE_MIN_IMAGE_SIZE</code> too low. Increase to 100-200 (if 50 isn't filtering).</p>
 <h3 id="takes-too-long">Takes too long<a class="headerlink" href="#takes-too-long" title="Permanent link">&para;</a></h3>
 <p>Check the tiers running:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>grep<span class="w"> </span><span class="s2">"🕸️\|⚡\|🧩\|🖼️"</span><span class="w"> </span>bot.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>grep<span class="w"> </span><span class="s2">"🕸️\|⚡\|🧩\|🖼️"</span><span class="w"> </span>bot.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
 </span></code></pre></div>
 <p>If Playwright is taking 30s+, lower <code>PW_GOTO_TIMEOUT_MS</code>. If gallery-dl is slow, lower <code>SCRAPE_GALLERY_DL_TIMEOUT_S</code> or disable (<code>SCRAPE_GALLERY_DL_ENABLE=no</code>).</p>
 <h2 id="captions">Captions<a class="headerlink" href="#captions" title="Permanent link">&para;</a></h2>
@@ -2412,7 +2409,7 @@
 </ul>
 <p>Check via <code>LOG_LEVEL=DEBUG</code> what's running.</p>
 <h2 id="for-deep-debug">For deep debug<a class="headerlink" href="#for-deep-debug" title="Permanent link">&para;</a></h2>
-<div class="language-ini highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="na">LOG_LEVEL</span><span class="o">=</span><span class="s">DEBUG</span>
+<div class="language-ini highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="na">LOG_LEVEL</span><span class="o">=</span><span class="s">DEBUG</span>
 </span></code></pre></div>
 <p>All modules (including <code>httpx</code>, <code>urllib3</code>, <code>playwright</code>, etc.) come back to log. Volume goes up A LOT — turn off afterwards.</p>
 <h2 id="reporting-bugs">Reporting bugs<a class="headerlink" href="#reporting-bugs" title="Permanent link">&para;</a></h2>
@@ -2446,7 +2443,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 7, 2026 02:31:08 UTC"><span class="timeago" datetime="2026-10-07T02:31:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 7, 2026 02:31:08 UTC">2026-10-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 04:15:57 UTC"><span class="timeago" datetime="2026-10-08T04:15:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 04:15:57 UTC">2026-10-08</span>
   </span>
 
     

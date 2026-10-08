@@ -835,10 +835,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-instagrapi-com-login" class="md-nav__link">
+  <a href="#2-api-web-sessao-do-firefox" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Instagrapi (com login)
+        2. API web (sessão do Firefox)
       
     </span>
   </a>
@@ -1646,10 +1646,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-instagrapi-com-login" class="md-nav__link">
+  <a href="#2-api-web-sessao-do-firefox" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Instagrapi (com login)
+        2. API web (sessão do Firefox)
       
     </span>
   </a>
@@ -1739,32 +1739,29 @@
 <li>✅ Posts de foto única</li>
 <li>✅ Carrosséis (vários itens)</li>
 <li>✅ Reels</li>
-<li>❌ Posts com <strong>música externa</strong> (precisa baixar áudio + mixar com ffmpeg → delega pro Instagrapi)</li>
+<li>❌ Posts com <strong>música externa</strong> (precisa baixar áudio + mixar com ffmpeg → delega pra API web)</li>
 <li>❌ Stories (URL diferente)</li>
 </ul>
 <p>Não precisa login. Falha silenciosa se o post for privado / removido.</p>
-<h2 id="2-instagrapi-com-login">2. Instagrapi (com login)<a class="headerlink" href="#2-instagrapi-com-login" title="Permanent link">&para;</a></h2>
-<p>Quando o embed não dá conta, tenta com a conta logada via <code>IG_USER</code>/<code>IG_PASS</code> (defina no <code>.env</code>).</p>
+<h2 id="2-api-web-sessao-do-firefox">2. API web (sessão do Firefox)<a class="headerlink" href="#2-api-web-sessao-do-firefox" title="Permanent link">&para;</a></h2>
+<p>Quando o embed não dá conta, o bot busca o post em <code>/api/v1/media/{pk}/info/</code> com a <strong>sessão web</strong> dos cookies do Firefox (<code>FIREFOX_PROFILE_PATH</code>) — a mesma que o yt-dlp e o gallery-dl usam. O JSON é o mesmo que a API do app devolve.</p>
 <ul>
 <li>✅ Tudo que o embed faz</li>
 <li>✅ Posts com música externa (baixa áudio + mixa com foto pra gerar vídeo)</li>
-<li>✅ Stories</li>
-<li>✅ Reels que o embed não pegou</li>
+<li>✅ Stories (<code>/stories/&lt;usuario&gt;/&lt;id&gt;/</code>)</li>
+<li>✅ Posts e reels que exigem login</li>
 </ul>
-<div class="admonition tip">
-<p class="admonition-title">Sem login do Instagrapi, a API web cobre</p>
-<p>Se o Instagrapi não estiver logado (desde out/2026 o login novo leva 429, <a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), o mesmo caminho busca o post pela <strong>API web</strong> (<code>/api/v1/media/{pk}/info/</code>) com a sessão do Firefox (<code>FIREFOX_PROFILE_PATH</code>). O JSON é o mesmo da API do app, então tudo acima continua valendo — inclusive foto + música no trecho certo. O status aparece como <code>📸 Instagram Web</code>.</p>
-</div>
+<p>O status aparece como <code>📸 Instagram Web (...)</code>. Sem sessão do Instagram no Firefox, esse caminho não roda — logue no Instagram pelo Firefox do perfil configurado.</p>
 <div class="admonition warning">
 <p class="admonition-title">Use conta descartável</p>
-<p>O Instagram bane contas que aparecem fazendo download em massa. Use uma conta secundária criada só pra isso. Sessão é persistida em <code>ig_session.json</code> (tem perms 600 automáticas).</p>
+<p>O Instagram bane contas que aparecem fazendo download em massa. Use uma conta secundária, logada só no Firefox do bot.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Por que não o instagrapi</p>
+<p>Até a v1.2.35 este caminho era o instagrapi (API do app, login por senha). Desde out/2026 o login novo por senha leva <strong>429</strong> para todo mundo (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), e a sessão web cobre o mesmo JSON — então ele saiu na v1.3.0, junto com <code>IG_USER</code>, <code>IG_PASS</code> e <code>ig_session.json</code>.</p>
 </div>
 <h2 id="3-gallery-dl-sessao-do-firefox">3. gallery-dl (sessão do Firefox)<a class="headerlink" href="#3-gallery-dl-sessao-do-firefox" title="Permanent link">&para;</a></h2>
-<p>Quando o yt-dlp diz que o post <strong>exige login</strong> e o Instagrapi também não resolve, o bot tenta o <code>gallery-dl</code> com a <strong>sessão web</strong> dos cookies do Firefox (<code>FIREFOX_PROFILE_PATH</code>). Não depende da API do app — segue funcionando quando o login do Instagrapi está fora do ar (desde out/2026 o login novo leva 429, <a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>).</p>
-<div class="admonition danger">
-<p class="admonition-title">Não use o <code>sessionid</code> do navegador no Instagrapi</p>
-<p><code>login_by_sessionid</code> com o cookie do Firefox é rejeitado pela API do app e pode <strong>deslogar a sessão do navegador</strong> — a mesma que o gallery-dl usa.</p>
-</div>
+<p>Quando o yt-dlp diz que o post <strong>exige login</strong> e a API web também não resolve, o bot tenta o <code>gallery-dl</code> com a mesma sessão web, como último recurso.</p>
 <h2 id="configuracoes-relevantes">Configurações relevantes<a class="headerlink" href="#configuracoes-relevantes" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -1783,12 +1780,12 @@
 <tr>
 <td><code>IG_USER_AGENT</code></td>
 <td><code>Instagram 219.0.0.12.117 Android</code></td>
-<td>UA usado pra baixar áudio (fora do instagrapi). Atualize se IG bloquear.</td>
+<td>UA usado pra baixar o áudio. Atualize se IG bloquear.</td>
 </tr>
 <tr>
 <td><code>IG_QUEUE_WARN_THRESHOLD</code></td>
 <td><code>5</code></td>
-<td>Tamanho da fila do Instagrapi que dispara warning no log.</td>
+<td>Tamanho da fila do Instagram que dispara warning no log.</td>
 </tr>
 </tbody>
 </table>
@@ -1800,19 +1797,19 @@
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>🔗 Link Original
 </span></code></pre></div>
 <h2 id="foto-musica">Foto + música<a class="headerlink" href="#foto-musica" title="Permanent link">&para;</a></h2>
-<p>Posts onde a foto tem música externa: o IG embed retorna a foto, mas a música vem em um <code>progressive_download_url</code> que só o Instagrapi conhece. Fluxo:</p>
+<p>Posts onde a foto tem música externa: o IG embed retorna a foto, mas a música vem em um <code>progressive_download_url</code> que só a API (web ou do app) traz. Fluxo:</p>
 <ol>
-<li>Embed acha que é foto pura → não pega música → falha (semântica esperada).</li>
-<li>Cai no Instagrapi → pega <code>media_info</code> + scaneia recursivamente o JSON pra achar <code>progressive_download_url</code>.</li>
+<li>Embed detecta foto + música → desiste de propósito (pra não mandar foto sem som).</li>
+<li>Cai na API web → pega o <code>media_info</code> + scaneia recursivamente o JSON pra achar <code>progressive_download_url</code>.</li>
 <li>Baixa áudio puro via <code>aiohttp</code> com UA do Instagram.</li>
 <li>Mixa via <code>ffmpeg loop -framerate 1 -i img.jpg -i audio.m4a -shortest</code>.</li>
 <li>Resultado: <code>.mp4</code> com a foto estática + a música, no tempo certo (<code>audio_asset_start_time_in_ms</code> e <code>overlap_duration_in_ms</code> são respeitados).</li>
 </ol>
 <h2 id="falhas-comuns">Falhas comuns<a class="headerlink" href="#falhas-comuns" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>"login_required"</strong> → bot tenta Instagrapi e depois gallery-dl com a sessão do Firefox. Se os dois falharem, confira se o Firefox ainda está logado. <strong>Não</strong> fique forçando re-login do Instagrapi: cada tentativa gasta o limite de login da conta (429).</li>
+<li><strong>"login_required"</strong> → bot tenta a API web e depois o gallery-dl, ambos com a sessão do Firefox. Se os dois falharem, confira se o Firefox ainda está logado no Instagram.</li>
 <li><strong>"feedback_required"</strong> → IG marcou como suspeito. Use VPN ou troque UA. Aguarde algumas horas.</li>
-<li><strong>Carrossel pega só primeira mídia</strong> → bug do embed em carrosséis muito grandes; o Instagrapi cobre.</li>
+<li><strong>Carrossel pega só primeira mídia</strong> → bug do embed em carrosséis muito grandes; a API web cobre.</li>
 </ul>
 
 
@@ -1836,7 +1833,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="8 de outubro de 2026 04:08:20 UTC"><span class="timeago" datetime="2026-10-08T04:08:20+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="8 de outubro de 2026 04:08:20 UTC">2026-10-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="8 de outubro de 2026 04:15:57 UTC"><span class="timeago" datetime="2026-10-08T04:15:57+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="8 de outubro de 2026 04:15:57 UTC">2026-10-08</span>
   </span>
 
     
