@@ -59,17 +59,12 @@ choco install ffmpeg                 # Windows
 
 ### Instagram pede login / challenge
 
-`Instagrapi falhou` no log. Possíveis causas:
+`API web do Instagram falhou` ou `Sem sessão do Instagram no Firefox` no log. Possíveis causas:
 
+- A sessão do Instagram no Firefox caiu (troca de senha, logout, recuperação de conta)
 - Conta foi sinalizada por atividade suspeita
-- Sessão velha (`ig_session.json`)
 
-Solução:
-
-```bash
-rm ig_session.json
-# restart do bot — força re-login com IG_USER/IG_PASS
-```
+Solução: abra o Firefox do perfil em `FIREFOX_PROFILE_PATH` e logue no Instagram de novo. O bot lê os cookies do disco — não precisa reiniciar.
 
 Se ainda falhar, use VPN ou aguarde algumas horas. Em casos persistentes, troque a conta — IG bloqueia contas que aparecem fazendo download em massa.
 

@@ -335,7 +335,7 @@ async def test_download_media_instagram_sign_in_required_tries_instagrapi(tmp_fo
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_instagram_embed",
                       new=AsyncMock(return_value=([], "", "", ""))), \
-         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "download_instagram_api", new=instagrapi_mock), \
          patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
         files, status, short, full, is_article = await dispatcher.download_media(
             "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None
@@ -357,7 +357,7 @@ async def test_download_media_instagram_sign_in_required_gives_up_without_scrape
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_instagram_embed",
                       new=AsyncMock(return_value=([], "", "", ""))), \
-         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "download_instagram_api", new=instagrapi_mock), \
          patch.object(dispatcher, "_gallery_dl_run", new=gallery_dl_mock), \
          patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
         files, status, short, full, is_article = await dispatcher.download_media(
@@ -384,7 +384,7 @@ async def test_download_media_instagram_sign_in_required_falls_back_to_gallery_d
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_instagram_embed",
                       new=AsyncMock(return_value=([], "", "", ""))), \
-         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "download_instagram_api", new=instagrapi_mock), \
          patch.object(dispatcher, "_gallery_dl_run", new=gallery_dl_mock), \
          patch.object(dispatcher, "_wipe_folder", new=lambda *_: None), \
          patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
@@ -408,7 +408,7 @@ async def test_download_media_instagram_private_does_not_retry_instagrapi(tmp_fo
          patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
          patch.object(dispatcher, "download_instagram_embed",
                       new=AsyncMock(return_value=([], "", "", ""))), \
-         patch.object(dispatcher, "download_instagram_instagrapi", new=instagrapi_mock), \
+         patch.object(dispatcher, "download_instagram_api", new=instagrapi_mock), \
          patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
         files, status, short, full, is_article = await dispatcher.download_media(
             "https://www.instagram.com/reels/ABC123/", tmp_folder, target_lang=None

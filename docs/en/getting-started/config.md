@@ -50,7 +50,6 @@ Then `ALLOWED_CHAT_ID` and `ALLOWED_USER_IDS` are ignored — anyone who finds t
 
 ### Useful optionals
 
-- `IG_USER` / `IG_PASS` — throwaway Instagram account for Instagrapi (fallback when yt-dlp fails).
 - `FIREFOX_PROFILE_PATH` — profile path to reuse cookies. See [Firefox cookies](#firefox-cookies-recommended-on-server) below.
 
 ## 4. Customization (optional)

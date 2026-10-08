@@ -6,43 +6,42 @@ Instagram has **three dedicated paths**, in order:
 
 URL `instagram.com/p/<shortcode>/embed/captioned/` returns HTML with embedded `contextJSON`. Works for:
 
-- ✅ Single photo posts
+- ✅ Single-photo posts
 - ✅ Carousels (multiple items)
 - ✅ Reels
-- ❌ Posts with **external music** (needs to download audio + mix with ffmpeg → delegates to Instagrapi)
+- ❌ Posts with **external music** (needs audio download + ffmpeg mix → delegates to the web API)
 - ❌ Stories (different URL)
 
-No login needed. Silent fallback if the post is private/removed.
+No login needed. Fails silently if the post is private / removed.
 
-## 2. Instagrapi (with login)
+## 2. Web API (Firefox session)
 
-When the embed can't handle it, tries with the logged-in account via `IG_USER`/`IG_PASS` (set in `.env`).
+When the embed can't handle it, the bot fetches the post at `/api/v1/media/{pk}/info/` with the **web session** from the Firefox cookies (`FIREFOX_PROFILE_PATH`) — the same one yt-dlp and gallery-dl use. The JSON is the same the app API returns.
 
-- ✅ Everything embed does
-- ✅ Posts with external music (downloads audio + mixes with photo to generate video)
-- ✅ Stories
-- ✅ Reels the embed didn't catch
+- ✅ Everything the embed does
+- ✅ Posts with external music (downloads audio + mixes with the photo into a video)
+- ✅ Stories (`/stories/<user>/<id>/`)
+- ✅ Login-required posts and reels
 
-!!! tip "No Instagrapi login? The web API covers it"
-    If Instagrapi isn't logged in (since Oct/2026 fresh logins get 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), the same path fetches the post through the **web API** (`/api/v1/media/{pk}/info/`) with the Firefox session (`FIREFOX_PROFILE_PATH`). The JSON is the same as the app API's, so everything above still applies — including photo + music on the right segment. Status shows as `📸 Instagram Web`.
+Status shows as `📸 Instagram Web (...)`. Without an Instagram session in Firefox this path doesn't run — log in to Instagram in the configured Firefox profile.
 
 !!! warning "Use a throwaway account"
-    Instagram bans accounts that appear doing mass downloads. Use a secondary account created just for this. Session is persisted in `ig_session.json` (auto perms 600).
+    Instagram bans accounts that appear doing mass downloads. Use a secondary account, logged in only in the bot's Firefox.
+
+!!! note "Why not instagrapi"
+    Up to v1.2.35 this path was instagrapi (app API, password login). Since Oct/2026 fresh password logins get **429** for everyone ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), and the web session covers the same JSON — so it was removed in v1.3.0, along with `IG_USER`, `IG_PASS` and `ig_session.json`.
 
 ## 3. gallery-dl (Firefox session)
 
-When yt-dlp says the post **requires login** and Instagrapi can't resolve it either, the bot tries `gallery-dl` with the **web session** from the Firefox cookies (`FIREFOX_PROFILE_PATH`). It doesn't depend on the app API — it keeps working while Instagrapi's login is down (since Oct/2026 fresh logins get 429, [instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)).
-
-!!! danger "Don't feed the browser `sessionid` to Instagrapi"
-    `login_by_sessionid` with the Firefox cookie is rejected by the app API and may **log the browser session out** — the same one gallery-dl uses.
+When yt-dlp says the post **requires login** and the web API can't resolve it either, the bot tries `gallery-dl` with the same web session, as a last resort.
 
 ## Relevant configs
 
 | Key | Default | What it does |
 |---|---|---|
-| `IG_CAPTION_MAX` | `1000` | Max chars of caption before truncating. IG's actual limit is 2200. |
-| `IG_USER_AGENT` | `Instagram 219.0.0.12.117 Android` | UA used to download audio (outside instagrapi). Update if IG blocks. |
-| `IG_QUEUE_WARN_THRESHOLD` | `5` | Instagrapi queue size that fires a warning log. |
+| `IG_CAPTION_MAX` | `1000` | Max caption chars before truncating. IG's real limit is 2200. |
+| `IG_USER_AGENT` | `Instagram 219.0.0.12.117 Android` | UA used to download the audio. Update if IG blocks. |
+| `IG_QUEUE_WARN_THRESHOLD` | `5` | Instagram queue size that triggers a log warning. |
 
 ## Caption
 
@@ -57,16 +56,16 @@ Post text (from edge_media_to_caption)
 
 ## Photo + music
 
-Posts where the photo has external music: the IG embed returns the photo, but the music comes in a `progressive_download_url` only Instagrapi knows. Flow:
+Posts where the photo has external music: the IG embed returns the photo, but the music comes in a `progressive_download_url` that only the API (web or app) returns. Flow:
 
-1. Embed thinks it's a pure photo → doesn't catch music → fails (expected semantic).
-2. Falls into Instagrapi → fetches `media_info` + recursively scans the JSON to find `progressive_download_url`.
-3. Downloads pure audio via `aiohttp` with Instagram UA.
+1. Embed detects photo + music → deliberately gives up (so it won't send a silent photo).
+2. Falls to the web API → gets the `media_info` + recursively scans the JSON for `progressive_download_url`.
+3. Downloads the raw audio via `aiohttp` with an Instagram UA.
 4. Mixes via `ffmpeg loop -framerate 1 -i img.jpg -i audio.m4a -shortest`.
-5. Result: `.mp4` with the static photo + music, at the right time (`audio_asset_start_time_in_ms` and `overlap_duration_in_ms` are respected).
+5. Result: `.mp4` with the static photo + the music, on the right segment (`audio_asset_start_time_in_ms` and `overlap_duration_in_ms` are honored).
 
 ## Common failures
 
-- **"login_required"** → bot tries Instagrapi, then gallery-dl with the Firefox session. If both fail, check that Firefox is still logged in. **Don't** keep forcing Instagrapi re-logins: every attempt spends the account's login budget (429).
-- **"feedback_required"** → IG flagged as suspicious. Use VPN or change UA. Wait a few hours.
-- **Carousel only gets first media** → embed bug with very large carousels; Instagrapi covers it.
+- **"login_required"** → bot tries the web API, then gallery-dl, both with the Firefox session. If both fail, check that Firefox is still logged in to Instagram.
+- **"feedback_required"** → IG flagged as suspicious. Use a VPN or change UA. Wait a few hours.
+- **Carousel only gets first media** → embed bug with very large carousels; the web API covers it.

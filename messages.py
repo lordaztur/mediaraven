@@ -10,27 +10,34 @@ _LOG_USER_FILE = os.path.join(_BASE_DIR, "log_messages.json")
 _LOG_EXAMPLE_FILE = os.path.join(_BASE_DIR, "log_messages.example.json")
 
 
-def _load() -> dict[str, Any]:
-    path = _USER_FILE if os.path.exists(_USER_FILE) else _EXAMPLE_FILE
+def _load(path: str) -> dict[str, Any]:
+    if not os.path.exists(path):
+        return {}
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-_MESSAGES: dict[str, Any] = _load()
+_MESSAGES: dict[str, Any] = _load(_USER_FILE)
+# Chave nova que o messages.json do usuário ainda não tem cai no texto do exemplo,
+# em vez de derrubar o download com KeyError depois de uma atualização.
+_EXAMPLE_MESSAGES: dict[str, Any] = _load(_EXAMPLE_FILE)
+
+
+def _lookup(tree: dict[str, Any], parts: list[str]) -> Any:
+    node: Any = tree
+    for p in parts:
+        node = node[p]
+    return node
 
 
 def _resolve(key: str) -> Any:
     parts = key.split(".")
-    node: Any = _MESSAGES
-    for idx, p in enumerate(parts):
+    for tree in (_MESSAGES, _EXAMPLE_MESSAGES):
         try:
-            node = node[p]
-        except (KeyError, TypeError) as e:
-            path_so_far = ".".join(parts[:idx + 1])
-            raise KeyError(
-                f"messages key not found: {path_so_far!r} (full key: {key!r})"
-            ) from e
-    return node
+            return _lookup(tree, parts)
+        except (KeyError, TypeError):
+            continue
+    raise KeyError(f"messages key not found: {key!r}")
 
 
 def msg(key: str, **kwargs) -> str:

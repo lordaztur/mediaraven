@@ -8,7 +8,7 @@ O MediaRaven detecta a plataforma pelo domínio da URL e roteia pra um handler d
 flowchart TD
     A[URL recebida] --> B{Detect platform}
     B -->|youtube.com| YT[yt-dlp + Deno bypass]
-    B -->|instagram.com| IG[IG embed → Instagrapi]
+    B -->|instagram.com| IG[IG embed → API web]
     B -->|reddit.com| RD[reddit_json → reddit_playwright]
     B -->|threads.net| TH[Threads JSON SSR via Playwright]
     B -->|x.com / twitter.com| X[__INITIAL_STATE__ → Playwright auth]

@@ -32,7 +32,7 @@ from ._ytdlp import (
 
 from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_owner_mismatch
 from .fallback import _build_status, _gallery_dl_run, fetch_article_caption, scrape_fallback
-from .instagram import download_instagram_instagrapi
+from .instagram import download_instagram_api
 from .instagram_embed import download_instagram_embed
 from .reddit_json import download_reddit_json, resolve_reddit_external_link
 from .reddit_playwright import download_reddit_playwright
@@ -50,7 +50,7 @@ async def _run_platform_fallbacks(
     platform: Platform,
 ) -> Optional[tuple[list[str], str, str, str, bool]]:
     if platform.instagram:
-        ig_files, ig_status, ig_short, ig_full = await download_instagram_instagrapi(url, unique_folder)
+        ig_files, ig_status, ig_short, ig_full = await download_instagram_api(url, unique_folder)
         if ig_files:
             return await _finalize_success(ig_files, ig_status, ig_short, ig_full, url)
 
@@ -249,14 +249,13 @@ async def download_media(
             _wipe_folder(unique_folder)
             if platform.instagram and unrecoverable_reason in _IG_AUTH_RETRY_REASONS:
                 logger.info(lmsg("dispatcher.unrecoverable_try_instagrapi", reason=unrecoverable_reason, url=safe_url(url)))
-                ig_files, ig_status, ig_short, ig_full = await download_instagram_instagrapi(url, unique_folder)
+                ig_files, ig_status, ig_short, ig_full = await download_instagram_api(url, unique_folder)
                 if ig_files:
                     return await _finalize_success(
                         ig_files, ig_status, ig_short, ig_full, url, platform_label, started,
                     )
                 _wipe_folder(unique_folder)
-                # gallery-dl usa a sessão WEB (cookies do Firefox), não a API do app: cobre o
-                # post que exige login quando o Instagrapi não loga (429 no login CAA, out/2026).
+                # gallery-dl: último recurso com a mesma sessão web, se a API web não resolveu.
                 logger.info(lmsg("dispatcher.unrecoverable_try_gallery_dl", reason=unrecoverable_reason, url=safe_url(url)))
                 gdl_files = await _gallery_dl_run(url, unique_folder)
                 if gdl_files:

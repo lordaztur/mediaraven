@@ -27,8 +27,7 @@ When `LOG_LEVEL > DEBUG`, these loggers are forced to `WARNING`:
 _NOISY_LIBS = (
     'httpx', 'httpcore', 'urllib3', 'asyncio', 'PIL',
     'gallery_dl', 'telegram._utils', 'telegram.ext._updater',
-    'apscheduler', 'instagrapi.mixins', 'public_request',
-    'private_request', 'curl_cffi', 'playwright',
+    'apscheduler', 'curl_cffi', 'playwright',
     'trafilatura', 'htmldate', 'courlan', 'charset_normalizer',
 )
 ```
@@ -54,7 +53,7 @@ Locations with `exc_info=True`:
 - `cookies.extract_firefox_cookies` — failure reading SQLite
 - `utils.safe_cleanup`, `async_ffmpeg_remux`, `async_merge_audio_image` — filesystem/ffmpeg ops
 - `lifecycle/instagram_login.py`, `lifecycle/playwright_refresh.py`, `lifecycle/startup.py`
-- `downloaders/instagram.py` — Instagrapi errors
+- `downloaders/instagram.py` — Instagram web API errors
 - `downloaders/reddit_json.py` — JSON parse errors
 - `downloaders/fallback.py` — `❌ Erro Scraper Playwright`
 - `handlers.process_media_request` — top-level exception handler

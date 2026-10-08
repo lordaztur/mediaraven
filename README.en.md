@@ -10,7 +10,6 @@
 [![Playwright](https://img.shields.io/badge/playwright-1.58-2EAD33?style=flat&logo=playwright&logoColor=white)](https://playwright.dev/)
 [![gallery-dl](https://img.shields.io/badge/gallery--dl-1.32-9333EA?style=flat)](https://github.com/mikf/gallery-dl)
 [![trafilatura](https://img.shields.io/badge/trafilatura-2.0-1B6B93?style=flat)](https://github.com/adbar/trafilatura)
-[![instagrapi](https://img.shields.io/badge/instagrapi-3.0-E4405F?style=flat&logo=instagram&logoColor=white)](https://github.com/subzeroid/instagrapi)
 [![curl-cffi](https://img.shields.io/badge/curl--cffi-0.14-073551?style=flat&logo=curl&logoColor=white)](https://github.com/lexiforest/curl_cffi)
 [![ffmpeg](https://img.shields.io/badge/ffmpeg-required-007808?style=flat&logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
@@ -102,7 +101,6 @@ BASE_DOWNLOAD_DIR=/absolute/path/downloads
 > ⚠️ `BASE_DOWNLOAD_DIR` must be **absolute**.
 
 Useful optionals:
-- `IG_USER` / `IG_PASS` — throwaway Instagram account (fallback)
 - `FIREFOX_PROFILE_PATH` — profile path to reuse cookies
 
 ### 4. Run
@@ -192,7 +190,7 @@ downloaders/
   dispatcher.py          orchestrator
   _platform.py _ytdlp.py _languages.py _caption.py
   instagram_embed.py     IG via /embed/ (no login)
-  instagram.py           IG via Instagrapi (with login)
+  instagram.py           IG via web API (Firefox session)
   reddit_json.py         public Reddit API
   reddit_playwright.py   headless Reddit (NSFW/spoilers)
   threads.py             Threads via JSON SSR
@@ -210,7 +208,7 @@ lifecycle/               init, shutdown, refresh, metrics
 - **Bot doesn't reply in groups** → turn off Group Privacy in BotFather.
 - **`ffmpeg not found`** → install it; without it, IG posts with standalone music don't work.
 - **`Invalid file http url specified`** → local Bot API isn't reachable; check Docker and `LOCAL_API_HOST`.
-- **Instagram asks for login/challenge** → use a throwaway account; delete `ig_session.json` and restart if it locks up.
+- **Instagram asks for login/challenge** → use a throwaway account and log in again in the configured Firefox profile.
 
 ---
 

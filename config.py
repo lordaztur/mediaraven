@@ -75,7 +75,6 @@ LOCAL_API_URL = f"http://{LOCAL_API_HOST}/bot"
 LOCAL_FILE_URL = f"http://{LOCAL_API_HOST}/file/bot"
 
 BASE_DOWNLOAD_DIR = os.getenv("BASE_DOWNLOAD_DIR", "")
-IG_SESSION_FILE = os.getenv("IG_SESSION_FILE", "ig_session.json")
 FIREFOX_PROFILE_PATH = os.getenv("FIREFOX_PROFILE_PATH", "")
 
 _IMAGE_EXTS_DEFAULT = ('.jpg', '.jpeg', '.png', '.webp', '.heic', '.bmp', '.tiff', '.jfif', '.avif', '.ico', '.svg')
@@ -194,8 +193,7 @@ REDDIT_JSON_UA = _env_str(
 _NOISY_LIBS = (
     'httpx', 'httpcore', 'urllib3', 'asyncio', 'PIL',
     'gallery_dl', 'telegram._utils', 'telegram.ext._updater',
-    'apscheduler', 'instagrapi.mixins', 'public_request',
-    'private_request', 'curl_cffi', 'playwright',
+    'apscheduler', 'curl_cffi', 'playwright',
     'trafilatura', 'htmldate', 'courlan', 'charset_normalizer',
 )
 

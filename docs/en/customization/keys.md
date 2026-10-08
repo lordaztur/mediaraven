@@ -64,7 +64,7 @@
 |---|---|---|---|---|
 | `IG_CAPTION_MAX` | `1000` | Max IG caption before truncating | 100 | 2200 |
 | `IG_USER_AGENT` | `Instagram 219...` | UA to download IG audio | — | — |
-| `IG_QUEUE_WARN_THRESHOLD` | `5` | Instagrapi queue size for warning | 1 | 100 |
+| `IG_QUEUE_WARN_THRESHOLD` | `5` | Instagram queue size for warning | 1 | 100 |
 | `THREADS_MIN_IMAGE_SIZE` | `500` | Min (px) of Threads image | 1 | 1000 |
 | `REDDIT_JSON_UA` | Firefox 123 UA | UA used in Reddit JSON API | — | — |
 
@@ -80,7 +80,7 @@
 
 Lives in `.env`, applies to the whole process:
 
-- **Auth/identity**: `TELEGRAM_BOT_TOKEN`, `ALLOWED_*`, `ALLOW_ALL`, `IG_USER`, `IG_PASS`, `IG_SESSION_FILE`
+- **Auth/identity**: `TELEGRAM_BOT_TOKEN`, `ALLOWED_*`, `ALLOW_ALL`, `FIREFOX_PROFILE_PATH`
 - **Endpoints**: `LOCAL_API_HOST`
 - **Paths**: `BASE_DOWNLOAD_DIR`, `FIREFOX_PROFILE_PATH`
 - **Logger**: `LOG_LEVEL`, `LOG_MAX_BYTES`, `LOG_BACKUP_COUNT`

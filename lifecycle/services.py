@@ -24,7 +24,6 @@ from config import (
 from messages import lmsg
 from cookies import extract_firefox_cookies
 
-from .instagram_login import init_instagrapi_async
 from .playwright_refresh import periodic_playwright_refresh
 from .startup import startup_cleanup_async
 
@@ -106,9 +105,6 @@ async def init_globals(app) -> None:
 
     asyncio.create_task(periodic_playwright_refresh())
     logger.info(lmsg("services.tarefa_de_limpeza"))
-
-    asyncio.create_task(init_instagrapi_async())
-    logger.info(lmsg("services.login_do_instagrapi"))
 
     asyncio.create_task(periodic_metrics_log())
     logger.info(lmsg("services.log_peri_dico_de"))

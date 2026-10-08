@@ -13,7 +13,7 @@ Bots públicos de download têm limites apertados (50 MB), filas, propaganda, e 
 | Plataforma | Estratégia | Texto-only? |
 |---|---|---|
 | YouTube | yt-dlp (com bypass JS via Deno) | — |
-| Instagram | Embed → Instagrapi (login) | — |
+| Instagram | Embed → API web (sessão do Firefox) | — |
 | Reddit | API JSON → Playwright (NSFW) | — |
 | Threads | JSON SSR via Playwright | ✅ |
 | X (Twitter) | `__INITIAL_STATE__` + GraphQL | ✅ |

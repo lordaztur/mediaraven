@@ -46,8 +46,8 @@
     "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
     "deno_js_engine": "🦕 Deno JS Engine activated for YouTube bypass: {arg0}",
     "falha_no_yt": "⚠️ yt-dlp failed for {arg0}. Starting Fallbacks.",
-    "unrecoverable_try_gallery_dl": "🖼️ Instagrapi did not resolve {reason} for {url}; trying gallery-dl with the Firefox session.",
-    "unrecoverable_try_instagrapi": "🔑 yt-dlp reported {reason} for {url}; trying authenticated Instagrapi before giving up.",
+    "unrecoverable_try_gallery_dl": "🖼️ Instagram web API did not resolve {reason} for {url}; trying gallery-dl with the Firefox session.",
+    "unrecoverable_try_instagrapi": "🔑 yt-dlp reported {reason} for {url}; trying the Instagram web API (Firefox session) before giving up.",
     "youtube_skip_scraper": "🚫 yt-dlp failed on YouTube; skipping the scraper (avoids dumping chopped DASH fragments): {url}",
     "reddit_link_redispatch": "🔗 Reddit post links to a known target; re-dispatching as if sent directly: {url}",
     "reddit_link_card": "🔗 Reddit post is an external link (news); sending thumb + title + link: {url}",
@@ -92,13 +92,12 @@
     "pinterest_media_filtered": "📌 Filtering Pinterest media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest."
   },
   "instagram": {
-    "iniciando_instagrapi_para": "📸 Starting Instagrapi for: {arg0}",
-    "via_web": "🌐 Instagrapi not logged in — fetching the post through the web API with the Firefox session: {url}",
-    "cliente_instagrapi_n_o": "❌ Instagrapi client is not logged in.",
+    "iniciando_instagrapi_para": "📸 Fetching the post through the Instagram web API: {arg0}",
+    "cliente_instagrapi_n_o": "❌ No Instagram session in Firefox (FIREFOX_PROFILE_PATH) or link without a post id — log in again in Firefox.",
     "buscando_udio_e": "🕵️ Looking for audio and metadata...",
     "erro_ao_buscar": "⚠️ Error fetching raw JSON: {e}",
-    "instagrapi_falhou_x": "❌ Instagrapi failed: {e}",
-    "fila_do_instagrapi": "📮 Instagrapi queue has {queue_size} jobs waiting (threshold={IG_QUEUE_WARN_THRESHOLD}).",
+    "instagrapi_falhou_x": "❌ Instagram web API failed: {e}",
+    "fila_do_instagrapi": "📮 Instagram queue has {queue_size} jobs waiting (threshold={IG_QUEUE_WARN_THRESHOLD}).",
     "baixando_udio_puro": "🎵 Downloading raw audio...",
     "erro_ao_baixar": "⚠️ Error downloading audio: {e}",
     "transformando_foto_em": "🎬 Turning photo into video with the music...",
@@ -112,7 +111,7 @@
     "tentando_ig_embed": "📸 Trying IG embed (guest) for: {arg0}",
     "n_o_consegui_extrair": "Couldn't extract shortcode from URL: {arg0}",
     "ig_embed_sem": "IG embed without shortcode_media for {shortcode}",
-    "ig_embed_post": "📸 IG embed: post {shortcode} is photo+music — delegating to Instagrapi (needs ffmpeg merge)",
+    "ig_embed_post": "📸 IG embed: post {shortcode} is photo+music — delegating to the web API (needs ffmpeg merge)",
     "ig_embed_sem_2": "IG embed with no extractable media for {shortcode}",
     "erro_ao_baixar": "⚠️ Error downloading IG embed media: {e}",
     "downloads_all_failed": "📸 IG embed: {n} URLs found but downloads failed for {shortcode}"
@@ -174,16 +173,6 @@
     "dominio_ignorado": "🔇 Domain on the ignore list; skipping silently without processing: {url}",
     "allowed_user_outside_whitelist": "👤 Allowed user {user_id} used the bot in chat {chat_id} (outside whitelist) — {n} URL(s)."
   },
-  "instagram_login": {
-    "falha_ao_aplicar": "Failed to apply chmod 0600 on {path}: {e}",
-    "credenciais_do_instagram": "⚠️ Instagram credentials not configured (.env). Instagrapi will not work.",
-    "carregando_sess_o_salva": "🍪 Loading saved Instagrapi session...",
-    "autenticando_instagrapi": "🔐 Authenticating Instagrapi...",
-    "instagrapi_logado_e": "✅ Instagrapi logged in and ready to use!",
-    "erro_ao_inicializar": "❌ Error initializing Instagrapi: {e}",
-    "login_do_instagram": "⌛ Instagram login exceeded {timeout}s. Continuing without Instagrapi (login keeps running in background).",
-    "falha_inesperada_no": "❌ Unexpected failure in init_instagrapi_async: {e}"
-  },
   "metrics_log": {
     "falha_ao_logar": "Failed to log metrics: {e}"
   },
@@ -203,7 +192,6 @@
     "contexto_playwright_pronto": "✅ Playwright context ready with cookies loaded!",
     "todos_os_servi_os": "✅ All global services ready!",
     "tarefa_de_limpeza": "🧹 Memory cleanup task scheduled.",
-    "login_do_instagrapi": "📸 Instagrapi login started in background.",
     "log_peri_dico_de": "📊 Periodic metrics logging scheduled.",
     "desligando_servi_os_globais": "🛑 Shutting down global services...",
     "aguardando_x_download": "⏳ Waiting for {arg0} download(s) in progress (up to {SHUTDOWN_TASKS_TIMEOUT}s)...",

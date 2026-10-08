@@ -13,7 +13,7 @@ Public download bots have tight limits (50 MB), queues, ads, and when they work 
 | Platform | Strategy | Text-only? |
 |---|---|---|
 | YouTube | yt-dlp (with Deno JS bypass) | — |
-| Instagram | Embed → Instagrapi (login) | — |
+| Instagram | Embed → web API (Firefox session) | — |
 | Reddit | JSON API → Playwright (NSFW) | — |
 | Threads | Playwright JSON SSR | ✅ |
 | X (Twitter) | `__INITIAL_STATE__` + GraphQL | ✅ |

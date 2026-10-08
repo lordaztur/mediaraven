@@ -59,17 +59,12 @@ choco install ffmpeg                 # Windows
 
 ### Instagram asks for login / challenge
 
-`Instagrapi failed` in the log. Possible causes:
+`Instagram web API failed` or `No Instagram session in Firefox` in the log. Possible causes:
 
+- The Instagram session in Firefox dropped (password change, logout, account recovery)
 - Account flagged for suspicious activity
-- Old session (`ig_session.json`)
 
-Solution:
-
-```bash
-rm ig_session.json
-# bot restart — forces re-login with IG_USER/IG_PASS
-```
+Solution: open the Firefox profile at `FIREFOX_PROFILE_PATH` and log in to Instagram again. The bot reads the cookies from disk — no restart needed.
 
 If still fails, use VPN or wait a few hours. In persistent cases, switch account — IG blocks accounts that appear doing mass downloads.
 

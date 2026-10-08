@@ -50,7 +50,6 @@ Aí `ALLOWED_CHAT_ID` e `ALLOWED_USER_IDS` ficam ignorados — qualquer um que d
 
 ### Opcionais úteis
 
-- `IG_USER` / `IG_PASS` — conta descartável do Instagram pro Instagrapi (fallback quando o yt-dlp falha).
 - `FIREFOX_PROFILE_PATH` — caminho do perfil pra reaproveitar cookies. Veja [Cookies do Firefox](#cookies-do-firefox-recomendado-em-servidor) abaixo.
 
 ## 4. Customização (opcional)
