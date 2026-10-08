@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.35 — Instagram without Instagrapi: web API with the Firefox session (photo + music included)
+
+**Root cause:** with Instagrapi's login down ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), the authenticated Instagram path gave up right away ("client is not logged in"). **Photo + music** posts — which the embed deliberately hands off and yt-dlp can't download (*"No video formats found"*) — arrived silent or via the generic scraper.
+
+**Major changes:**
+
+- 🌐 **`media/{pk}/info` through the web API** when Instagrapi isn't logged in — using the Firefox cookies (`FIREFOX_PROFILE_PATH`). The JSON is the same as the app API's: instagrapi's own `extract_media_v1` builds the `media_info`, and the rest of the flow is unchanged (CDN download, `progressive_download_url` + `audio_asset_start_time_in_ms` / `overlap_duration_in_ms` → ffmpeg). Carousels, reels and login-required posts come along.
+- 🏷️ New status `📸 Instagram Web (...)` — **if you use your own `messages.json`, add `downloader_status.instagram_web`** (a missing key raises `KeyError`).
+- ✅ Validated: 415 tests; a real photo + music post became an H.264 1088×1104 + AAC `.mp4` of **exactly 90 s** (the segment picked in the post), with no Instagrapi.
+
 ## v1.2.34 — Login-required Instagram: gallery-dl with the Firefox session when Instagrapi can't log in
 
 **Root cause:** since Oct 2, 2026, Instagrapi's fresh password login gets **HTTP 429** on credential submission (CAA flow) — a general problem with no fix yet ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)). Without an Instagrapi session, a post yt-dlp flagged as "login required" had nowhere left to go: the bot deliberately skips every other path (so it won't send the error page logo).
