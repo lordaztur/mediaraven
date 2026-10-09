@@ -112,5 +112,6 @@
     "original_lang_label": "ORIGINAL"
   },
 
-  "reactions": ["🔥", "⚡", "👀", "🗿", "👨‍💻"]
+  "reactions": ["🔥", "⚡", "👀", "🗿", "👨‍💻"],
+  "reaction_ignored": "🙈"
 }

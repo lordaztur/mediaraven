@@ -219,6 +219,15 @@ async def _safe_edit(status_msg: Any, text: str, **kwargs) -> None:
         logger.debug(lmsg("handlers.falha_silenciosa_em", e=e))
 
 
+async def _safe_react(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, emoji: str) -> bool:
+    try:
+        await context.bot.set_message_reaction(chat_id, message_id, reaction=emoji)
+        return True
+    except Exception as e:
+        logger.debug(lmsg("handlers.falha_ao_setar", e=e))
+        return False
+
+
 async def _safe_delete(status_msg: Any) -> None:
     try:
         await status_msg.delete()
@@ -241,6 +250,7 @@ async def _initial_status_message(
     user_id: Optional[int],
     idx: int,
     skip_confirm: bool,
+    total: int = 1,
 ) -> Optional[Any]:
     prompt_enabled = should_show_prompt("download", chat_id, user_id or 0)
     if skip_confirm or not prompt_enabled:
@@ -256,7 +266,12 @@ async def _initial_status_message(
         chat_id=chat_id,
     )
     if choice == 'no':
-        await _safe_edit(status_msg, msg("status.download_ignored", suffix=suffix))
+        # Link único: a pergunta some e só a reação da mensagem muda. Com vários links
+        # a reação valeria pra todos — e se o chat recusar a reação, o texto avisa.
+        if total == 1 and await _safe_react(context, chat_id, message_id, msg("reaction_ignored")):
+            await _safe_delete(status_msg)
+        else:
+            await _safe_edit(status_msg, msg("status.download_ignored", suffix=suffix))
         return None
     await _safe_edit(status_msg, msg("status.queue_busy", suffix=suffix))
     return status_msg
@@ -378,7 +393,7 @@ async def process_media_request(
 
     skip_confirm = is_retry or bool(target_lang)
     status_msg = await _initial_status_message(
-        context, chat_id, message_id, suffix, user_id, idx, skip_confirm,
+        context, chat_id, message_id, suffix, user_id, idx, skip_confirm, total,
     )
     if status_msg is None:
         return

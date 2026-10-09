@@ -24,7 +24,8 @@ Top-level groups:
   "downloader_status": { "ytdlp_success": "...", "scraper": "...", ... },
   "media_type_labels": { "ig_video": "...", "scraper_images": "...", ... },
   "caption":           { "link_original_label": "...", "title_prefix": "📄 ", ... },
-  "reactions":         [ "🔥", "⚡", ... ]
+  "reactions":         [ "🔥", "⚡", ... ],
+  "reaction_ignored":  "🙈"
 }
 ```
 
@@ -56,6 +57,8 @@ A array `reactions` define os emojis que o bot reage à mensagem original ao com
 ```
 
 Lista vazia (`[]`) desabilita reações.
+
+`reaction_ignored` é a reação que **substitui** a de processamento quando você clica em **ignorar** o download: a pergunta some e nenhuma mensagem é enviada. Precisa ser um dos emojis que o Telegram aceita como reação de bot (ex.: 🙈, 🤷, 🥱, 👎). Se a mensagem tem vários links, ou se o chat recusar a reação, o bot volta a responder com o texto `status.download_ignored`.
 
 ## Dica: cycle de status
 
