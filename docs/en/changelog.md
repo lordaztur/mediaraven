@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.1 — Ignored download becomes a 🙈 reaction, no message
+
+- 🙈 **Ignoring the download no longer sends text:** with a single link, the prompt disappears and the original message's reaction switches to `reaction_ignored` (default 🙈 — Telegram only accepts a fixed emoji list as bot reactions, no ❌). With several links in the same message, or if the chat refuses the reaction, the `status.download_ignored` text is kept.
+- ✅ 424 tests (new: reaction + prompt deleted; several links keep the text; refused reaction falls back to text).
+
 ## v1.3.0 — instagrapi removed: Instagram only through the Firefox web session
 
 **Why:** since Oct 2, 2026, instagrapi's fresh password login gets **HTTP 429** for everyone ([instagrapi #2852](https://github.com/subzeroid/instagrapi/issues/2852)), and every bot restart spent one attempt of the account's login budget. v1.2.35 already fetched the same JSON through the web API with the Firefox session; instagrapi became dead weight.
