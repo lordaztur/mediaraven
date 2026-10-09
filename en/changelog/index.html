@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v131-ignored-download-becomes-a-reaction-no-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.1 — Ignored download becomes a 🙈 reaction, no message
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1984,6 +1995,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v131-ignored-download-becomes-a-reaction-no-message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.1 — Ignored download becomes a 🙈 reaction, no message
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2433,6 +2455,11 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v131-ignored-download-becomes-a-reaction-no-message">v1.3.1 — Ignored download becomes a 🙈 reaction, no message<a class="headerlink" href="#v131-ignored-download-becomes-a-reaction-no-message" title="Permanent link">&para;</a></h2>
+<ul>
+<li>🙈 <strong>Ignoring the download no longer sends text:</strong> with a single link, the prompt disappears and the original message's reaction switches to <code>reaction_ignored</code> (default 🙈 — Telegram only accepts a fixed emoji list as bot reactions, no ❌). With several links in the same message, or if the chat refuses the reaction, the <code>status.download_ignored</code> text is kept.</li>
+<li>✅ 424 tests (new: reaction + prompt deleted; several links keep the text; refused reaction falls back to text).</li>
+</ul>
 <h2 id="v130-instagrapi-removed-instagram-only-through-the-firefox-web-session">v1.3.0 — instagrapi removed: Instagram only through the Firefox web session<a class="headerlink" href="#v130-instagrapi-removed-instagram-only-through-the-firefox-web-session" title="Permanent link">&para;</a></h2>
 <p><strong>Why:</strong> since Oct 2, 2026, instagrapi's fresh password login gets <strong>HTTP 429</strong> for everyone (<a href="https://github.com/subzeroid/instagrapi/issues/2852">instagrapi #2852</a>), and every bot restart spent one attempt of the account's login budget. v1.2.35 already fetched the same JSON through the web API with the Firefox session; instagrapi became dead weight.</p>
 <p><strong>Breaking changes:</strong></p>
@@ -2951,7 +2978,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 8, 2026 04:15:57 UTC"><span class="timeago" datetime="2026-10-08T04:15:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 8, 2026 04:15:57 UTC">2026-10-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 9, 2026 14:20:27 UTC"><span class="timeago" datetime="2026-10-09T14:20:27+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 9, 2026 14:20:27 UTC">2026-10-09</span>
   </span>
 
     
