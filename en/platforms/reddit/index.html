@@ -862,6 +862,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="1. Reddit JSON (reddit_json.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-page-when-the-json-api-returns-403" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post page (when the JSON API returns 403)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1645,6 +1662,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="1. Reddit JSON (reddit_json.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-page-when-the-json-api-returns-403" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post page (when the JSON API returns 403)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1746,8 +1780,26 @@
 <li>❌ Spoilers blurred → falls into Playwright</li>
 </ul>
 <p>Firefox cookies are auto-injected into the <code>aiohttp</code> session when available.</p>
+<h3 id="post-page-when-the-json-api-returns-403">Post page (when the JSON API returns 403)<a class="headerlink" href="#post-page-when-the-json-api-returns-403" title="Permanent link">&para;</a></h3>
+<p>Since <strong>2026-10-21</strong> the JSON API answers <code>403 Blocked</code> to anonymous clients — residential or datacenter IP, with or without cookies — and yt-dlp fails with <em>"Account authentication is required"</em>. The post page still opens, and the same <code>reddit_json.py</code> reads it instead:</p>
+<ol>
+<li><strong>Browser TLS fingerprint:</strong> the GET goes through <code>curl_cffi</code> (<code>impersonate="firefox"</code>); with <code>aiohttp</code> Reddit returns 403 even after solving the challenge.</li>
+<li><strong>JS challenge:</strong> the first response is a hidden form plus a <code>(async e=&gt;e+e)("&lt;seed&gt;")</code> script. The bot doubles the seed and resubmits the form via GET (<code>solution</code>, <code>js_challenge</code>, <code>jsc_token</code>, <code>jsc_orig_r</code>), getting the full page.</li>
+<li><strong><code>&lt;shreddit-post&gt;</code>:</strong> gives <code>post-title</code>, <code>post-type</code> and <code>content-href</code>:<ul>
+<li>image/gallery → the <code>i.redd.it</code> URLs in the post body, in order (avatars and icons are skipped)</li>
+<li>video → the post's <code>&lt;shreddit-player&gt;</code> <code>src</code> (HLS), which the dispatcher hands straight to yt-dlp</li>
+<li>crosspost → <code>content-href</code> relative to the original post (made absolute); the video is on the page itself</li>
+<li>no <code>post-type</code> → uses <code>content-href</code> if it is an image</li>
+</ul>
+</li>
+<li><strong>App <code>/s/</code> links:</strong> Reddit redirects with the slug encoded twice (<code>hist%25C3%25B3ria</code>) and the page can't find the post; the bot decodes it first.</li>
+<li><strong>Deleted media:</strong> if the image returns 404 on <code>i.redd.it</code>, the answer is <code>downloader_status.reddit_media_removed</code> (<em>"🗑️ This post's media was removed from Reddit."</em>), without going through yt-dlp.</li>
+</ol>
 <h2 id="2-reddit-playwright-reddit_playwrightpy">2. Reddit Playwright (<code>reddit_playwright.py</code>)<a class="headerlink" href="#2-reddit-playwright-reddit_playwrightpy" title="Permanent link">&para;</a></h2>
 <p>When JSON fails (NSFW gate, spoilers, "no preview"), opens <code>old.reddit.com</code> in Playwright:</p>
+<blockquote>
+<p>⚠️ Since Oct/2026 <code>old.reddit.com</code> sends anonymous clients to login (<code>reason=lor2</code>); this path only works with logged-in session cookies.</p>
+</blockquote>
 <ul>
 <li>✅ Auto-clicks the NSFW button</li>
 <li>✅ Removes spoiler blur (including Shadow DOM)</li>
@@ -1782,11 +1834,13 @@
 <h2 id="reddit-videos">Reddit videos<a class="headerlink" href="#reddit-videos" title="Permanent link">&para;</a></h2>
 <p>URL like <code>v.redd.it/xxx</code> or post with <code>is_video=true</code> → <code>reddit_json</code> detects and <strong>returns empty on purpose</strong>, making the dispatcher fall into <code>yt-dlp</code>. yt-dlp downloads the DASH stream (separate video + audio) and mixes.</p>
 <p>Video caption comes from yt-dlp's <code>info_dict</code> (title + description).</p>
+<p>When the post came from the page (JSON API blocked), yt-dlp gets the <code>&lt;shreddit-player&gt;</code> HLS URL instead of the post link, and the caption uses the post title.</p>
 <h2 id="nsfw">NSFW<a class="headerlink" href="#nsfw" title="Permanent link">&para;</a></h2>
 <p>Bot can download NSFW if you have Firefox cookies from a logged-in session with NSFW enabled in Reddit preferences. Without cookies, <code>reddit_playwright</code> clicks the NSFW button automatically as fallback.</p>
 <h2 id="common-failures">Common failures<a class="headerlink" href="#common-failures" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>403 / "blocked"</strong> → you need cookies; Reddit closed anonymous access to a lot of stuff in 2023+.</li>
+<li><strong>403 / "blocked"</strong> on the JSON API → expected since 2026-10-21; the bot reads the post page (above). If the page returns 403 too, check whether the JS challenge changed format (log <code>reddit_json.usando_pagina_html</code> followed by an error).</li>
+<li><strong>"🗑️ This post's media was removed from Reddit."</strong> → the image was deleted (404 on <code>i.redd.it</code>); nothing to download.</li>
 <li><strong>Gallery with some images missing</strong> → API sometimes returns partial <code>media_metadata</code>. Bot uses what came.</li>
 <li><strong><code>v.redd.it</code> returns no audio</strong> → yt-dlp + ffmpeg should mix. If not, ffmpeg isn't in PATH or DASH failed. Enable <code>LOG_LEVEL=DEBUG</code>.</li>
 </ul>
@@ -1812,7 +1866,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 26, 2026 17:37:00 UTC"><span class="timeago" datetime="2026-04-26T17:37:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 26, 2026 17:37:00 UTC">2026-04-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 22, 2026 11:40:09 UTC"><span class="timeago" datetime="2026-10-22T11:40:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 22, 2026 11:40:09 UTC">2026-10-22</span>
   </span>
 
     
