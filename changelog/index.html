@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v134-post-de-texto-do-reddit-volta-como-texto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.4 — Post de texto do Reddit volta como texto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v133-reddit-volta-a-baixar-sem-a-api-json" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2015,6 +2026,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v134-post-de-texto-do-reddit-volta-como-texto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.3.4 — Post de texto do Reddit volta como texto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v133-reddit-volta-a-baixar-sem-a-api-json" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2497,6 +2519,13 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v134-post-de-texto-do-reddit-volta-como-texto">v1.3.4 — Post de texto do Reddit volta como texto<a class="headerlink" href="#v134-post-de-texto-do-reddit-volta-como-texto" title="Permanent link">&para;</a></h2>
+<p><strong>Causa:</strong> lendo a página do post (v1.3.3), o bot pegava imagem e vídeo, mas não o texto. Post só de texto não tinha mídia, caía no yt-dlp e terminava em "🚫 Vídeo indisponível".</p>
+<ul>
+<li>📝 <strong>Texto do post:</strong> o corpo (<code>…-post-rtjson-content</code>) vira o <code>selftext</code>, um parágrafo por linha — também na legenda de posts com mídia.</li>
+<li>💬 <strong>Post só de texto:</strong> volta como mensagem com título, texto e link, como X e Threads (nova chave <code>downloader_status.reddit_text_only</code>), sem passar pelo yt-dlp.</li>
+<li>✅ 429 testes (novo: post de texto lido da página volta só com a legenda).</li>
+</ul>
 <h2 id="v133-reddit-volta-a-baixar-sem-a-api-json">v1.3.3 — Reddit volta a baixar sem a API JSON<a class="headerlink" href="#v133-reddit-volta-a-baixar-sem-a-api-json" title="Permanent link">&para;</a></h2>
 <p><strong>Causa:</strong> em 21/10/2026 o Reddit passou a responder <code>403 Blocked</code> na API JSON pra qualquer anônimo (IP residencial ou de datacenter, com ou sem cookies), e o yt-dlp — inclusive a versão do mesmo dia — cai em <em>"Account authentication is required"</em>. Todo link do Reddit falhava com "🔑 Vídeo exige login".</p>
 <ul>
@@ -3036,7 +3065,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="22 de outubro de 2026 11:40:09 UTC"><span class="timeago" datetime="2026-10-22T11:40:09+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="22 de outubro de 2026 11:40:09 UTC">2026-10-22</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="22 de outubro de 2026 13:36:28 UTC"><span class="timeago" datetime="2026-10-22T13:36:28+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="22 de outubro de 2026 13:36:28 UTC">2026-10-22</span>
   </span>
 
     
