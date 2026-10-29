@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.4.0 — Parallel gallery-dl, sturdier sending and clean shutdown
+
+Contributed by @Victaryon (PR #1), from issues seen in the logs running the bot 24/7 on an ARM VPS.
+
+- 📚 **gallery-dl first where it has its own extractor and yt-dlp only the generic one** (Erome albums, direct file links). gallery-dl only lists the files and the bot downloads several at once, each in `Range` segments. New keys: `SCRAPE_GALLERY_DL_PARALLEL_FILES` (3) and `DOWNLOAD_SEGMENTS` (4). An album with missing files warns the user (`downloader_status.gallery_incomplete`).
+- ⏱️ **Downloads no longer cut midway:** `DOWNLOAD_TIMEOUT_SECONDS` is now per read, not for the whole file; partial files are removed on error.
+- 🍪 **Firefox cookies:** also reads `-wal`/`-shm` (a new login works without closing Firefox), converts `expiry` from ms and only sends a cookie to its own domain or subdomains (`x.com` used to match `dropbox.com`).
+- 📤 **Sending:** running out of retries raises instead of failing silently; `image_process_failed` sends the photo as a document and the album file by file; media still goes out if the message with the link is deleted (`allow_sending_without_reply`).
+- 🚨 **Error notice to the admin** (`ERROR_NOTIFY_CHAT_ID`, off by default, at most 1 every 5 min) and a global error handler.
+- 🔑 **Prompts and retry per chat:** keys are now `(chat_id, key)`, since `message_id` is only unique within a chat.
+- 🛑 **Shutdown:** periodic tasks are cancelled and each `close()` has its own try (Chromium killed by systemd no longer skips the rest); ffmpeg is not left orphaned.
+- 👽 **Reddit tries the cookie first** in yt-dlp.
+- ⚡ PIL, trafilatura, sqlite and hashing run off the event loop.
+- ✅ 448 tests.
+
 ## v1.3.4 — Reddit text posts come back as text
 
 **Root cause:** when reading the post page (v1.3.3), the bot took images and video but not the text. A text-only post had no media, fell through to yt-dlp and ended in "🚫 Video unavailable".

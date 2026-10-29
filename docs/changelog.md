@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.4.0 — gallery-dl em paralelo, envio robusto e shutdown limpo
+
+Contribuição de @Victaryon (PR #1), vinda de problemas vistos nos logs rodando o bot 24/7 numa VPS ARM.
+
+- 📚 **gallery-dl primeiro onde ele tem extrator próprio e o yt-dlp só o genérico** (álbuns do Erome, links diretos de arquivo). O gallery-dl só lista os arquivos e o bot baixa vários ao mesmo tempo, cada um em faixas `Range`. Novas chaves: `SCRAPE_GALLERY_DL_PARALLEL_FILES` (3) e `DOWNLOAD_SEGMENTS` (4). Álbum com arquivo faltando avisa o usuário (`downloader_status.gallery_incomplete`).
+- ⏱️ **Download sem corte no meio:** `DOWNLOAD_TIMEOUT_SECONDS` passa a ser por leitura, não pelo arquivo inteiro; arquivo parcial é apagado em erro.
+- 🍪 **Cookies do Firefox:** lê também o `-wal`/`-shm` (login novo vale sem fechar o Firefox), converte `expiry` em ms e só manda o cookie pro domínio dele ou subdomínio (antes `x.com` casava com `dropbox.com`).
+- 📤 **Envio:** esgotar as tentativas avisa em vez de sair calado; `image_process_failed` manda a foto como documento e o álbum arquivo por arquivo; mídia sai mesmo se a mensagem com o link for apagada (`allow_sending_without_reply`).
+- 🚨 **Aviso de erro ao admin** (`ERROR_NOTIFY_CHAT_ID`, padrão desligado, no máximo 1 a cada 5 min) e error handler global.
+- 🔑 **Prompts e retry por chat:** chaves agora são `(chat_id, chave)`, porque o `message_id` só é único dentro do chat.
+- 🛑 **Shutdown:** tarefas periódicas canceladas e cada `close()` em seu próprio try (Chromium morto pelo systemd não pula o resto); ffmpeg não fica órfão.
+- 👽 **Reddit tenta o cookie primeiro** no yt-dlp.
+- ⚡ PIL, trafilatura, sqlite e hash fora do event loop.
+- ✅ 448 testes.
+
 ## v1.3.4 — Post de texto do Reddit volta como texto
 
 **Causa:** lendo a página do post (v1.3.3), o bot pegava imagem e vídeo, mas não o texto. Post só de texto não tinha mídia, caía no yt-dlp e terminava em "🚫 Vídeo indisponível".
