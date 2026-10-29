@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v140-gallery-dl-em-paralelo-envio-robusto-e-shutdown-limpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.4.0 — gallery-dl em paralelo, envio robusto e shutdown limpo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v134-post-de-texto-do-reddit-volta-como-texto" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2026,6 +2037,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v140-gallery-dl-em-paralelo-envio-robusto-e-shutdown-limpo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.4.0 — gallery-dl em paralelo, envio robusto e shutdown limpo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v134-post-de-texto-do-reddit-volta-como-texto" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2519,6 +2541,20 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v140-gallery-dl-em-paralelo-envio-robusto-e-shutdown-limpo">v1.4.0 — gallery-dl em paralelo, envio robusto e shutdown limpo<a class="headerlink" href="#v140-gallery-dl-em-paralelo-envio-robusto-e-shutdown-limpo" title="Permanent link">&para;</a></h2>
+<p>Contribuição de @Victaryon (PR #1), vinda de problemas vistos nos logs rodando o bot 24/7 numa VPS ARM.</p>
+<ul>
+<li>📚 <strong>gallery-dl primeiro onde ele tem extrator próprio e o yt-dlp só o genérico</strong> (álbuns do Erome, links diretos de arquivo). O gallery-dl só lista os arquivos e o bot baixa vários ao mesmo tempo, cada um em faixas <code>Range</code>. Novas chaves: <code>SCRAPE_GALLERY_DL_PARALLEL_FILES</code> (3) e <code>DOWNLOAD_SEGMENTS</code> (4). Álbum com arquivo faltando avisa o usuário (<code>downloader_status.gallery_incomplete</code>).</li>
+<li>⏱️ <strong>Download sem corte no meio:</strong> <code>DOWNLOAD_TIMEOUT_SECONDS</code> passa a ser por leitura, não pelo arquivo inteiro; arquivo parcial é apagado em erro.</li>
+<li>🍪 <strong>Cookies do Firefox:</strong> lê também o <code>-wal</code>/<code>-shm</code> (login novo vale sem fechar o Firefox), converte <code>expiry</code> em ms e só manda o cookie pro domínio dele ou subdomínio (antes <code>x.com</code> casava com <code>dropbox.com</code>).</li>
+<li>📤 <strong>Envio:</strong> esgotar as tentativas avisa em vez de sair calado; <code>image_process_failed</code> manda a foto como documento e o álbum arquivo por arquivo; mídia sai mesmo se a mensagem com o link for apagada (<code>allow_sending_without_reply</code>).</li>
+<li>🚨 <strong>Aviso de erro ao admin</strong> (<code>ERROR_NOTIFY_CHAT_ID</code>, padrão desligado, no máximo 1 a cada 5 min) e error handler global.</li>
+<li>🔑 <strong>Prompts e retry por chat:</strong> chaves agora são <code>(chat_id, chave)</code>, porque o <code>message_id</code> só é único dentro do chat.</li>
+<li>🛑 <strong>Shutdown:</strong> tarefas periódicas canceladas e cada <code>close()</code> em seu próprio try (Chromium morto pelo systemd não pula o resto); ffmpeg não fica órfão.</li>
+<li>👽 <strong>Reddit tenta o cookie primeiro</strong> no yt-dlp.</li>
+<li>⚡ PIL, trafilatura, sqlite e hash fora do event loop.</li>
+<li>✅ 448 testes.</li>
+</ul>
 <h2 id="v134-post-de-texto-do-reddit-volta-como-texto">v1.3.4 — Post de texto do Reddit volta como texto<a class="headerlink" href="#v134-post-de-texto-do-reddit-volta-como-texto" title="Permanent link">&para;</a></h2>
 <p><strong>Causa:</strong> lendo a página do post (v1.3.3), o bot pegava imagem e vídeo, mas não o texto. Post só de texto não tinha mídia, caía no yt-dlp e terminava em "🚫 Vídeo indisponível".</p>
 <ul>
@@ -3065,7 +3101,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="22 de outubro de 2026 13:36:28 UTC"><span class="timeago" datetime="2026-10-22T13:36:28+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="22 de outubro de 2026 13:36:28 UTC">2026-10-22</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="29 de outubro de 2026 13:57:47 UTC"><span class="timeago" datetime="2026-10-29T13:57:47+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="29 de outubro de 2026 13:57:47 UTC">2026-10-29</span>
   </span>
 
     
