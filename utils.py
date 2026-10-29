@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import logging
 import os
 import shutil
@@ -7,6 +8,7 @@ from typing import Any, Optional
 from urllib.parse import urlparse, urlunparse
 
 import aiofiles
+import aiohttp
 from PIL import Image
 from telegram.error import RetryAfter
 
@@ -120,6 +122,35 @@ def normalize_image(filepath: str, min_size: int = 50, quality: int = 95) -> Opt
         return None
 
 
+def dedupe_identical_files(files: list[str]) -> list[str]:
+    """Remove (do disco e da lista) arquivos com conteúdo idêntico, mantendo o
+    primeiro. O extrator genérico do yt-dlp baixa o mesmo vídeo uma vez por tag
+    (<video> e <source>), com nomes diferentes."""
+    kept: list[str] = []
+    seen: dict[tuple[int, str], str] = {}
+    for path in files:
+        try:
+            size = os.path.getsize(path)
+            h = hashlib.sha1()
+            with open(path, 'rb') as f:
+                for block in iter(lambda: f.read(1 << 20), b''):
+                    h.update(block)
+            key = (size, h.hexdigest())
+        except OSError:
+            kept.append(path)
+            continue
+        if key in seen:
+            logger.info(lmsg("utils.duplicate_file_removed", path=os.path.basename(path), original=os.path.basename(seen[key])))
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+            continue
+        seen[key] = path
+        kept.append(path)
+    return kept
+
+
 async def safe_cleanup(folder: str) -> None:
     def _cleanup():
         if not os.path.exists(folder):
@@ -149,10 +180,12 @@ async def async_download_file(
 ):
     """Baixa via aiohttp. Se return_content_type=True, retorna (ok, content_type)."""
     ct = ''
+    # Timeout por leitura, não pelo arquivo inteiro: um número puro vira
+    # ClientTimeout(total=...) e corta vídeos grandes no meio do download.
+    per_read = cfg("DOWNLOAD_TIMEOUT_SECONDS")
+    timeout = aiohttp.ClientTimeout(total=None, connect=per_read, sock_read=per_read)
     try:
-        async with state.AIOHTTP_SESSION.get(
-            url, timeout=cfg("DOWNLOAD_TIMEOUT_SECONDS"), headers=headers,
-        ) as response:
+        async with state.AIOHTTP_SESSION.get(url, timeout=timeout, headers=headers) as response:
             ct = (response.headers.get('Content-Type') or '').lower()
             if response.status == 200:
                 if ct.startswith(('text/html', 'application/json')):
@@ -175,7 +208,105 @@ async def async_download_file(
             return (False, ct) if return_content_type else False
     except Exception as e:
         logger.warning(lmsg("utils.erro_no_aiohttp", url=url, e=e))
+        # Não deixa arquivo parcial pra trás: quem lista a pasta depois
+        # (fallback genérico) o trataria como mídia baixada.
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        except OSError:
+            pass
     return (False, ct) if return_content_type else False
+
+
+SEGMENT_MIN_BYTES = 4 * 1024 * 1024
+_SEGMENT_ATTEMPTS = 3
+
+
+def _parse_content_range_total(value: str) -> Optional[int]:
+    # "bytes 0-0/28186548"
+    try:
+        total = value.rsplit('/', 1)[1].strip()
+        return int(total) if total != '*' else None
+    except (IndexError, ValueError):
+        return None
+
+
+async def async_download_file_segmented(
+    url: str,
+    filepath: str,
+    headers: Optional[dict] = None,
+    segments: Optional[int] = None,
+) -> bool:
+    """Baixa em N faixas (Range) em paralelo. Algumas CDNs limitam a
+    velocidade por conexão (~650 KB/s), então 4 conexões ≈ 4× mais rápido.
+    Sem suporte a Range ou arquivo pequeno, cai no download simples."""
+    segments = segments or cfg("DOWNLOAD_SEGMENTS")
+    headers = dict(headers or {})
+    per_read = cfg("DOWNLOAD_TIMEOUT_SECONDS")
+    timeout = aiohttp.ClientTimeout(total=None, connect=per_read, sock_read=per_read)
+
+    total = None
+    if segments > 1:
+        try:
+            async with state.AIOHTTP_SESSION.get(
+                url, timeout=timeout, headers={**headers, 'Range': 'bytes=0-0'},
+            ) as response:
+                ct = (response.headers.get('Content-Type') or '').lower()
+                if response.status == 206 and not ct.startswith(('text/html', 'application/json')):
+                    total = _parse_content_range_total(response.headers.get('Content-Range', ''))
+        except Exception as e:
+            logger.debug(lmsg("utils.segment_probe_failed", url=url, e=e))
+    if not total or total < SEGMENT_MIN_BYTES:
+        return await async_download_file(url, filepath, headers=headers)
+
+    size = -(-total // segments)
+    ranges = [(start, min(start + size, total) - 1) for start in range(0, total, size)]
+    with open(filepath, 'wb') as f:
+        f.truncate(total)
+
+    async def _fetch(start: int, end: int) -> None:
+        pos = start
+        for attempt in range(_SEGMENT_ATTEMPTS):
+            try:
+                async with state.AIOHTTP_SESSION.get(
+                    url, timeout=timeout, headers={**headers, 'Range': f'bytes={pos}-{end}'},
+                ) as response:
+                    if response.status != 206:
+                        raise aiohttp.ClientResponseError(
+                            response.request_info, (), status=response.status,
+                        )
+                    async with aiofiles.open(filepath, 'r+b') as f:
+                        await f.seek(pos)
+                        async for chunk in response.content.iter_chunked(64 * 1024):
+                            await f.write(chunk[:end + 1 - pos])
+                            pos += len(chunk)
+                            if pos > end:
+                                break
+                if pos > end:
+                    return
+            except Exception as e:
+                # Retoma do byte onde parou em vez de reiniciar a faixa.
+                if attempt == _SEGMENT_ATTEMPTS - 1:
+                    raise
+                logger.debug(lmsg("utils.segment_retry", url=url, start=pos, end=end, e=e))
+        raise IOError(f"faixa {start}-{end} incompleta")
+
+    tasks = [asyncio.create_task(_fetch(s, e)) for s, e in ranges]
+    try:
+        await asyncio.gather(*tasks)
+        return True
+    except (Exception, asyncio.CancelledError) as e:
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
+        if isinstance(e, asyncio.CancelledError):
+            raise
+        logger.warning(lmsg("utils.erro_no_aiohttp", url=url, e=e))
+        return False
 
 
 async def async_download_via_playwright(
@@ -240,6 +371,14 @@ async def _run_proc(
             except Exception:
                 pass
         return 'timeout', b'', ''
+    except asyncio.CancelledError:
+        # Shutdown cancela a task: sem isso o ffmpeg fica órfão rodando.
+        if process and process.returncode is None:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+        raise
     except Exception as e:
         return 'error', b'', e
 

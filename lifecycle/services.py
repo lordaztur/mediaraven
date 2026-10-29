@@ -14,17 +14,13 @@ from config import (
     AIOHTTP_READ_TIMEOUT,
     AIOHTTP_TOTAL_TIMEOUT,
     METRICS_LOG_INTERVAL_MIN,
-    PLAYWRIGHT_UA,
-    PW_VIEWPORT_HEIGHT,
-    PW_VIEWPORT_WIDTH,
     SHUTDOWN_TASKS_TIMEOUT,
     TTL_FUTURES_SECONDS,
     TTL_RETRIES_SECONDS,
 )
 from messages import lmsg
-from cookies import extract_firefox_cookies
 
-from .playwright_refresh import periodic_playwright_refresh
+from .playwright_refresh import new_context_with_cookies, periodic_playwright_refresh
 from .startup import startup_cleanup_async
 
 logger = logging.getLogger(__name__)
@@ -77,21 +73,7 @@ async def init_globals(app) -> None:
         headless=True,
         proxy={"server": proxy, "bypass": os.environ.get("NO_PROXY", "")} if proxy else None,
     )
-    state.PW_CONTEXT = await state.PW_BROWSER.new_context(
-        user_agent=PLAYWRIGHT_UA,
-        viewport={'width': PW_VIEWPORT_WIDTH, 'height': PW_VIEWPORT_HEIGHT},
-        # Logado, o x.com registra um service worker que prende o renderer
-        # (~300-500 MB) vivo depois do page.close() até o próximo refresh.
-        service_workers="block",
-    )
-
-    state.FIREFOX_COOKIES_CACHE = extract_firefox_cookies()
-    if state.FIREFOX_COOKIES_CACHE:
-        try:
-            await state.PW_CONTEXT.add_cookies(state.FIREFOX_COOKIES_CACHE)
-            logger.info(lmsg("services.x_cookies_do", arg0=len(state.FIREFOX_COOKIES_CACHE)))
-        except Exception as e:
-            logger.warning(lmsg("services.erro_ao_injetar", e=e))
+    state.PW_CONTEXT = await new_context_with_cookies()
 
     logger.info(lmsg("services.contexto_playwright_pronto"))
 
@@ -103,15 +85,20 @@ async def init_globals(app) -> None:
     app.bot_data['screenshot_futures'] = TTLCache(maxsize=1000, ttl=TTL_FUTURES_SECONDS)
     logger.info(lmsg("services.todos_os_servi_os"))
 
-    asyncio.create_task(periodic_playwright_refresh())
+    state.periodic_tasks.add(asyncio.create_task(periodic_playwright_refresh()))
     logger.info(lmsg("services.tarefa_de_limpeza"))
 
-    asyncio.create_task(periodic_metrics_log())
+    state.periodic_tasks.add(asyncio.create_task(periodic_metrics_log()))
     logger.info(lmsg("services.log_peri_dico_de"))
 
 
 async def stop_globals(app) -> None:
     logger.info(lmsg("services.desligando_servi_os_globais"))
+
+    for t in state.periodic_tasks:
+        t.cancel()
+    await asyncio.gather(*state.periodic_tasks, return_exceptions=True)
+    state.periodic_tasks.clear()
 
     pending = [t for t in state.background_tasks if not t.done()]
     if pending:
@@ -129,14 +116,21 @@ async def stop_globals(app) -> None:
                 t.cancel()
             await asyncio.gather(*still_pending, return_exceptions=True)
 
-    if state.AIOHTTP_SESSION:
-        await state.AIOHTTP_SESSION.close()
-    if state.PW_CONTEXT:
-        await state.PW_CONTEXT.close()
-    if state.PW_BROWSER:
-        await state.PW_BROWSER.close()
-    if state.PW_MANAGER:
-        await state.PW_MANAGER.stop()
+    # Cada um separado: se o Chromium já morreu (SIGTERM do systemd pro grupo
+    # todo), o close() do contexto falha e não pode impedir o stop() do manager.
+    for name, closer in (
+        ('AIOHTTP_SESSION', lambda o: o.close()),
+        ('PW_CONTEXT', lambda o: o.close()),
+        ('PW_BROWSER', lambda o: o.close()),
+        ('PW_MANAGER', lambda o: o.stop()),
+    ):
+        obj = getattr(state, name, None)
+        if obj is None:
+            continue
+        try:
+            await closer(obj)
+        except Exception as e:
+            logger.debug(lmsg("services.falha_ao_desligar", pool_name=name, e=e))
 
     for pool_name in ('YTDLP_POOL', 'IG_POOL', 'IO_POOL'):
         pool = getattr(state, pool_name, None)

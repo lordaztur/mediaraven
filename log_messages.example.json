@@ -41,6 +41,7 @@
     "unrecoverable_reason": "🛑 yt-dlp reportou erro não recuperável: {reason}"
   },
   "dispatcher": {
+    "gallery_dl_first": "📚 gallery-dl primeiro (extrator próprio do site; yt-dlp só teria o genérico): {url}",
     "link_do_threads": "🧵 Link do Threads detectado, redirecionando direto para Playwright.",
     "link_do_x": "🐦 Link do X detectado, redirecionando direto para handler dedicado.",
     "aten_o_deno_n_o": "⚠️ Atenção: Deno não encontrado! Downloads do YouTube podem falhar por JS Challenges.",
@@ -89,7 +90,9 @@
     "article_detected": "📰 Artigo detectado ({body_len} chars body, caption {caption_len} chars) em {url}",
     "combined_stats": "🔎 Combinado: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (após dedupe), {n_iframes} iframe(s) embed.",
     "article_media_filtered": "📰 Filtrando mídia do artigo: {n_combined} candidata(s) oficiais (og:image/jsonld), descartando o resto.",
-    "pinterest_media_filtered": "📌 Filtrando mídia do Pinterest: {n_combined} candidata(s) oficiais (og:image/jsonld), descartando o resto."
+    "pinterest_media_filtered": "📌 Filtrando mídia do Pinterest: {n_combined} candidata(s) oficiais (og:image/jsonld), descartando o resto.",
+    "gallery_dl_parallel": "📚 gallery-dl listou {count} arquivo(s); baixando em paralelo: {url}",
+    "gallery_dl_incomplete": "⚠️ gallery-dl: {missing} de {total} arquivo(s) falharam: {url}"
   },
   "instagram": {
     "iniciando_instagrapi_para": "📸 Buscando o post pela API web do Instagram: {arg0}",
@@ -163,6 +166,9 @@
     "downloads_all_failed": "⚠️ Tweet {tweet_id}: {n} URLs encontradas mas downloads falharam"
   },
   "handlers": {
+    "erro_rede": "🌐 Erro de rede com o Telegram (o polling se recupera): {e}",
+    "erro_nao_tratado": "❌ Erro não tratado: {e}",
+    "falha_aviso_erro": "Falha ao enviar aviso de erro: {e}",
     "falha_no_prompt": "Falha no prompt de screenshot: {e}",
     "screenshot_falhou_para": "⚠️ Screenshot falhou para {url}",
     "falha_ao_atualizar": "Falha ao atualizar status 'queue_busy': {e}",
@@ -188,8 +194,6 @@
   "services": {
     "sess_o_aiohttp_global": "🌐 Sessão aiohttp global iniciada (timeout default {AIOHTTP_TOTAL_TIMEOUT}s).",
     "iniciando_playwright_navegador": "🌐 Iniciando Playwright (Navegador Global)...",
-    "x_cookies_do": "✅ {arg0} cookies do Firefox carregados no Playwright!",
-    "erro_ao_injetar": "⚠️ Erro ao injetar cookies no Playwright: {e}",
     "contexto_playwright_pronto": "✅ Contexto Playwright pronto com cookies carregados!",
     "todos_os_servi_os": "✅ Todos os serviços globais prontos!",
     "tarefa_de_limpeza": "🧹 Tarefa de limpeza de memória agendada.",
@@ -216,9 +220,13 @@
     "erro_fatal_ao": "❌ Erro fatal ao enviar mídia única: {e}",
     "flood_control_de": "⏳ Flood control de grupo! Aguardando {arg0}s antes de reenviar os 10 arquivos...",
     "timeout_no_envio_2": "⏳ Timeout no envio do media_group. Retentando em 5s...",
-    "erro_desconhecido_ao": "⚠️ Erro desconhecido ao enviar media_group: {e}"
+    "erro_desconhecido_ao": "⚠️ Erro desconhecido ao enviar media_group: {e}",
+    "retries_exhausted": "❌ Envio falhou após {n} tentativas.",
+    "image_as_document": "🖼️ Telegram não processou a imagem {path}; reenviando como documento.",
+    "media_group_fallback": "🖼️ Telegram recusou o álbum ({e}); enviando os arquivos um a um."
   },
   "utils": {
+    "duplicate_file_removed": "🧹 Arquivo duplicado descartado: {path} (igual a {original})",
     "normalize_image_falhou": "normalize_image falhou para {filepath}: {e}",
     "falha_final_ao": "⚠️ Falha final ao limpar pasta '{folder}': {e}",
     "skip_content_type": "⏭️ Skip (Content-Type {ct}): {url}",
@@ -248,6 +256,8 @@
     "erro_ffmpeg_x": "⚠️ Erro FFmpeg: {err_msg}",
     "ffmpeg_travou_e": "⚠️ FFmpeg travou e foi interrompido (Timeout 60s).",
     "erro_fatal_no_2": "⚠️ Erro fatal no FFmpeg Merge: {e}",
-    "skip_image_too_small": "⏭️ Skip (imagem {width}x{height} < min_size {min_size}): {filepath}"
+    "skip_image_too_small": "⏭️ Skip (imagem {width}x{height} < min_size {min_size}): {filepath}",
+    "segment_probe_failed": "🔎 Sem teste de Range pra {url}: {e}",
+    "segment_retry": "🔁 Retomando faixa {start}-{end} de {url}: {e}"
   }
 }

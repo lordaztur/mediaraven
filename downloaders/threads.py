@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -145,14 +146,16 @@ async def _fetch_html(url: str) -> tuple[Optional[str], Optional[str]]:
             logger.warning(lmsg("threads.playwright_erro_carregando", arg0=safe_url(url), e=e))
             return None, None
         finally:
-            await page.close()
+            try:
+                await page.close()
+            except Exception:
+                pass
 
 
 async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str, str, str]:
     logger.info(lmsg("threads.iniciando_extra_o_via", arg0=safe_url(url)))
 
-    if not os.path.exists(unique_folder):
-        os.makedirs(unique_folder)
+    os.makedirs(unique_folder, exist_ok=True)
 
     if not state.PW_BROWSER or not state.PW_CONTEXT:
         return [], msg("downloader_status.playwright_not_running"), "", ""
@@ -195,7 +198,7 @@ async def download_threads(url: str, unique_folder: str) -> tuple[list[str], str
         if not success:
             continue
         if kind == "image":
-            normalized = normalize_image(filepath, min_size=cfg("THREADS_MIN_IMAGE_SIZE"))
+            normalized = await asyncio.to_thread(normalize_image, filepath, min_size=cfg("THREADS_MIN_IMAGE_SIZE"))
             if normalized is None:
                 continue
             downloaded_files.append(normalized)

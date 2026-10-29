@@ -1,10 +1,13 @@
 import asyncio
+import html
 import logging
 import os
 import random
+import time
 from typing import Any, Optional
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.error import NetworkError
 from telegram.ext import ContextTypes
 
 import state
@@ -28,6 +31,38 @@ from utils import chunk_html_text, cycle_status_message, is_ignored_domain, safe
 logger = logging.getLogger(__name__)
 
 
+_ERROR_NOTICE_INTERVAL_S = 300
+_last_error_notice = 0.0
+
+
+async def notify_error(context: ContextTypes.DEFAULT_TYPE, err: BaseException, where: str) -> None:
+    """Avisa ERROR_NOTIFY_CHAT_ID do erro, no máximo 1 aviso a cada 5 min."""
+    global _last_error_notice
+    target = cfg("ERROR_NOTIFY_CHAT_ID")
+    now = time.monotonic()
+    if not target or now - _last_error_notice < _ERROR_NOTICE_INTERVAL_S:
+        return
+    _last_error_notice = now
+    detail = html.escape(f"{type(err).__name__}: {err}")[:500]
+    try:
+        await context.bot.send_message(
+            target, msg("status.error_notice", where=html.escape(where), error=detail), parse_mode='HTML',
+        )
+    except Exception as e:
+        logger.debug(lmsg("handlers.falha_aviso_erro", e=e))
+
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Erros que escapam dos handlers (callbacks, polling...)."""
+    err = context.error
+    if isinstance(err, NetworkError):
+        # oscilação de rede/servidor do Telegram; o polling se recupera sozinho
+        logger.warning(lmsg("handlers.erro_rede", e=err))
+        return
+    logger.error(lmsg("handlers.erro_nao_tratado", e=err), exc_info=err)
+    await notify_error(context, err, "handler")
+
+
 # prefixo do callback_data: (store_key, nome nos alerts, nome nos buttons, chave do prompt)
 _PROMPT_KINDS = {
     'dl': ('dl_futures', 'dl', 'download', 'link_detected'),
@@ -42,7 +77,8 @@ async def future_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     prefix, req_key, value = query.data.split('|')
     store_key, alert = _PROMPT_KINDS[prefix][:2]
 
-    data = context.bot_data.get(store_key, {}).get(req_key)
+    # message_id só é único dentro do chat: a chave guardada leva o chat junto.
+    data = context.bot_data.get(store_key, {}).get((query.message.chat_id, req_key))
     if not data:
         await query.answer(msg(f"callback_alerts.{alert}_expired"), show_alert=True)
         return
@@ -59,7 +95,7 @@ async def future_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def retry_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    retry_id = query.data
+    retry_id = (query.message.chat_id, query.data)
 
     if retry_id not in context.bot_data.get('retries', {}):
         await query.answer(msg("callback_alerts.retry_expired"), show_alert=True)
@@ -86,6 +122,7 @@ async def retry_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def _ask_via_future(
     context: ContextTypes.DEFAULT_TYPE,
     store_key: str,
+    chat_id: int,
     req_key: str,
     user_id: Optional[int],
     timeout: float,
@@ -93,13 +130,14 @@ async def _ask_via_future(
 ) -> str:
     loop = asyncio.get_running_loop()
     future = loop.create_future()
-    context.bot_data.setdefault(store_key, {})[req_key] = {'future': future, 'user_id': user_id}
+    key = (chat_id, req_key)
+    context.bot_data.setdefault(store_key, {})[key] = {'future': future, 'user_id': user_id}
     try:
         return await asyncio.wait_for(future, timeout=timeout)
     except asyncio.TimeoutError:
         return default
     finally:
-        context.bot_data[store_key].pop(req_key, None)
+        context.bot_data[store_key].pop(key, None)
 
 
 def _yes_no_markup(prefix: str, req_key: str, yes_label: str, no_label: str) -> InlineKeyboardMarkup:
@@ -136,7 +174,7 @@ async def _ask_yes_no(
     else:
         await status_msg.edit_text(text, parse_mode='HTML', reply_markup=markup)
     choice = await _ask_via_future(
-        context, store_key, req_key, user_id, timeout=timeout, default=default,
+        context, store_key, status_msg.chat_id, req_key, user_id, timeout=timeout, default=default,
     )
     return choice, status_msg
 
@@ -163,7 +201,7 @@ async def _ask_language_choice(
         reply_markup=markup,
     )
     return await _ask_via_future(
-        context, 'lang_futures', req_key, user_id,
+        context, 'lang_futures', status_msg.chat_id, req_key, user_id,
         timeout=cfg("ASK_LANG_TIMEOUT"), default='original',
     )
 
@@ -288,7 +326,7 @@ async def _register_retry_and_prompt(
     suffix: str,
 ) -> None:
     retry_id = f"retry_{message_id}_{idx}"
-    context.bot_data['retries'][retry_id] = {
+    context.bot_data['retries'][(status_msg.chat_id, retry_id)] = {
         'url': url, 'msg_id': message_id, 'user_id': user_id,
         'target_lang': target_lang,
     }
@@ -382,7 +420,6 @@ async def process_media_request(
     message_id: int,
     url: str,
     target_lang: Optional[str] = None,
-    request_id: Optional[str] = None,
     idx: int = 1,
     total: int = 1,
     user_id: Optional[int] = None,
@@ -411,6 +448,7 @@ async def process_media_request(
         link_folder = os.path.join(unique_folder, "content")
 
         detect_lang = should_show_prompt("lang", chat_id, user_id or 0)
+        state.download_notice.set("")
         files, status_or_error, desc_short, desc_full, is_article = await download_media(
             url, link_folder, target_lang, detect_languages=detect_lang,
         )
@@ -431,7 +469,7 @@ async def process_media_request(
             return await process_media_request(
                 context, chat_id, message_id, url,
                 target_lang=chosen_lang,
-                request_id=request_id, idx=idx, total=total,
+                idx=idx, total=total,
                 user_id=user_id, is_retry=is_retry,
             )
 
@@ -472,10 +510,13 @@ async def process_media_request(
             context, chat_id, message_id, status_msg, files, desc_short, desc_full,
             suffix, user_id, idx, is_article=is_article,
         )
+        if notice := state.download_notice.get():
+            await _send_text_in_chunks(context, chat_id, message_id, notice, show_preview=False)
 
-    except Exception:
+    except Exception as e:
         logger.exception("⚠️ Erro ao processar link")
         await _safe_edit(status_msg, msg("status.internal_error", suffix=suffix))
+        await notify_error(context, e, safe_url(url))
 
     finally:
         if status_task is not None:

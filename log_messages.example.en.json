@@ -41,6 +41,7 @@
     "unrecoverable_reason": "🛑 yt-dlp reported unrecoverable error: {reason}"
   },
   "dispatcher": {
+    "gallery_dl_first": "📚 gallery-dl first (site has its own extractor; yt-dlp would only use generic): {url}",
     "link_do_threads": "🧵 Threads link detected, routing directly to Playwright.",
     "link_do_x": "🐦 X link detected, routing directly to dedicated handler.",
     "aten_o_deno_n_o": "⚠️ Warning: Deno not found! YouTube downloads may fail due to JS Challenges.",
@@ -89,7 +90,9 @@
     "article_detected": "📰 Article detected ({body_len} chars body, {caption_len} chars caption) at {url}",
     "combined_stats": "🔎 Combined: {n_html} HTML ({source}) + {n_pw} Playwright → {n_combined} (after dedupe), {n_iframes} embed iframe(s).",
     "article_media_filtered": "📰 Filtering article media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest.",
-    "pinterest_media_filtered": "📌 Filtering Pinterest media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest."
+    "pinterest_media_filtered": "📌 Filtering Pinterest media: {n_combined} official candidate(s) (og:image/jsonld), discarding the rest.",
+    "gallery_dl_parallel": "📚 gallery-dl listed {count} file(s); downloading in parallel: {url}",
+    "gallery_dl_incomplete": "⚠️ gallery-dl: {missing} of {total} file(s) failed: {url}"
   },
   "instagram": {
     "iniciando_instagrapi_para": "📸 Fetching the post through the Instagram web API: {arg0}",
@@ -163,6 +166,9 @@
     "downloads_all_failed": "⚠️ Tweet {tweet_id}: {n} URLs found but downloads failed"
   },
   "handlers": {
+    "erro_rede": "🌐 Telegram network error (polling recovers): {e}",
+    "erro_nao_tratado": "❌ Unhandled error: {e}",
+    "falha_aviso_erro": "Failed to send error notice: {e}",
     "falha_no_prompt": "Screenshot prompt failed: {e}",
     "screenshot_falhou_para": "⚠️ Screenshot failed for {url}",
     "falha_ao_atualizar": "Failed to update 'queue_busy' status: {e}",
@@ -188,8 +194,6 @@
   "services": {
     "sess_o_aiohttp_global": "🌐 Global aiohttp session started (default timeout {AIOHTTP_TOTAL_TIMEOUT}s).",
     "iniciando_playwright_navegador": "🌐 Starting Playwright (Global Browser)...",
-    "x_cookies_do": "✅ {arg0} Firefox cookies loaded into Playwright!",
-    "erro_ao_injetar": "⚠️ Error injecting cookies into Playwright: {e}",
     "contexto_playwright_pronto": "✅ Playwright context ready with cookies loaded!",
     "todos_os_servi_os": "✅ All global services ready!",
     "tarefa_de_limpeza": "🧹 Memory cleanup task scheduled.",
@@ -216,9 +220,13 @@
     "erro_fatal_ao": "❌ Fatal error sending single media: {e}",
     "flood_control_de": "⏳ Group flood control! Waiting {arg0}s before resending the 10 files...",
     "timeout_no_envio_2": "⏳ Timeout sending media_group. Retrying in 5s...",
-    "erro_desconhecido_ao": "⚠️ Unknown error sending media_group: {e}"
+    "erro_desconhecido_ao": "⚠️ Unknown error sending media_group: {e}",
+    "retries_exhausted": "❌ Sending failed after {n} attempts.",
+    "image_as_document": "🖼️ Telegram couldn't process image {path}; resending as a document.",
+    "media_group_fallback": "🖼️ Telegram rejected the album ({e}); sending files one by one."
   },
   "utils": {
+    "duplicate_file_removed": "🧹 Duplicate file dropped: {path} (same as {original})",
     "normalize_image_falhou": "normalize_image failed for {filepath}: {e}",
     "falha_final_ao": "⚠️ Final failure cleaning folder '{folder}': {e}",
     "skip_content_type": "⏭️ Skip (Content-Type {ct}): {url}",
@@ -248,6 +256,8 @@
     "erro_ffmpeg_x": "⚠️ FFmpeg error: {err_msg}",
     "ffmpeg_travou_e": "⚠️ FFmpeg froze and was interrupted (60s timeout).",
     "erro_fatal_no_2": "⚠️ Fatal error in FFmpeg Merge: {e}",
-    "skip_image_too_small": "⏭️ Skip (image {width}x{height} < min_size {min_size}): {filepath}"
+    "skip_image_too_small": "⏭️ Skip (image {width}x{height} < min_size {min_size}): {filepath}",
+    "segment_probe_failed": "🔎 Range probe failed for {url}: {e}",
+    "segment_retry": "🔁 Resuming range {start}-{end} of {url}: {e}"
   }
 }

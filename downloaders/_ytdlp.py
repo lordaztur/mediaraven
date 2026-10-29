@@ -7,6 +7,7 @@ import yt_dlp
 from yt_dlp.networking.impersonate import ImpersonateTarget
 
 import state
+from utils import dedupe_identical_files
 from config import (
     cfg,
     FIREFOX_PROFILE_PATH,
@@ -251,7 +252,8 @@ def _attempt_order(
     has_firefox_cookie: bool, target_lang: Optional[str], platform: Optional[Platform] = None,
 ) -> list[str]:
     attempts: list[str] = []
-    cookie_first = bool(target_lang and target_lang != 'original') or bool(platform and platform.tiktok)
+    # Reddit bloqueia IP de datacenter sem login: sem cookie é tentativa perdida.
+    cookie_first = bool(target_lang and target_lang != 'original') or bool(platform and (platform.tiktok or platform.reddit))
     if cookie_first:
         if has_firefox_cookie:
             attempts.append("with_cookie")
@@ -341,7 +343,7 @@ async def _run_ytdlp_with_cookie_fallback(
 
             current_files = _list_downloaded_files(unique_folder)
             if current_files:
-                downloaded_files = sorted(current_files)
+                downloaded_files = await asyncio.to_thread(dedupe_identical_files, sorted(current_files))
                 logger.info(lmsg("_ytdlp.download_bem_sucedido", mode=attempt_label))
                 break
             logger.warning(lmsg("_ytdlp.yt_dlp_falhou", mode=attempt_label))

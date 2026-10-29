@@ -1,6 +1,7 @@
 """Orquestrador de download. Os helpers específicos vivem em submódulos
 (_platform, _ytdlp, _languages, _caption).
 """
+import asyncio
 import logging
 import os
 import time
@@ -31,7 +32,7 @@ from ._ytdlp import (
 )
 
 from .facebook import _FB_NUMERIC_USER_RE, download_facebook_gallery, facebook_owner_mismatch
-from .fallback import _build_status, _gallery_dl_run, fetch_article_caption, scrape_fallback
+from .fallback import _build_status, _gallery_dl_run, fetch_article_caption, gallery_dl_download, prefers_gallery_dl, scrape_fallback
 from .instagram import download_instagram_api
 from .instagram_embed import download_instagram_embed
 from .reddit_json import download_reddit_json, resolve_reddit_external_link
@@ -87,7 +88,7 @@ async def _reddit_news_card(
         thumb_path = os.path.join(unique_folder, 'reddit_link_thumb.jpg')
         try:
             if await async_download_file(thumb, thumb_path):
-                normalized = normalize_image(thumb_path, min_size=1)
+                normalized = await asyncio.to_thread(normalize_image, thumb_path, min_size=1)
                 if normalized:
                     files = [normalized]
         except Exception as e:
@@ -144,8 +145,7 @@ async def download_media(
     started = time.monotonic()
     platform_label = 'other'
     try:
-        if not os.path.exists(unique_folder):
-            os.makedirs(unique_folder)
+        os.makedirs(unique_folder, exist_ok=True)
 
         url = await _resolve_short_reddit_url(url)
         url = await _resolve_facebook_share_url(url)
@@ -214,6 +214,22 @@ async def download_media(
             fb_files, fb_status, fb_short, fb_full = await download_facebook_gallery(url, unique_folder)
             if fb_files:
                 return await _finalize_success(fb_files, fb_status, fb_short, fb_full, url, platform_label, started)
+
+        if platform_label == 'other' and prefers_gallery_dl(url):
+            logger.info(lmsg("dispatcher.gallery_dl_first", url=safe_url(url)))
+            gdl_files, missing = await gallery_dl_download(url, unique_folder)
+            if gdl_files:
+                if missing > 0:
+                    state.download_notice.set(msg(
+                        "downloader_status.gallery_incomplete", missing=missing, total=len(gdl_files) + missing,
+                    ))
+                elif missing < 0:
+                    state.download_notice.set(msg("downloader_status.gallery_maybe_incomplete"))
+                return await _finalize_success(
+                    gdl_files, _build_status(gdl_files, "downloader_status.scraper_gallerydl"),
+                    "", "", url, platform_label, started,
+                )
+            _wipe_folder(unique_folder)
 
         has_firefox_cookie = os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite'))
         if platform.youtube and not state.DENO_PATH:

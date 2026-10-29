@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from typing import Optional
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 import yt_dlp
 from curl_cffi import requests as curl_requests
@@ -12,6 +12,7 @@ from config import cfg, FIREFOX_PROFILE_PATH
 from messages import lmsg, msg
 from utils import (
     async_download_file,
+    async_download_file_segmented,
     async_download_via_playwright,
     async_ffmpeg_remux,
     normalize_image,
@@ -267,7 +268,7 @@ async def _download_one(
             return None
 
     if kind == "image":
-        normalized = normalize_image(filepath, min_size=cfg("SCRAPE_MIN_IMAGE_SIZE"))
+        normalized = await asyncio.to_thread(normalize_image, filepath, min_size=cfg("SCRAPE_MIN_IMAGE_SIZE"))
         return normalized
     return filepath
 
@@ -349,6 +350,24 @@ def _can_handle_with_gallery_dl(url: str) -> bool:
         return False
 
 
+def _ytdlp_has_specific_extractor(url: str) -> bool:
+    from yt_dlp.extractor import gen_extractor_classes
+    return any(ie.suitable(url) for ie in gen_extractor_classes() if ie.ie_key() != 'Generic')
+
+
+def prefers_gallery_dl(url: str) -> bool:
+    """gallery-dl primeiro quando ele tem extrator próprio pro site e o yt-dlp só
+    teria o genérico (ex.: álbuns mistos de fotos e vídeos). O genérico do yt-dlp só enxerga
+    <video>, ignora as fotos e pega cada vídeo duas vezes (<video> e <source>)."""
+    if cfg("SCRAPE_GALLERY_DL_ENABLE") != "yes" or not _can_handle_with_gallery_dl(url):
+        return False
+    try:
+        return not _ytdlp_has_specific_extractor(url)
+    except Exception as e:
+        logger.debug(lmsg("fallback.gallery_dl_extractor", e=e))
+        return False
+
+
 def _list_files_in(folder: str) -> list[str]:
     if not os.path.exists(folder):
         return []
@@ -361,58 +380,180 @@ def _list_files_in(folder: str) -> list[str]:
     return sorted(out)
 
 
-async def _gallery_dl_run(url: str, folder: str) -> list[str]:
-    """Roda gallery-dl pra URL. Útil em galerias (Pinterest, Imgur, Tumblr, etc.)."""
-    if cfg("SCRAPE_GALLERY_DL_ENABLE") != "yes":
-        return []
-    if not _can_handle_with_gallery_dl(url):
-        return []
+def _load_gallery_dl_config() -> None:
+    global _GALLERY_DL_LOADED
+    from gallery_dl import config as gdl_config
+
+    if not _GALLERY_DL_LOADED:
+        try:
+            gdl_config.load()
+        except Exception as e:
+            logger.debug(lmsg("fallback.gallery_dl_config", e=e))
+        _GALLERY_DL_LOADED = True
+
+    gdl_config.set((), 'output', {'mode': 'null'})
+    if os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite')):
+        gdl_config.set(('extractor',), 'cookies', ('firefox', FIREFOX_PROFILE_PATH))
+
+
+# Chaves _http_* que o download próprio sabe reproduzir; qualquer outra (método,
+# corpo, validação, assinatura...) fica com o downloader do próprio gallery-dl.
+_GDL_PLAIN_HTTP_KEYS = {"_http_headers", "_http_expected_status", "_http_adjust_extension"}
+_GDL_SKIP_HEADERS = {"accept-encoding", "connection"}
+
+
+def _collect_gallery_dl_items(url: str) -> Optional[list[tuple[str, str, dict]]]:
+    """Só lista os arquivos (URL, extensão, headers), sem baixar. None quando
+    algum item precisa de algo que só o downloader do gallery-dl faz."""
+    import requests
+    from gallery_dl import job as gdl_job
+
+    items: list[tuple[str, str, dict]] = []
+    unsupported = False
+
+    class _CollectJob(gdl_job.Job):
+        def handle_url(self, file_url, kwdict):
+            nonlocal unsupported
+            extra = {k for k in kwdict if k.startswith('_http_')} - _GDL_PLAIN_HTTP_KEYS
+            if extra or not file_url.startswith(('http://', 'https://')):
+                unsupported = True
+                return
+            items.append((file_url, kwdict.get('extension') or '', dict(kwdict.get('_http_headers') or {})))
+
+        def handle_queue(self, queue_url, kwdict):
+            nonlocal unsupported
+            unsupported = True
+
+    job = _CollectJob(url)
+    job.run()
+    if unsupported or not items:
+        return None
+
+    session = getattr(job.extractor, 'session', None)
+    base = {k: v for k, v in (session.headers.items() if session else []) if k.lower() not in _GDL_SKIP_HEADERS}
+    out = []
+    for file_url, ext, extra in items:
+        headers = {**base, **extra}
+        if session is not None:
+            req = requests.Request('GET', file_url).prepare()
+            req.prepare_cookies(session.cookies)
+            if req.headers.get('Cookie'):
+                headers['Cookie'] = req.headers['Cookie']
+        if not ext.isalnum():
+            ext = os.path.splitext(urlparse(file_url).path)[1].lstrip('.')
+        out.append((file_url, ext.lower()[:5] or 'bin', headers))
+    return out
+
+
+async def _run_locked_gallery_dl(fn, *args):
+    """Roda fn no pool segurando o lock do config global do gallery-dl. No
+    timeout a thread continua; o lock só sai quando ela terminar, senão a
+    próxima chamada troca o config no meio. Timeout -> (None, True)."""
+    await _GALLERY_DL_LOCK.acquire()
+    release_now = True
+    try:
+        loop = asyncio.get_running_loop()
+        job = loop.run_in_executor(state.YTDLP_POOL, fn, *args)
+        try:
+            return await asyncio.wait_for(asyncio.shield(job), timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S")), False
+        except asyncio.TimeoutError:
+            job.add_done_callback(lambda _: _GALLERY_DL_LOCK.release())
+            release_now = False
+            return None, True
+        except asyncio.CancelledError:
+            job.add_done_callback(lambda _: _GALLERY_DL_LOCK.release())
+            release_now = False
+            raise
+    finally:
+        if release_now:
+            _GALLERY_DL_LOCK.release()
+
+
+async def _download_collected(items: list[tuple[str, str, dict]], folder: str) -> tuple[list[str], int]:
+    os.makedirs(folder, exist_ok=True)
+    sem = asyncio.Semaphore(max(1, cfg("SCRAPE_GALLERY_DL_PARALLEL_FILES")))
+
+    async def _one(num: int, file_url: str, ext: str, headers: dict) -> Optional[str]:
+        path = os.path.join(folder, f"galdl_{num:03}.{ext}")
+        async with sem:
+            ok = await async_download_file_segmented(file_url, path, headers=headers)
+        return path if ok else None
+
+    results = await asyncio.gather(*(
+        _one(i, u, ext, h) for i, (u, ext, h) in enumerate(items, start=1)
+    ))
+    files = [r for r in results if r]
+    return files, len(items) - len(files)
+
+
+def _gallery_dl_job_sync(url: str, folder: str) -> None:
+    from gallery_dl import config as gdl_config, job as gdl_job
+
+    _load_gallery_dl_config()
+    gdl_config.set(('extractor',), 'base-directory', folder + os.sep)
+    gdl_config.set(('extractor',), 'directory', [])
+    gdl_config.set(('extractor',), 'filename', 'galdl_{num:>03}.{extension}')
+    gdl_config.set(('extractor',), 'skip', True)
+    try:
+        gdl_job.DownloadJob(url).run()
+    except Exception as e:
+        logger.debug(lmsg("fallback.gallery_dl_job", e=e))
+
+
+def _gallery_dl_collect_sync(url: str) -> Optional[list[tuple[str, str, dict]]]:
+    _load_gallery_dl_config()
+    try:
+        return _collect_gallery_dl_items(url)
+    except Exception as e:
+        logger.debug(lmsg("fallback.gallery_dl_job", e=e))
+        return None
+
+
+async def gallery_dl_download(url: str, folder: str) -> tuple[list[str], int]:
+    """gallery-dl lista os arquivos e o bot baixa vários ao mesmo tempo, cada um
+    em faixas paralelas. Se não der pra listar, usa o download do gallery-dl.
+    Retorna (arquivos, faltando); faltando == -1: cortado pelo timeout."""
+    if cfg("SCRAPE_GALLERY_DL_ENABLE") != "yes" or not _can_handle_with_gallery_dl(url):
+        return [], 0
+
+    try:
+        items, timed_out = await _run_locked_gallery_dl(_gallery_dl_collect_sync, url)
+    except Exception as e:
+        logger.debug(lmsg("fallback.gallery_dl_executor", e=e))
+        items, timed_out = None, False
+    if timed_out:
+        logger.warning(lmsg(
+            "fallback.gallery_dl_timeout",
+            timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"), url=safe_url(url),
+        ))
+        return [], 0
+    if items:
+        logger.info(lmsg("fallback.gallery_dl_parallel", count=len(items), url=safe_url(url)))
+        files, missing = await _download_collected(items, folder)
+        if files:
+            if missing:
+                logger.warning(lmsg("fallback.gallery_dl_incomplete", missing=missing, total=len(items), url=safe_url(url)))
+            return files, missing
 
     files_before = set(_list_files_in(folder))
+    try:
+        _, timed_out = await _run_locked_gallery_dl(_gallery_dl_job_sync, url, folder)
+    except Exception as e:
+        logger.debug(lmsg("fallback.gallery_dl_executor", e=e))
+        timed_out = False
+    if timed_out:
+        logger.warning(lmsg(
+            "fallback.gallery_dl_timeout",
+            timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"), url=safe_url(url),
+        ))
+    new_files = sorted(set(_list_files_in(folder)) - files_before)
+    return new_files, (-1 if timed_out and new_files else 0)
 
-    async with _GALLERY_DL_LOCK:
-        global _GALLERY_DL_LOADED
-        from gallery_dl import config as gdl_config, job as gdl_job
 
-        if not _GALLERY_DL_LOADED:
-            try:
-                gdl_config.load()
-            except Exception as e:
-                logger.debug(lmsg("fallback.gallery_dl_config", e=e))
-            _GALLERY_DL_LOADED = True
-
-        gdl_config.set(('extractor',), 'base-directory', folder + os.sep)
-        gdl_config.set(('extractor',), 'directory', [])
-        gdl_config.set(('extractor',), 'filename', 'galdl_{num:>03}.{extension}')
-        gdl_config.set(('extractor',), 'skip', True)
-        gdl_config.set((), 'output', {'mode': 'null'})
-        if os.path.exists(os.path.join(FIREFOX_PROFILE_PATH, 'cookies.sqlite')):
-            gdl_config.set(('extractor',), 'cookies', ('firefox', FIREFOX_PROFILE_PATH))
-
-        loop = asyncio.get_running_loop()
-
-        def _run() -> None:
-            try:
-                gdl_job.DownloadJob(url).run()
-            except Exception as e:
-                logger.debug(lmsg("fallback.gallery_dl_job", e=e))
-
-        try:
-            await asyncio.wait_for(
-                loop.run_in_executor(state.YTDLP_POOL, _run),
-                timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"),
-            )
-        except asyncio.TimeoutError:
-            logger.warning(lmsg(
-                "fallback.gallery_dl_timeout",
-                timeout=cfg("SCRAPE_GALLERY_DL_TIMEOUT_S"), url=safe_url(url),
-            ))
-        except Exception as e:
-            logger.debug(lmsg("fallback.gallery_dl_executor", e=e))
-
-    files_after = set(_list_files_in(folder))
-    new_files = sorted(files_after - files_before)
-    return new_files
+async def _gallery_dl_run(url: str, folder: str) -> list[str]:
+    """Roda gallery-dl pra URL. Útil em galerias (Pinterest, Imgur, Tumblr, etc.)."""
+    files, _ = await gallery_dl_download(url, folder)
+    return files
 
 
 async def _ytdlp_generic_iframes(iframes: list[str], folder: str) -> list[str]:
@@ -428,8 +569,7 @@ async def take_page_screenshot(folder: str, url: str) -> Optional[str]:
     """Captura screenshot da fold da página. Retorna o path ou None se falhar."""
     if not state.PW_BROWSER or not state.PW_CONTEXT:
         return None
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+    os.makedirs(folder, exist_ok=True)
     out_path = os.path.join(folder, "screenshot.jpg")
     async with state.PW_SEMAPHORE:
         page = None
@@ -472,7 +612,7 @@ async def fetch_article_caption(url: str, html: Optional[str] = None) -> tuple[s
         )
     if not html:
         return "", ""
-    result = extract_article(html, url=url, min_chars=cfg("SCRAPE_ARTICLE_MIN_CHARS"))
+    result = await asyncio.to_thread(extract_article, html, url=url, min_chars=cfg("SCRAPE_ARTICLE_MIN_CHARS"))
     if not result:
         return "", ""
     title, body = result
@@ -489,8 +629,7 @@ async def scrape_fallback(
 ) -> tuple[list[str], str, str, str, bool]:
     logger.info(lmsg("fallback.iniciando_scraping_multi", arg0=safe_url(url)))
 
-    if not os.path.exists(unique_folder):
-        os.makedirs(unique_folder)
+    os.makedirs(unique_folder, exist_ok=True)
 
     pw_available = bool(state.PW_BROWSER and state.PW_CONTEXT)
 
