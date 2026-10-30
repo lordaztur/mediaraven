@@ -522,3 +522,21 @@ async def test_threads_text_only_returns_caption_without_files(tmp_folder):
     assert short == text_short
     assert full == text_full
     assert status == "THREADS_TEXT_ONLY"
+
+
+@pytest.mark.asyncio
+async def test_download_media_reddit_skips_generic_scraper(tmp_folder):
+    """Reddit: com yt-dlp e Playwright vazios, não cai no scraper genérico (só junta logo/avatar)."""
+    scrape_mock = AsyncMock(return_value=(["lixo.jpg"], "ok", "", "", False))
+    with patch.object(dispatcher, "_run_ytdlp_with_cookie_fallback", new=AsyncMock(return_value=([], {}, None))), \
+         patch.object(dispatcher, "_resolve_short_reddit_url", new=_passthrough_async_mock()), \
+         patch.object(dispatcher, "resolve_reddit_external_link", new=AsyncMock(return_value=(None, None))), \
+         patch.object(dispatcher, "download_reddit_json", new=AsyncMock(return_value=([], "fail", "", ""))), \
+         patch.object(dispatcher, "download_reddit_playwright", new=AsyncMock(return_value=([], "fail", "", ""))), \
+         patch.object(dispatcher, "scrape_fallback", new=scrape_mock):
+        files, *_ = await dispatcher.download_media(
+            "https://reddit.com/r/foo/comments/x/", tmp_folder, target_lang=None
+        )
+
+    assert files == []
+    scrape_mock.assert_not_called()

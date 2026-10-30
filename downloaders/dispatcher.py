@@ -64,6 +64,11 @@ async def _run_platform_fallbacks(
         logger.info(lmsg("dispatcher.youtube_skip_scraper", url=safe_url(url)))
         return None
 
+    # A página do Reddit só rende avatar, logo e anúncio pro scraper genérico.
+    if platform.reddit:
+        logger.info(lmsg("dispatcher.reddit_skip_scraper", url=safe_url(url)))
+        return None
+
     scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article = await scrape_fallback(url, unique_folder)
     if scrape_files:
         return scrape_files, scrape_status, scrape_short, scrape_full, scrape_is_article

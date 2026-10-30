@@ -354,6 +354,8 @@ async def _run_ytdlp_with_cookie_fallback(
     if not downloaded_files and last_exc is not None:
         logger.debug(lmsg("_ytdlp.stack_trace_last_exc"), exc_info=last_exc)
 
+    if not downloaded_files and all_errors:
+        logger.warning(lmsg("_ytdlp.erros_capturados", errors=" | ".join(all_errors[-4:])[:1500]))
     reason = _classify_ytdlp_errors(all_errors) if not downloaded_files else None
     if reason:
         logger.info(lmsg("_ytdlp.unrecoverable_reason", reason=reason))
