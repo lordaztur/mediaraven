@@ -341,3 +341,12 @@ def test_walk_for_tweet_obj_finds_in_graphql_legacy_shape():
     found = list(_walk_for_tweet_obj(response, "999"))
     assert len(found) >= 1
     assert any(t.get("full_text") == "found me" or t.get("rest_id") == "999" for t in found)
+
+
+def test_extract_tweet_text_prefers_note_tweet_for_long_posts():
+    long_text = "linha longa " * 60
+    tweet = {
+        "legacy": {"full_text": long_text[:270] + "… https://t.co/abc", "display_text_range": [0, 280]},
+        "note_tweet": {"note_tweet_results": {"result": {"text": long_text}}},
+    }
+    assert _extract_tweet_text(tweet) == long_text.strip()

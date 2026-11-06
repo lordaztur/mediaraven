@@ -124,6 +124,10 @@ def _resolve_user_dict(data: dict, tweet: dict) -> Optional[dict]:
 def _extract_tweet_text(tweet: Optional[dict]) -> str:
     if not isinstance(tweet, dict):
         return ""
+    # Tweet longo: legacy.full_text vem cortado, o texto inteiro está em note_tweet.
+    note = (((tweet.get("note_tweet") or {}).get("note_tweet_results") or {}).get("result") or {}).get("text")
+    if isinstance(note, str) and note.strip():
+        return _TCO_TRAIL_RE.sub("", note).strip()
     legacy = tweet.get("legacy")
     src = legacy if isinstance(legacy, dict) and (legacy.get("full_text") or legacy.get("text")) else tweet
     text = src.get("full_text") or src.get("text") or ""
