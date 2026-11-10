@@ -31,6 +31,8 @@ _POST_RE = re.compile(r'<shreddit-post\b([^>]*)>(.*?)</shreddit-post>', re.S)
 _ATTR_RE = re.compile(r'([\w-]+)="([^"]*)"')
 _PLAYER_RE = re.compile(r'<shreddit-player\b[^>]*\bsrc="([^"]+)"')
 _IREDDIT_RE = re.compile(r'https://i\.redd\.it/[^"?&\s]+')
+# selo do autor ("Profile Badge for the Achievement ...") também é <img> i.redd.it
+_BADGE_RE = re.compile(r'<img[^>]*alt="Profile Badge[^>]*>')
 _TEXT_BODY_RE = re.compile(r'-post-rtjson-content"[^>]*>(.*?)</div>', re.S)
 _BLOCK_END_RE = re.compile(r'</(?:p|li|h\d|blockquote|pre)>|<br\s*/?>')
 _TAG_RE = re.compile(r'<[^>]+>')
@@ -152,7 +154,7 @@ def _post_data_from_html(page: str) -> dict:
         data['_hls_url'] = html.unescape(player.group(1))
     if not player:
         # Alguns posts vêm sem post-type nem <img> no corpo; aí só sobra o content-href.
-        urls = [u for u in _IREDDIT_RE.findall(body) if is_reddit_media_url(u)]
+        urls = [u for u in _IREDDIT_RE.findall(_BADGE_RE.sub('', body)) if is_reddit_media_url(u)]
         if not urls and looks_like_image(data['url']):
             urls = [data['url']]
         if urls and post_type not in ('text', 'link'):
