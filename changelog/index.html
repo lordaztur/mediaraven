@@ -1519,6 +1519,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v151-rate-limit-estrito-por-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.5.1 — rate limit estrito por link
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v150-rate-limit-por-chat" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2059,6 +2070,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v151-rate-limit-estrito-por-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.5.1 — rate limit estrito por link
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v150-rate-limit-por-chat" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2585,6 +2607,10 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v151-rate-limit-estrito-por-link">v1.5.1 — rate limit estrito por link<a class="headerlink" href="#v151-rate-limit-estrito-por-link" title="Permanent link">&para;</a></h2>
+<ul>
+<li>⏱️ <strong>Rate limit vale por link, não por mensagem:</strong> com o rate limit ligado, só o 1º link de uma mensagem é baixado; os demais são ignorados (log <code>Rate limit: só o 1º link...</code>). Desligado (<code>RATE_LIMIT_ENABLED: no</code>), nada muda.</li>
+</ul>
 <h2 id="v150-rate-limit-por-chat">v1.5.0 — rate limit por chat<a class="headerlink" href="#v150-rate-limit-por-chat" title="Permanent link">&para;</a></h2>
 <ul>
 <li>⏱️ <strong>Rate limit ligado por padrão:</strong> cada chat aceita 1 mensagem com link a cada <code>RATE_LIMIT_INTERVAL_MS</code> (1000 ms) e as que chegam dentro da janela são ignoradas, sem reação nem resposta (só um log). Os links de uma mesma mensagem passam juntos. Novas chaves: <code>RATE_LIMIT_ENABLED</code> (<code>yes</code>) e <code>RATE_LIMIT_INTERVAL_MS</code> (1000), configuráveis por chat e por usuário.</li>
@@ -3153,7 +3179,7 @@
     <span class="md-icon" title="Última atualização">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="23 de novembro de 2026 16:55:54 UTC"><span class="timeago" datetime="2026-11-23T16:55:54+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="23 de novembro de 2026 16:55:54 UTC">2026-11-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="23 de novembro de 2026 16:57:21 UTC"><span class="timeago" datetime="2026-11-23T16:57:21+00:00" locale="pt"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="23 de novembro de 2026 16:57:21 UTC">2026-11-23</span>
   </span>
 
     

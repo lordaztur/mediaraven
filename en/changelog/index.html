@@ -1521,6 +1521,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v151-strict-per-link-rate-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.5.1 — strict per-link rate limit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v150-per-chat-rate-limit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2061,6 +2072,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v151-strict-per-link-rate-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.5.1 — strict per-link rate limit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v150-per-chat-rate-limit" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2587,6 +2609,10 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v151-strict-per-link-rate-limit">v1.5.1 — strict per-link rate limit<a class="headerlink" href="#v151-strict-per-link-rate-limit" title="Permanent link">&para;</a></h2>
+<ul>
+<li>⏱️ <strong>Rate limit is per link, not per message:</strong> with the rate limit on, only the 1st link of a message is downloaded; the others are ignored (log <code>Rate limit: só o 1º link...</code>). With it off (<code>RATE_LIMIT_ENABLED: no</code>), nothing changes.</li>
+</ul>
 <h2 id="v150-per-chat-rate-limit">v1.5.0 — per-chat rate limit<a class="headerlink" href="#v150-per-chat-rate-limit" title="Permanent link">&para;</a></h2>
 <ul>
 <li>⏱️ <strong>Rate limit on by default:</strong> each chat accepts 1 link message every <code>RATE_LIMIT_INTERVAL_MS</code> (1000 ms); messages arriving inside the window are ignored with no reaction or reply (log only). Links in the same message go through together. New keys: <code>RATE_LIMIT_ENABLED</code> (<code>yes</code>) and <code>RATE_LIMIT_INTERVAL_MS</code> (1000), configurable per chat and per user.</li>
@@ -3155,7 +3181,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 23, 2026 16:55:54 UTC"><span class="timeago" datetime="2026-11-23T16:55:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 23, 2026 16:55:54 UTC">2026-11-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="November 23, 2026 16:57:21 UTC"><span class="timeago" datetime="2026-11-23T16:57:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="November 23, 2026 16:57:21 UTC">2026-11-23</span>
   </span>
 
     
