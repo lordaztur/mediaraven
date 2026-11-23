@@ -50,6 +50,10 @@
 
     "_doc_MAX_URLS_PER_MESSAGE": "Máximo de URLs processadas em uma única mensagem do Telegram (protege contra paste-bombs). Min 1, max 50.",
     "MAX_URLS_PER_MESSAGE": 20,
+    "_doc_RATE_LIMIT_ENABLED": "Liga o rate limit por chat: o bot atende 1 mensagem com link a cada RATE_LIMIT_INTERVAL_MS e ignora as que chegarem dentro da janela. \"yes\" ou \"no\".",
+    "RATE_LIMIT_ENABLED": "yes",
+    "_doc_RATE_LIMIT_INTERVAL_MS": "Janela do rate limit em milissegundos (padrão 1000 = 1 mensagem com link por segundo). Min 0, max 60000.",
+    "RATE_LIMIT_INTERVAL_MS": 1000,
 
     "_doc_IGNORED_DOMAINS": "Lista de domínios a ignorar silenciosamente — links desses domínios passam batido, sem reação, prompt ou qualquer mensagem no chat (só registra no log). Casa o domínio exato e subdomínios (ex: \"example.com\" também ignora \"www.example.com\" e \"m.example.com\"). Por padrão vem do .env (IGNORED_DOMAINS); descomente a linha abaixo só pra sobrepor por chat/user aqui (isso ANULA o valor do .env). Ex: [\"twitch.tv\", \"spotify.com\"].",
     "__IGNORED_DOMAINS": [],

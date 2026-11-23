@@ -124,6 +124,9 @@ IO_WORKERS = _env_int("IO_WORKERS", 4)
 PW_CONCURRENCY = _env_int("PW_CONCURRENCY", 3)
 
 MAX_URLS_PER_MESSAGE = _env_int("MAX_URLS_PER_MESSAGE", 20)
+# Rate limit por chat: aceita 1 mensagem com link a cada RATE_LIMIT_INTERVAL_MS e ignora as que chegam dentro da janela.
+RATE_LIMIT_ENABLED = _env_yesno("RATE_LIMIT_ENABLED", "yes")
+RATE_LIMIT_INTERVAL_MS = _env_int("RATE_LIMIT_INTERVAL_MS", 1000)
 IGNORED_DOMAINS: list[str] = _csv_strings(os.getenv("IGNORED_DOMAINS", ""))
 DOWNLOAD_TIMEOUT_SECONDS = _env_int("DOWNLOAD_TIMEOUT_SECONDS", 15)
 DOWNLOAD_SEGMENTS = _env_int("DOWNLOAD_SEGMENTS", 4)

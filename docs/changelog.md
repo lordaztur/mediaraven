@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.0 — rate limit por chat
+
+- ⏱️ **Rate limit ligado por padrão:** cada chat aceita 1 mensagem com link a cada `RATE_LIMIT_INTERVAL_MS` (1000 ms) e as que chegam dentro da janela são ignoradas, sem reação nem resposta (só um log). Os links de uma mesma mensagem passam juntos. Novas chaves: `RATE_LIMIT_ENABLED` (`yes`) e `RATE_LIMIT_INTERVAL_MS` (1000), configuráveis por chat e por usuário.
+
 ## v1.4.1 — retry na mensagem inicial
 
 - 🔁 **Mensagem inicial do pedido tenta de novo:** `Timed out`/erro de rede no primeiro envio (status ou pergunta de download) não mata mais o pedido em silêncio. Até 3 tentativas; se esgotar, reage 👎 na mensagem.

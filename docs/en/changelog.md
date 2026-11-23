@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.0 — per-chat rate limit
+
+- ⏱️ **Rate limit on by default:** each chat accepts 1 link message every `RATE_LIMIT_INTERVAL_MS` (1000 ms); messages arriving inside the window are ignored with no reaction or reply (log only). Links in the same message go through together. New keys: `RATE_LIMIT_ENABLED` (`yes`) and `RATE_LIMIT_INTERVAL_MS` (1000), configurable per chat and per user.
+
 ## v1.4.1 — retry on the initial message
 
 - 🔁 **Initial request message retries:** `Timed out`/network errors on the first send (status or download prompt) no longer kill the request silently. Up to 3 attempts; if exhausted, reacts 👎 to the message.

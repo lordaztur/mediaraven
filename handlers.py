@@ -586,6 +586,23 @@ def _extract_urls_from_update(update: Update) -> list[str]:
     return deduped
 
 
+_rate_last: dict[int, float] = {}
+
+
+def _rate_limited(chat_id: int, user_id: int, now: Optional[float] = None) -> bool:
+    """True se a mensagem cai dentro da janela do rate limit do chat (deve ser ignorada).
+    Mensagem aceita abre uma nova janela; a ignorada não estende a anterior."""
+    if cfg("RATE_LIMIT_ENABLED", chat_id, user_id) != "yes":
+        return False
+    interval = max(0, int(cfg("RATE_LIMIT_INTERVAL_MS", chat_id, user_id))) / 1000.0
+    now = time.monotonic() if now is None else now
+    last = _rate_last.get(chat_id)
+    if last is not None and now - last < interval:
+        return True
+    _rate_last[chat_id] = now
+    return False
+
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id if update.effective_user else 0
@@ -598,6 +615,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     urls = _extract_urls_from_update(update)
     if not urls:
+        return
+
+    if _rate_limited(chat_id, user_id):
+        logger.info(f"⏱️ Rate limit: mensagem ignorada no chat {chat_id} (usuário {user_id}, {len(urls)} URL(s)).")
         return
 
     if is_allowed_user and not is_whitelisted_chat:
