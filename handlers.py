@@ -591,7 +591,8 @@ _rate_last: dict[int, float] = {}
 
 def _rate_limited(chat_id: int, user_id: int, now: Optional[float] = None) -> bool:
     """True se a mensagem cai dentro da janela do rate limit do chat (deve ser ignorada).
-    Mensagem aceita abre uma nova janela; a ignorada não estende a anterior."""
+    Mensagem aceita abre uma nova janela; a ignorada não estende a anterior.
+    Estrito por link: a mensagem aceita baixa só o 1º link (ver handle_message)."""
     if cfg("RATE_LIMIT_ENABLED", chat_id, user_id) != "yes":
         return False
     interval = max(0, int(cfg("RATE_LIMIT_INTERVAL_MS", chat_id, user_id))) / 1000.0
@@ -620,6 +621,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if _rate_limited(chat_id, user_id):
         logger.info(f"⏱️ Rate limit: mensagem ignorada no chat {chat_id} (usuário {user_id}, {len(urls)} URL(s)).")
         return
+    if cfg("RATE_LIMIT_ENABLED", chat_id, user_id) == "yes" and len(urls) > 1:
+        logger.info(f"⏱️ Rate limit: só o 1º link da mensagem é baixado no chat {chat_id}; {len(urls) - 1} ignorado(s).")
+        urls = urls[:1]
 
     if is_allowed_user and not is_whitelisted_chat:
         logger.info(lmsg(

@@ -41,3 +41,44 @@ def test_intervalo_configuravel_e_zero_desliga_na_pratica(monkeypatch):
     _set(monkeypatch, ms=0)
     assert handlers._rate_limited(1, 9, now=200.0) is False
     assert handlers._rate_limited(1, 9, now=200.0) is False
+
+
+import asyncio
+from types import SimpleNamespace
+
+
+def _update(chat_id=1, user_id=9):
+    msg = SimpleNamespace(id=5, set_reaction=lambda **kw: asyncio.sleep(0))
+    return SimpleNamespace(
+        effective_chat=SimpleNamespace(id=chat_id),
+        effective_user=SimpleNamespace(id=user_id),
+        message=msg,
+    )
+
+
+def _run(monkeypatch, enabled, urls):
+    _set(monkeypatch, enabled=enabled)
+    chamadas = []
+
+    async def fake_process(context, chat_id, message_id, url, **kw):
+        chamadas.append(url)
+
+    monkeypatch.setattr(handlers, "ALLOW_ALL", "yes")
+    monkeypatch.setattr(handlers, "_extract_urls_from_update", lambda u: list(urls))
+    monkeypatch.setattr(handlers, "msg_list", lambda k: [])
+    monkeypatch.setattr(handlers, "process_media_request", fake_process)
+
+    async def go():
+        await handlers.handle_message(_update(), SimpleNamespace())
+        await asyncio.gather(*list(handlers.state.background_tasks))
+
+    asyncio.run(go())
+    return chamadas
+
+
+def test_so_o_primeiro_link_da_mensagem_com_rate_limit(monkeypatch):
+    assert _run(monkeypatch, "yes", ["a", "b", "c"]) == ["a"]
+
+
+def test_sem_rate_limit_baixa_todos(monkeypatch):
+    assert _run(monkeypatch, "no", ["a", "b", "c"]) == ["a", "b", "c"]

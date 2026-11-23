@@ -52,7 +52,7 @@
 | Key | Default | Description | Min | Max |
 |---|---|---|---|---|
 | `MAX_URLS_PER_MESSAGE` | `20` | Max URLs per message | 1 | 50 |
-| `RATE_LIMIT_ENABLED` | `"yes"` | Per-chat rate limit: ignores link messages arriving inside the window | — | — |
+| `RATE_LIMIT_ENABLED` | `"yes"` | Per-chat rate limit, strict per link: 1 link per window; other links in the message and messages inside the window are ignored | — | — |
 | `RATE_LIMIT_INTERVAL_MS` | `1000` | Rate limit window (ms): 1 link message per window | 0 | 60000 |
 | `MEDIA_GROUP_CHUNK_SIZE` | `10` | sendMediaGroup chunk size (Telegram caps at 10) | 1 | 10 |
 | `MEDIA_GROUP_DELAY` | `4.0` | Delay (s) between chunks of 10 — controls flood-risk | 0 | 30 |

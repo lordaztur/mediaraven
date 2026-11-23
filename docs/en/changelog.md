@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1 — strict per-link rate limit
+
+- ⏱️ **Rate limit is per link, not per message:** with the rate limit on, only the 1st link of a message is downloaded; the others are ignored (log `Rate limit: só o 1º link...`). With it off (`RATE_LIMIT_ENABLED: no`), nothing changes.
+
 ## v1.5.0 — per-chat rate limit
 
 - ⏱️ **Rate limit on by default:** each chat accepts 1 link message every `RATE_LIMIT_INTERVAL_MS` (1000 ms); messages arriving inside the window are ignored with no reaction or reply (log only). Links in the same message go through together. New keys: `RATE_LIMIT_ENABLED` (`yes`) and `RATE_LIMIT_INTERVAL_MS` (1000), configurable per chat and per user.
