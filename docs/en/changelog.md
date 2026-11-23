@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 — retry on the initial message
+
+- 🔁 **Initial request message retries:** `Timed out`/network errors on the first send (status or download prompt) no longer kill the request silently. Up to 3 attempts; if exhausted, reacts 👎 to the message.
+
 ## v1.4.0 — Parallel gallery-dl, sturdier sending and clean shutdown
 
 Contributed by @Victaryon (PR #1), from issues seen in the logs running the bot 24/7 on an ARM VPS.

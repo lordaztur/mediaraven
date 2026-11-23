@@ -429,9 +429,19 @@ async def process_media_request(
     suffix = _build_suffix(idx, total, target_lang)
 
     skip_confirm = is_retry or bool(target_lang)
-    status_msg = await _initial_status_message(
-        context, chat_id, message_id, suffix, user_id, idx, skip_confirm, total,
-    )
+    status_msg = None
+    for attempt in range(1, 4):
+        try:
+            status_msg = await _initial_status_message(
+                context, chat_id, message_id, suffix, user_id, idx, skip_confirm, total,
+            )
+            break
+        except NetworkError as e:
+            logger.warning(f"⚠️ Mensagem inicial falhou ({type(e).__name__}), tentativa {attempt}/3: {url}")
+            if attempt == 3:
+                await _safe_react(context, chat_id, message_id, "👎")
+                return
+            await asyncio.sleep(2 * attempt)
     if status_msg is None:
         return
 

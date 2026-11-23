@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 — retry na mensagem inicial
+
+- 🔁 **Mensagem inicial do pedido tenta de novo:** `Timed out`/erro de rede no primeiro envio (status ou pergunta de download) não mata mais o pedido em silêncio. Até 3 tentativas; se esgotar, reage 👎 na mensagem.
+
 ## v1.4.0 — gallery-dl em paralelo, envio robusto e shutdown limpo
 
 Contribuição de @Victaryon (PR #1), vinda de problemas vistos nos logs rodando o bot 24/7 numa VPS ARM.
